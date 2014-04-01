@@ -1,13 +1,3 @@
-// Lab 1-1.
-// This is the same as the first simple example in the course book,
-// but with a few error checks.
-// Remember to copy your file to a new on appropriate places during the lab so you keep old results.
-// Note that the files "lab1-1.frag", "lab1-1.vert" are required.
-
-// Includes vary a bit with platforms.
-// MS Windows needs GLEW or glee.
-// Mac uses slightly different paths.
-
 #include <gl\glew.h>
 #include <gl\freeglut.h>
 #include "GL_utilities.h"
