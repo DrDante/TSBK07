@@ -1,14 +1,14 @@
+// Includes
 #include <gl\glew.h>
 #include <gl\freeglut.h>
+#include <math.h>
 #include "GL_utilities.h"
 #include "loadobj.h"
 #include "VectorUtils3.h"
-#include <math.h>
-
 #include "LoadTGA.h"
 
+
 // Globals
-// Data would normally be read from files
 
 // Frustum
 #define near 1.0
@@ -17,13 +17,13 @@
 #define left -0.5
 #define top 0.5
 #define bottom -0.5
-GLfloat projectionMatrix[] = { 2.0f*near / (right - left), 0.0f, (right + left) / (right - left), 0.0f,
-0.0f, 2.0f*near / (top - bottom), (top + bottom) / (top - bottom), 0.0f,
-0.0f, 0.0f, -(far + near) / (far - near), -2 * far*near / (far - near),
-0.0f, 0.0f, -1.0f, 0.0f };
+GLfloat projectionMatrix[] = {	2.0f*near / (right - left), 0.0f, (right + left) / (right - left), 0.0f,
+								0.0f, 2.0f*near / (top - bottom), (top + bottom) / (top - bottom), 0.0f,
+								0.0f, 0.0f, -(far + near) / (far - near), -2 * far*near / (far - near),
+								0.0f, 0.0f, -1.0f, 0.0f };
 
-Model *m;
-Model *solkanin;
+Model *car;
+Model *bunny;
 
 // Time variable
 GLfloat t;
@@ -47,23 +47,25 @@ GLenum err;
 
 void init(void)
 {
+	// Initializing GLEW
 	err = glewInit();
 
 	dumpInfo();
 
-	m = LoadModelPlus("bilskiss.obj");
-	solkanin = LoadModelPlus("bunnyplus.obj");
+	// Loading models
+	car = LoadModelPlus("bilskiss.obj");
+	bunny = LoadModelPlus("bunnyplus.obj");
 
 	// GL inits
 	glClearColor(0.0, 0.3, 0.3, 0);
 	glEnable(GL_DEPTH_TEST);
 	printError("GL inits");
 
-	// Load and compile shader
+	// Load and compile shaders
 	program = loadShaders("main.vert", "main.frag");
 	printError("init shader");
 
-	// Load texture
+	// Load textures
 	LoadTGATextureSimple("bilskissred.tga", &myTex);
 	LoadTGATextureSimple("maskros512.tga", &myTex2);
 
@@ -109,7 +111,7 @@ void display(void)
 
 	//Active texture pbject
 	glBindTexture(GL_TEXTURE_2D, myTex);
-	DrawModel(m, program, "inPosition", "inNormal", "inTexCoord");
+	DrawModel(car, program, "inPosition", "inNormal", "inTexCoord");
 
 	// Upload the affine result matrix
 	glUniformMatrix4fv(glGetUniformLocation(program, "mdlMatrix"), 1, GL_TRUE, total.m);
@@ -123,7 +125,7 @@ void display(void)
 
 	//Active texture pbject
 	glBindTexture(GL_TEXTURE_2D, myTex2);
-	DrawModel(solkanin, program, "inPosition", "inNormal", "inTexCoord");
+	DrawModel(bunny, program, "inPosition", "inNormal", "inTexCoord");
 
 	// Upload the affine result matrix
 	glUniformMatrix4fv(glGetUniformLocation(program, "mdlMatrix"), 1, GL_TRUE, total2.m);
@@ -137,7 +139,7 @@ void display(void)
 
 	//Active texture pbject
 	glBindTexture(GL_TEXTURE_2D, myTex2);
-	DrawModel(solkanin, program, "inPosition", "inNormal", "inTexCoord");
+	DrawModel(bunny, program, "inPosition", "inNormal", "inTexCoord");
 
 	// Upload the affine result matrix
 	glUniformMatrix4fv(glGetUniformLocation(program, "mdlMatrix"), 1, GL_TRUE, total3.m);
