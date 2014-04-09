@@ -128,6 +128,10 @@
     <ClInclude Include="LoadTGA.h" />
     <ClInclude Include="VectorUtils3.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="main.frag" />
+    <None Include="main.vert" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

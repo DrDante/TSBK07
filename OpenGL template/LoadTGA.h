@@ -1,14 +1,7 @@
 #ifndef __TGA_LOADER__
 #define __TGA_LOADER__
 
-#ifdef __APPLE__
-	#include <OpenGL/gl3.h>
-#elif defined(_WIN32)
-  #include "GL/glew.h"
-#else
-  #include <GL/gl.h>
-#endif
-
+#include "GL/glew.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,12 +24,15 @@ typedef struct TextureData		// Create A Structure for .tga loading.
 	GLuint	bpp;				// Image Color Depth In Bits Per Pixel.
 	GLuint	width;				// Image Width
 	GLuint	height;				// Image Height
+	GLuint	w;				// Image Width "raw"
+	GLuint	h;				// Image Height "raw"
 	GLuint	texID;				// Texture ID Used To Select A Texture
 	GLfloat	texWidth, texHeight;
 } TextureData, *TextureDataPtr;					// Structure Name
 
+void LoadTGASetMipmapping(bool active);
+bool LoadTGATextureData(char *filename, TextureData *texture);
 bool LoadTGATexture(char *filename, TextureData *texture);
 void LoadTGATextureSimple(char *filename, GLuint *tex);
 
 #endif
-
