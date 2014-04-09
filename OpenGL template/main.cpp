@@ -108,25 +108,25 @@ void init(void)
 
 	// ----------------------OBJECT(S)----------------------
 	// Loading models.
-	windmillWalls = LoadModelPlus("OBJ/windmill/windmill-walls.obj");
-	windmillRoof = LoadModelPlus("OBJ/windmill/windmill-roof.obj");
-	windmillBalcony = LoadModelPlus("OBJ/windmill/windmill-balcony.obj");
-	windmillBlade = LoadModelPlus("OBJ/windmill/blade.obj");
-	ground = LoadModelPlus("OBJ/ground.obj");
-	skybox = LoadModelPlus("OBJ/skybox.obj");
-	bunny = LoadModelPlus("OBJ/bunnyplus.obj");
-	teapot = LoadModelPlus("OBJ/teapot.obj");
-	car = LoadModelPlus("OBJ/bilskiss.obj");
-	teddy = LoadModelPlus("OBJ/teddy.obj");
+	windmillWalls = LoadModelPlus("models/windmill/windmill-walls.obj");
+	windmillRoof = LoadModelPlus("models/windmill/windmill-roof.obj");
+	windmillBalcony = LoadModelPlus("models/windmill/windmill-balcony.obj");
+	windmillBlade = LoadModelPlus("models/windmill/blade.obj");
+	ground = LoadModelPlus("models/ground.obj");
+	skybox = LoadModelPlus("models/skybox.obj");
+	bunny = LoadModelPlus("models/bunnyplus.obj");
+	teapot = LoadModelPlus("models/teapot.obj");
+	car = LoadModelPlus("models/bilskiss.obj");
+	teddy = LoadModelPlus("models/teddy.obj");
 
 	// Loading textures.
-	LoadTGATextureSimple("TGA/grass.tga", &groundTex);
-	LoadTGATextureSimple("TGA/conc.tga", &millTex);
-	LoadTGATextureSimple("TGA/Skybox512.tga", &skyTex);
-	LoadTGATextureSimple("TGA/dirt.tga", &bunnyTex);
-	LoadTGATextureSimple("TGA/rutor.tga", &teapotTex);
-	LoadTGATextureSimple("TGA/bilskissred.tga", &carTex);
-	LoadTGATextureSimple("TGA/maskros512.tga", &teddyTex);
+	LoadTGATextureSimple("textures/grass.tga", &groundTex);
+	LoadTGATextureSimple("textures/conc.tga", &millTex);
+	LoadTGATextureSimple("textures/Skybox512.tga", &skyTex);
+	LoadTGATextureSimple("textures/dirt.tga", &bunnyTex);
+	LoadTGATextureSimple("textures/rutor.tga", &teapotTex);
+	LoadTGATextureSimple("textures/bilskissred.tga", &carTex);
+	LoadTGATextureSimple("textures/maskros512.tga", &teddyTex);
 	// -----------------------------------------------------
 
 	// Multitexturing.
