@@ -76,6 +76,7 @@ Model *teapot;
 Model *car;
 Model *teddy;
 Model *terrain;
+Model *plane;
 
 // Rotation, translation and result matrices for the models.
 mat4 bunnyTrans, teapotTrans, carTrans, teddyTrans;
@@ -137,6 +138,7 @@ void init(void)
 	teapot = LoadModelPlus("models/teapot.obj");
 	car = LoadModelPlus("models/bilskiss.obj");
 	teddy = LoadModelPlus("models/teddy.obj");
+	plane = LoadModelPlus("models/GreatLakesBiplaneHP.obj");
 
 
 	// Loading textures.
@@ -203,6 +205,7 @@ void display(void)
 
 	// Ny terräng
 	UploadAndDraw(statTotal.m, terrain, 0, 0);
+	UploadAndDraw(statTotal.m, plane, 0, 0);
 	/*
 	// Ground.
 	glBindTexture(GL_TEXTURE_2D, groundTex);
