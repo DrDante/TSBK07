@@ -1,7 +1,4 @@
-
 #include "terrain.h"
-
-
 
 // terrain variables
 int terrainW; //width
