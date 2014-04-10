@@ -202,7 +202,7 @@ void display(void)
 	statTotal = statTrans;				// In this case, no rotation is used.
 
 	// Ny terräng
-	UploadAndDraw(statTotal.m, terrain, 0);
+	UploadAndDraw(statTotal.m, terrain, 0, 0);
 	/*
 	// Ground.
 	glBindTexture(GL_TEXTURE_2D, groundTex);
