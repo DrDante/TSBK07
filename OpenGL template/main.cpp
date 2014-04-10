@@ -201,7 +201,8 @@ void display(void)
 	bladeRot = Rx(0.001 * t);			// Blade rotation speed.
 	statTotal = statTrans;				// In this case, no rotation is used.
 
-	DrawModel(terrain, program, "inPosition", "inNormal", "inTexCoord");
+	// Ny terräng
+	UploadAndDraw(statTotal.m, terrain, 0);
 	/*
 	// Ground.
 	glBindTexture(GL_TEXTURE_2D, groundTex);
@@ -291,7 +292,7 @@ int main(int argc, const char *argv[])
 	glutMainLoop();
 }
 
-void UploadAndDraw(GLfloat totalMat[], Model *currentModel, bool isSkybox)	// Uploads and draws the specified object.
+void UploadAndDraw(GLfloat totalMat[], Model *currentModel, bool isSkybox, bool isLambertian) // Uploads and draws the specified object.
 {
 	glUniform1i(glGetUniformLocation(program, "texUnit"), 0);
 	glUniformMatrix4fv(glGetUniformLocation(program, "VTPMatrix"), 1, GL_TRUE, projMatrix);
@@ -321,8 +322,16 @@ void UploadAndDraw(GLfloat totalMat[], Model *currentModel, bool isSkybox)	// Up
 		glUniformMatrix4fv(glGetUniformLocation(program, "MTWMatrix"), 1, GL_TRUE, totalMat);
 		glUniformMatrix4fv(glGetUniformLocation(program, "WTVMatrix"), 1, GL_TRUE, camMatrix.m);
 	}
+	if (isLambertian)
+	{
+		glUniform1i(glGetUniformLocation(program, "lambert"), 1);	// Disables specular lighting.
+	}
 	// Drawing the model.
 	DrawModel(currentModel, program, "inPosition", "inNormal", "inTexCoord");
+	if (isLambertian)
+	{
+		glUniform1i(glGetUniformLocation(program, "lambert"), 0);	// Re-enables specular lighting.
+	}
 	if (isSkybox)
 	{
 		// Restoring some changes made when the skybox was drawn.
