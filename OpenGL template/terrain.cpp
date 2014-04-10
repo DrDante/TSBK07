@@ -1,3 +1,10 @@
+
+#include "GL_utilities.h"
+#include "VectorUtils3.h"
+#include "loadobj.h"
+#include "LoadTGA.h"
+#include "math.h"
+
 // terrain variables
 int terrainW; //width
 int terrainH; //height
@@ -5,9 +12,8 @@ int terrainH; //height
 // Model
 Model *terrain;
 
+// textures
 TextureData ttex; // terrain
-
-
 GLuint groundTex;
 
 Model* GenerateTerrain(TextureData *tex)
@@ -21,7 +27,7 @@ Model* GenerateTerrain(TextureData *tex)
 	GLfloat *texCoordArray = malloc(sizeof(GLfloat)* 2 * vertexCount);
 	GLuint *indexArray = malloc(sizeof(GLuint)* triangleCount * 3);
 
-	vec3 tempNormal;
+	vec3 tempNormal = { 0, 0, 0 };
 
 	printf("bpp %d\n", tex->bpp);
 	for (x = 0; x < tex->width; x++)
@@ -86,7 +92,7 @@ Model* GenerateTerrain(TextureData *tex)
 
 vec3 giveNormal(int x, int y, int z, GLfloat *vertexArray, GLuint *indexArray, int width, int height)
 {
-	vec3 punkten = { x, y, z };
+	vec3 vertex = { GLfloat(x), GLfloat(y), GLfloat(z)};
 	vec3 normal = { 0, 1, 0 };
 
 	vec3 normal1 = { 0, 1, 0 };
@@ -123,12 +129,12 @@ vec3 giveNormal(int x, int y, int z, GLfloat *vertexArray, GLuint *indexArray, i
 			vertexArray[indexArray[(x + (z + 1) * (width - 1)) * 6 + 0] * 3 + 2] };
 
 
-		normal1 = CrossProduct(VectorSub(tempVec1, punkten), VectorSub(tempVec2, punkten));
-		normal2 = CrossProduct(VectorSub(tempVec2, punkten), VectorSub(tempVec4, punkten));
-		normal3 = CrossProduct(VectorSub(tempVec5, punkten), VectorSub(tempVec5, punkten));
-		normal4 = CrossProduct(VectorSub(tempVec5, punkten), VectorSub(tempVec6, punkten));
-		normal5 = CrossProduct(VectorSub(tempVec6, punkten), VectorSub(tempVec3, punkten));
-		normal6 = CrossProduct(VectorSub(tempVec3, punkten), VectorSub(tempVec1, punkten));
+		normal1 = CrossProduct(VectorSub(tempVec1, vertex), VectorSub(tempVec2, vertex));
+		normal2 = CrossProduct(VectorSub(tempVec2, vertex), VectorSub(tempVec4, vertex));
+		normal3 = CrossProduct(VectorSub(tempVec5, vertex), VectorSub(tempVec5, vertex));
+		normal4 = CrossProduct(VectorSub(tempVec5, vertex), VectorSub(tempVec6, vertex));
+		normal5 = CrossProduct(VectorSub(tempVec6, vertex), VectorSub(tempVec3, vertex));
+		normal6 = CrossProduct(VectorSub(tempVec3, vertex), VectorSub(tempVec1, vertex));
 
 		normal = Normalize(VectorAdd(normal1, VectorAdd(normal2, VectorAdd(normal3, VectorAdd(normal4, VectorAdd(normal5, normal6))))));
 
