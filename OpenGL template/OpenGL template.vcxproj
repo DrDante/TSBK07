@@ -120,12 +120,14 @@
     <ClCompile Include="loadobj.cpp" />
     <ClCompile Include="LoadTGA.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="terrain.cpp" />
     <ClCompile Include="VectorUtils3.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GL_utilities.h" />
     <ClInclude Include="loadobj.h" />
     <ClInclude Include="LoadTGA.h" />
+    <ClInclude Include="terrain.h" />
     <ClInclude Include="VectorUtils3.h" />
   </ItemGroup>
   <ItemGroup>
