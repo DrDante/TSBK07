@@ -57,7 +57,7 @@ Point3D lightSourcesColorsArr[] = { { 1.0f, 1.0f, 1.0f }, // White light
 { 0.0f, 0.0f, 0.0f }, // No light
 { 0.0f, 0.0f, 0.0f }, // No light
 { 0.0f, 0.0f, 0.0f } }; // No light
-GLfloat specularExponent[] = { 80.0, 0.0, 0.0, 0.0 };
+GLfloat specularExponent[] = { 280.0, 0.0, 0.0, 0.0 };
 GLint isDirectional[] = { 1, 0, 0, 0 };
 Point3D lightSourcesDirectionsPositions[] = { { -0.58f, 0.58f, -0.58f }, // White light, directional
 { 0.0f, 0.0f, 0.0f }, // No light
@@ -78,6 +78,7 @@ Model *car;
 Model *teddy;
 Model *terrain;
 Model *plane;
+Model *planeRot;
 
 // Rotation, translation and result matrices for the models.
 mat4 bunnyTrans, teapotTrans, carTrans, teddyTrans;
@@ -142,7 +143,8 @@ void init(void)
 	teapot = LoadModelPlus("models/teapot.obj");
 	car = LoadModelPlus("models/bilskiss.obj");
 	teddy = LoadModelPlus("models/teddy.obj");
-	plane = LoadModelPlus("models/GreatLakesBiplane.obj");
+	plane = LoadModelPlus("models/LPNoBladeobj.obj");
+	planeRot = LoadModelPlus("models/Blade.obj");
 
 
 	// Loading textures.
@@ -209,7 +211,7 @@ void display(void)
 
 	planeTrans = T(15.0, 15.0, 0.0);
 	mat4 temp0 = Ry(-PI*0.5);
-	mat4 temp = Ry(0.00005*t*0);
+	mat4 temp = Ry(0.0001*t);
 	temp = Mult(temp, temp0);
 	//planeTotal = (planeTrans, temp);
 	planeTotal = Mult(temp, planeTrans);
@@ -217,6 +219,10 @@ void display(void)
 	// Ny terräng
 	UploadAndDraw(statTotal.m, terrain, 0, 0);
 	UploadAndDraw(planeTotal.m, plane, 0, 0);
+	mat4 temp2 = Rz(0.03*t);
+	planeTotal = Mult(planeTrans, temp2);
+	planeTotal = Mult(temp, planeTotal);
+	UploadAndDraw(planeTotal.m, planeRot, 0, 0);
 	/*
 	// Ground.
 	glBindTexture(GL_TEXTURE_2D, groundTex);
