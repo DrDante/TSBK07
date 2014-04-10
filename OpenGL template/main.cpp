@@ -209,6 +209,10 @@ void display(void)
 	bladeRot = Rx(0.001 * t);			// Blade rotation speed.
 	statTotal = statTrans;				// In this case, no rotation is used.
 
+	// Ny terräng
+	glBindTexture(GL_TEXTURE_2D, groundTex);
+	UploadAndDraw(statTotal.m, terrain, 0, 0);
+
 	planeTrans = T(15.0, 15.0, 0.0);
 	mat4 temp0 = Ry(-PI*0.5);
 	mat4 temp = Ry(0.0001*t);
@@ -216,8 +220,8 @@ void display(void)
 	//planeTotal = (planeTrans, temp);
 	planeTotal = Mult(temp, planeTrans);
 
-	// Ny terräng
-	UploadAndDraw(statTotal.m, terrain, 0, 0);
+	// Plane
+	glBindTexture(GL_TEXTURE_2D, skyTex);
 	UploadAndDraw(planeTotal.m, plane, 0, 0);
 	mat4 temp2 = Rz(0.03*t);
 	planeTotal = Mult(planeTrans, temp2);

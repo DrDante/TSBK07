@@ -12,8 +12,11 @@ Model* GenerateTerrain(TextureData *tex);
 
 vec3 giveNormal(int x, int y, int z, GLfloat *vertexArray, GLuint *indexArray, int width, int height);
 
-int getWidth(TextureData *tex); //Only needed locally?
+int getWidth(TextureData *tex);
 
 int getHeight(TextureData *tex);
+
+// Find the height of the terrain, given a x- and z-coordinate
+GLfloat findHeight(GLfloat x, GLfloat z, GLfloat *vertexArray, int width, int height); 
 
 #endif

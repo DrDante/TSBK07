@@ -1,4 +1,4 @@
-#include "terrain.h"
+﻿#include "terrain.h"
 
 // terrain variables
 //int terrainW; //width
@@ -27,7 +27,7 @@ Model* GenerateTerrain(TextureData *tex)
 		{
 			// Vertex array. You need to scale this properly
 			vertexArray[(x + z * tex->width) * 3 + 0] = x / 1.0;
-			vertexArray[(x + z * tex->width) * 3 + 1] = tex->imageData[(x + z * tex->width) * (tex->bpp / 8)] / 10.0;
+			vertexArray[(x + z * tex->width) * 3 + 1] = tex->imageData[(x + z * tex->width) * (tex->bpp / 8)] / 25.0;
 			vertexArray[(x + z * tex->width) * 3 + 2] = z / 1.0;
 
 			// Texture coordinates. You may want to scale them.
@@ -144,3 +144,63 @@ int getHeight(TextureData *tex)
 	int height = tex->height;
 	return height;
 }
+
+GLfloat findHeight(GLfloat x, GLfloat z, GLfloat *vertexArray, int width, int height){
+
+	GLfloat yheight = 0;
+
+	int vertX1 = floor(x);
+	int vertZ1 = floor(z);
+
+	int vertX2 = floor(x) + 1;
+	int vertZ2 = floor(z) + 1;
+
+	int vertX3 = 0;
+	int vertZ3 = 0;
+
+	if ((vertX1 - 1>0) && (vertZ1 - 1 >0) && (vertX2 + 2 < height) && (vertZ2 + 2 < width))
+	{
+
+		GLfloat dist1 = vertX1 - x;
+		GLfloat dist2 = vertZ1 - z;
+
+		if (dist1 <= dist2)
+		{
+			vertX3 = vertX1;
+			vertZ3 = vertZ1 + 1;
+
+		}
+		if (dist1 > dist2)
+		{
+			vertX3 = vertX1 + 1;
+			vertZ3 = vertZ1;
+
+		}
+		int vertY1;
+		vertY1 = vertexArray[(vertX1 + vertZ1 * width) * 3 + 1]; // H��R ��R DET FEL!!!!!!!!!!!!1111111111111
+
+		int vertY2;
+		vertY2 = vertexArray[(vertX2 + vertZ2 * width) * 3 + 1];
+
+		int vertY3;
+		vertY3 = vertexArray[(vertX3 + vertZ3 * width) * 3 + 1];
+
+		vec3 p1 = { GLfloat(vertX1), GLfloat(vertY1), GLfloat(vertZ1) };
+		vec3 p2 = { GLfloat(vertX2), GLfloat(vertY2), GLfloat(vertZ2) };
+		vec3 p3 = { GLfloat(vertX3), GLfloat(vertY3), GLfloat(vertZ3) };
+
+		vec3 planeNormal = { 0, 0, 0 };
+		planeNormal = Normalize(CrossProduct(VectorSub(p2, p1), VectorSub(p3, p1)));
+
+		GLfloat D;
+		D = DotProduct(planeNormal, p1);
+
+
+
+		yheight = (D - planeNormal.x*x - planeNormal.z*z) / planeNormal.y;
+
+	}
+	return yheight;
+}
+
+
