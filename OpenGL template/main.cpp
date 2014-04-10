@@ -6,6 +6,7 @@
 #include "loadobj.h"
 #include "VectorUtils3.h"
 #include "LoadTGA.h"
+#include "terrain.h"
 
 // ---Globals---
 #define PI 3.14159265358979323846
