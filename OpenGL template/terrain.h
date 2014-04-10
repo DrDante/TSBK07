@@ -9,6 +9,12 @@
 #include <GL/gl.h>
 #endif
 
+#include "loadobj.h"
+#include "VectorUtils3.h"
+#include "GL_utilities.h"
+#include "LoadTGA.h"
+#include "math.h"
+
 Model* GenerateTerrain(TextureData *tex);
 
 vec3 giveNormal(int x, int y, int z, GLfloat *vertexArray, GLuint *indexArray, int width, int height);

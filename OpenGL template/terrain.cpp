@@ -1,9 +1,7 @@
 
-#include "GL_utilities.h"
-#include "VectorUtils3.h"
-#include "loadobj.h"
-#include "LoadTGA.h"
-#include "math.h"
+#include "terrain.h"
+
+
 
 // terrain variables
 int terrainW; //width
@@ -14,7 +12,7 @@ Model *terrain;
 
 // textures
 TextureData ttex; // terrain
-GLuint groundTex;
+//GLuint groundTex;
 
 Model* GenerateTerrain(TextureData *tex)
 {
@@ -22,10 +20,10 @@ Model* GenerateTerrain(TextureData *tex)
 	int triangleCount = (tex->width - 1) * (tex->height - 1) * 2;
 	int x, z;
 
-	GLfloat *vertexArray = malloc(sizeof(GLfloat)* 3 * vertexCount);
-	GLfloat *normalArray = malloc(sizeof(GLfloat)* 3 * vertexCount);
-	GLfloat *texCoordArray = malloc(sizeof(GLfloat)* 2 * vertexCount);
-	GLuint *indexArray = malloc(sizeof(GLuint)* triangleCount * 3);
+	GLfloat *vertexArray = (GLfloat *)malloc(sizeof(GLfloat)* 3 * vertexCount);
+	GLfloat *normalArray = (GLfloat *)malloc(sizeof(GLfloat)* 3 * vertexCount);
+	GLfloat *texCoordArray = (GLfloat *)malloc(sizeof(GLfloat)* 2 * vertexCount);
+	GLuint *indexArray = (GLuint *)malloc(sizeof(GLuint)* triangleCount * 3);
 
 	vec3 tempNormal = { 0, 0, 0 };
 
