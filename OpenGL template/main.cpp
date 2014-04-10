@@ -375,7 +375,7 @@ void SetCameraVector(float fi, float theta)	// Sets the camera matrix.
 
 void CheckKeys()	// Checks if keys are being pressed.
 {
-	float moveSpeed = 0.2;
+	float moveSpeed = 0.1;
 	// 'w' moves the camera forwards.
 	if (keyIsDown('w'))
 	{
