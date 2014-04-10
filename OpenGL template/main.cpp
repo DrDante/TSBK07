@@ -40,7 +40,7 @@ vec3 s = l - p;					// "Forward" vector for the camera.
 GLuint program;
 
 // Function declarations.
-void UploadAndDraw(GLfloat totalMat[], Model *currentModel, bool isSkybox);
+void UploadAndDraw(GLfloat totalMat[], Model *currentModel, bool isSkybox, bool isLambertian);
 void CheckMouse(int x, int y);
 void SetCameraVector(float fi, float theta);
 void CheckKeys();
@@ -181,7 +181,7 @@ void display(void)
 	// -----------------------SKYBOX------------------------
 	// Skybox.
 	glBindTexture(GL_TEXTURE_2D, skyTex);
-	UploadAndDraw(skyMatrix, skybox, 1);
+	UploadAndDraw(skyMatrix, skybox, 1, 0);
 	// -----------------------------------------------------
 
 	// Lighting stuff.
@@ -213,9 +213,9 @@ void display(void)
 	// Windmill.
 	glBindTexture(GL_TEXTURE_2D, millTex);
 	// Walls, roof and balcony.
-	UploadAndDraw(statTotal.m, windmillWalls, 0);
-	UploadAndDraw(statTotal.m, windmillRoof, 0);
-	UploadAndDraw(statTotal.m, windmillBalcony, 0);
+	UploadAndDraw(statTotal.m, windmillWalls, 0, 0);
+	UploadAndDraw(statTotal.m, windmillRoof, 0, 0);
+	UploadAndDraw(statTotal.m, windmillBalcony, 0, 0);
 	// Blades.
 	bladeStartRot = Rx(0);
 	bladeTotal1 = Mult(bladeRot, bladeStartRot);
@@ -230,13 +230,13 @@ void display(void)
 	bladeTotal4 = Mult(bladeRot, bladeStartRot);
 	bladeTotal4 = Mult(bladeTrans, bladeTotal4);
 	// Upload matrices, blade 1.
-	UploadAndDraw(bladeTotal1.m, windmillBlade, 0);
+	UploadAndDraw(bladeTotal1.m, windmillBlade, 0, 0);
 	// Upload matrices, blade 2.
-	UploadAndDraw(bladeTotal2.m, windmillBlade, 0);
+	UploadAndDraw(bladeTotal2.m, windmillBlade, 0, 0);
 	// Upload matrices, blade 3.
-	UploadAndDraw(bladeTotal3.m, windmillBlade, 0);
+	UploadAndDraw(bladeTotal3.m, windmillBlade, 0, 0);
 	// Upload matrices, blade 4.
-	UploadAndDraw(bladeTotal4.m, windmillBlade, 0);
+	UploadAndDraw(bladeTotal4.m, windmillBlade, 0, 0);
 
 	// Extra objects.
 	bunnyTrans = T(-20.0, 0.55, -20.0);
@@ -244,14 +244,14 @@ void display(void)
 	carTrans = T(20.0, 0.0, -20.0);
 	teddyTrans = T(20.0, 1.1, 20.0);
 	glBindTexture(GL_TEXTURE_2D, bunnyTex);
-	UploadAndDraw(bunnyTrans.m, bunny, 0);
+	UploadAndDraw(bunnyTrans.m, bunny, 0, 0);
 	// ---Multi textured teapot---
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, teapotTex);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, bunnyTex);
 	glUniform1i(glGetUniformLocation(program, "multitex"), 1);
-	UploadAndDraw(teapotTrans.m, teapot, 0);
+	UploadAndDraw(teapotTrans.m, teapot, 0, 0);
 	glUniform1i(glGetUniformLocation(program, "multitex"), 0);
 
 	glActiveTexture(GL_TEXTURE0);
@@ -259,9 +259,9 @@ void display(void)
 	// ---Transparent objects---
 	glUniform1i(glGetUniformLocation(program, "transparent"), 1);
 	glBindTexture(GL_TEXTURE_2D, carTex);
-	UploadAndDraw(carTrans.m, car, 0);
+	UploadAndDraw(carTrans.m, car, 0, 0);
 	glBindTexture(GL_TEXTURE_2D, teddyTex);
-	UploadAndDraw(teddyTrans.m, teddy, 0);
+	UploadAndDraw(teddyTrans.m, teddy, 0, 0);
 	glUniform1i(glGetUniformLocation(program, "transparent"), 0);
 	// -------------------------
 	// -----------------------------------------------------
