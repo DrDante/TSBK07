@@ -88,6 +88,9 @@ mat4 balconyRot, balconyTrans;
 mat4 bladeRot, bladeStartRot, bladeTrans;
 mat4 bladeTotal1, bladeTotal2, bladeTotal3, bladeTotal4;
 
+mat4 planeTrans;
+mat4 planeTotal;
+
 // References to textures.
 GLuint groundTex;
 GLuint millTex;
@@ -139,7 +142,7 @@ void init(void)
 	teapot = LoadModelPlus("models/teapot.obj");
 	car = LoadModelPlus("models/bilskiss.obj");
 	teddy = LoadModelPlus("models/teddy.obj");
-	plane = LoadModelPlus("models/grottaplan.obj");
+	plane = LoadModelPlus("models/GreatLakesBiplane.obj");
 
 
 	// Loading textures.
@@ -204,9 +207,16 @@ void display(void)
 	bladeRot = Rx(0.001 * t);			// Blade rotation speed.
 	statTotal = statTrans;				// In this case, no rotation is used.
 
+	planeTrans = T(15.0, 15.0, 0.0);
+	mat4 temp0 = Ry(-PI*0.5);
+	mat4 temp = Ry(0.00005*t*0);
+	temp = Mult(temp, temp0);
+	//planeTotal = (planeTrans, temp);
+	planeTotal = Mult(temp, planeTrans);
+
 	// Ny terräng
 	UploadAndDraw(statTotal.m, terrain, 0, 0);
-	UploadAndDraw(statTotal.m, plane, 0, 0);
+	UploadAndDraw(planeTotal.m, plane, 0, 0);
 	/*
 	// Ground.
 	glBindTexture(GL_TEXTURE_2D, groundTex);
