@@ -52,7 +52,7 @@ GLenum err;
 
 
 // -------------------LIGHT SOURCE(S)-------------------
-const int numberOfLightSources = 4;
+const int numberOfLightSources = 4;	// Change here and in the fragment shader when setting the number of light sources.
 Point3D lightSourcesColorsArr[] = { { 1.0f, 1.0f, 1.0f }, // White light
 { 0.0f, 0.0f, 0.0f }, // No light
 { 0.0f, 0.0f, 0.0f }, // No light
