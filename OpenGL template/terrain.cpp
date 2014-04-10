@@ -1,5 +1,7 @@
 #include "terrain.h"
 
+//fooo
+
 // terrain variables
 int terrainW; //width
 int terrainH; //height
