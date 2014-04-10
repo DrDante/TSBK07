@@ -7,10 +7,6 @@ int terrainH; //height
 // Model
 Model *terrain;
 
-// textures
-TextureData ttex; // terrain
-//GLuint groundTex;
-
 Model* GenerateTerrain(TextureData *tex)
 {
 	int vertexCount = tex->width * tex->height;
