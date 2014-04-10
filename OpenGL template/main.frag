@@ -12,7 +12,7 @@ uniform bool lambert;
 uniform bool multitex;
 uniform bool transparent;
 uniform mat4 camMatrix;
-
+//GG
 // -------------------LIGHT SOURCE(S)-------------------
 // Light sources
 const int numberOfLightSources = 4;
