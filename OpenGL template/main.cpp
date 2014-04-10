@@ -44,6 +44,7 @@ void CheckMouse(int x, int y);
 void SetCameraVector(float fi, float theta);
 void CheckKeys();
 
+
 // Glew initialization... thing.
 GLenum err;
 
@@ -74,6 +75,7 @@ Model *teapot;
 Model *car;
 Model *teddy;
 
+
 // Rotation, translation and result matrices for the models.
 mat4 bunnyTrans, teapotTrans, carTrans, teddyTrans;
 mat4 statTrans, statTotal;
@@ -88,6 +90,8 @@ GLuint groundTex;
 GLuint millTex;
 GLuint skyTex;
 GLuint bunnyTex, teapotTex, carTex, teddyTex;
+
+
 // -----------------------------------------------------
 // -------------
 
@@ -118,6 +122,7 @@ void init(void)
 	teapot = LoadModelPlus("models/teapot.obj");
 	car = LoadModelPlus("models/bilskiss.obj");
 	teddy = LoadModelPlus("models/teddy.obj");
+
 
 	// Loading textures.
 	LoadTGATextureSimple("textures/grass.tga", &groundTex);
@@ -253,6 +258,8 @@ void OnTimer(int value)
 	glutPostRedisplay();
 	glutTimerFunc(20, &OnTimer, value);
 }
+
+
 
 int main(int argc, const char *argv[])
 {
