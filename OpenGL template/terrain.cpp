@@ -1,11 +1,11 @@
 #include "terrain.h"
 
 // terrain variables
-int terrainW; //width
-int terrainH; //height
+//int terrainW; //width
+//int terrainH; //height
 
 // Model
-Model *terrain;
+//Model *terrain;
 
 Model* GenerateTerrain(TextureData *tex)
 {

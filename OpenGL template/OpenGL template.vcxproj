@@ -127,12 +127,16 @@
     <ClInclude Include="GL_utilities.h" />
     <ClInclude Include="loadobj.h" />
     <ClInclude Include="LoadTGA.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="terrain.h" />
     <ClInclude Include="VectorUtils3.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="main.frag" />
     <None Include="main.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="OpenGL template.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

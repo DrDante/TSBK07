@@ -75,7 +75,7 @@ Model *bunny;
 Model *teapot;
 Model *car;
 Model *teddy;
-
+Model *terrain;
 
 // Rotation, translation and result matrices for the models.
 mat4 bunnyTrans, teapotTrans, carTrans, teddyTrans;
@@ -92,6 +92,11 @@ GLuint millTex;
 GLuint skyTex;
 GLuint bunnyTex, teapotTex, carTex, teddyTex;
 
+// terrain
+TextureData ttex;
+
+int terrainW;
+int terrainH;
 
 // -----------------------------------------------------
 // -------------
@@ -112,6 +117,15 @@ void init(void)
 	printError("init shader");
 
 	// ----------------------OBJECT(S)----------------------
+
+	// Load terrain data
+	LoadTGATextureData("terrain/fft-terrain.tga", &ttex);
+
+	terrain = GenerateTerrain(&ttex);
+	terrainW = getWidth(&ttex);
+	terrainH = getHeight(&ttex);
+	printError("init terrain");
+
 	// Loading models.
 	windmillWalls = LoadModelPlus("models/windmill/windmill-walls.obj");
 	windmillRoof = LoadModelPlus("models/windmill/windmill-roof.obj");
@@ -187,12 +201,14 @@ void display(void)
 	bladeRot = Rx(0.001 * t);			// Blade rotation speed.
 	statTotal = statTrans;				// In this case, no rotation is used.
 
+	DrawModel(terrain, program, "inPosition", "inNormal", "inTexCoord");
+	/*
 	// Ground.
 	glBindTexture(GL_TEXTURE_2D, groundTex);
 	glUniform1i(glGetUniformLocation(program, "lambert"), 1);	// Disables specular lighting.
 	UploadAndDraw(statTotal.m, ground, 0);
 	glUniform1i(glGetUniformLocation(program, "lambert"), 0);	// Re-enables specular lighting.
-
+	*/
 	// Windmill.
 	glBindTexture(GL_TEXTURE_2D, millTex);
 	// Walls, roof and balcony.
