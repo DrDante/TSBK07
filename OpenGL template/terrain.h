@@ -1,14 +1,7 @@
 #ifndef terrain_h
 #define terrain_h
 
-#ifdef __APPLE__
-#include <OpenGL/gl3.h>
-#elif defined(_WIN32)
 #include "GL/glew.h"
-#else
-#include <GL/gl.h>
-#endif
-
 #include "loadobj.h"
 #include "VectorUtils3.h"
 #include "GL_utilities.h"
