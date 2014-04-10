@@ -139,7 +139,7 @@ void init(void)
 	teapot = LoadModelPlus("models/teapot.obj");
 	car = LoadModelPlus("models/bilskiss.obj");
 	teddy = LoadModelPlus("models/teddy.obj");
-	plane = LoadModelPlus("models/GreatLakesBiplaneHP.obj");
+	plane = LoadModelPlus("models/grottaplan.obj");
 
 
 	// Loading textures.
