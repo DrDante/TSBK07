@@ -52,6 +52,7 @@ GLenum err;
 
 
 // -------------------LIGHT SOURCE(S)-------------------
+const int numberOfLightSources = 4;
 Point3D lightSourcesColorsArr[] = { { 1.0f, 1.0f, 1.0f }, // White light
 { 0.0f, 0.0f, 0.0f }, // No light
 { 0.0f, 0.0f, 0.0f }, // No light
@@ -185,10 +186,10 @@ void display(void)
 	// -----------------------------------------------------
 
 	// Lighting stuff.
-	glUniform3fv(glGetUniformLocation(program, "lightSourcesDirPosArr"), 4, &lightSourcesDirectionsPositions[0].x);
-	glUniform3fv(glGetUniformLocation(program, "lightSourcesColorArr"), 4, &lightSourcesColorsArr[0].x);
-	glUniform1fv(glGetUniformLocation(program, "specularExponent"), 4, specularExponent);
-	glUniform1iv(glGetUniformLocation(program, "isDirectional"), 4, isDirectional);
+	glUniform3fv(glGetUniformLocation(program, "lightSourcesDirPosArr"), numberOfLightSources, &lightSourcesDirectionsPositions[0].x);
+	glUniform3fv(glGetUniformLocation(program, "lightSourcesColorArr"), numberOfLightSources, &lightSourcesColorsArr[0].x);
+	glUniform1fv(glGetUniformLocation(program, "specularExponent"), numberOfLightSources, specularExponent);
+	glUniform1iv(glGetUniformLocation(program, "isDirectional"), numberOfLightSources, isDirectional);
 
 	// Uploading the camera position (in world coordinates) to the shaders.
 	GLfloat camPos[3] = { p.x, p.y, p.z };
