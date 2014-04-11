@@ -12,7 +12,6 @@ uniform bool lambert;
 uniform bool multitex;
 uniform bool transparent;
 uniform mat4 camMatrix;
-//GG
 // -------------------LIGHT SOURCE(S)-------------------
 // Light sources
 const int numberOfLightSources = 4;
@@ -23,6 +22,7 @@ uniform float specularExponent[numberOfLightSources];
 uniform bool isDirectional[numberOfLightSources];
 
 vec3 r[numberOfLightSources];
+vec3 s[numberOfLightSources];	// Incident light.
 // -----------------------------------------------------
 vec3 eye;	// Vector from the object to the camera.
 
@@ -42,18 +42,18 @@ void main(void)
 	}
 	else
 	{
-		// Calculates the reflected light rays for all light sources.
+		// Calculates the incident and reflected light rays for all light sources.
 		for (int i = 0; i < numberOfLightSources; i++)
 		{
 			if(isDirectional[i])
 			{
-				r[i] = normalize(2 * outNormal * dot(normalize(lightSourcesDirPosArr[i]), normalize(outNormal)) - lightSourcesDirPosArr[i]);
+				s[i] = normalize(lightSourcesDirPosArr[i]);
 			}
 			else
 			{
-				vec3 s = normalize(lightSourcesDirPosArr[i] - outObjPos);
-				r[i] = normalize(2 * outNormal * dot(s, normalize(outNormal)) - s);
+				s[i] = normalize(lightSourcesDirPosArr[i] - outObjPos);
 			}
+			r[i] = normalize(2 * outNormal * dot(normalize(s[i]), normalize(outNormal)) - s[i]);
 		}
 		// Calculates the eye vector.
 		eye = normalize(outCamPos-outObjPos);
@@ -67,7 +67,7 @@ void main(void)
 		// Calculates diffuse light.
 		for (int i = 0; i < numberOfLightSources; i++)
 		{
-			diffLight += kdiff * lightSourcesColorArr[i] * max(0.0, dot(lightSourcesDirPosArr[i], normalize(outNormal)));
+			diffLight += kdiff * lightSourcesColorArr[i] * max(0.0, dot(s[i], normalize(outNormal)));
 		}
 		// Calculates specular light, if the surface is not Lambertian.
 		if(!lambert)
