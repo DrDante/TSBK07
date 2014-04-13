@@ -81,53 +81,57 @@ Model* GenerateTerrain(TextureData *tex)
 }
 
 
-vec3 giveNormal(int x, int y, int z, GLfloat *vertexArray, GLuint *indexArray, int width, int height)
+vec3 giveNormal(int x, int y, int z, GLfloat *vertexArray, GLuint *indexArray, int width, int height)	// Returns the normal of a vertex.
 {
-	vec3 vertex = { GLfloat(x), GLfloat(y), GLfloat(z)};
+	vec3 vertex = { GLfloat(x), GLfloat(y), GLfloat(z) };
 	vec3 normal = { 0, 1, 0 };
 
-	vec3 normal1 = { 0, 1, 0 };
-	vec3 normal2 = { 0, 1, 0 };
-	vec3 normal3 = { 0, 1, 0 };
-	vec3 normal4 = { 0, 1, 0 };
-	vec3 normal5 = { 0, 1, 0 };
-	vec3 normal6 = { 0, 1, 0 };
+	vec3 normal1 = { 0, 0, 0 };
+	vec3 normal2 = { 0, 0, 0 };
+	vec3 normal3 = { 0, 0, 0 };
+	vec3 normal4 = { 0, 0, 0 };
+	vec3 normal5 = { 0, 0, 0 };
+	vec3 normal6 = { 0, 0, 0 };
 
-	if ((x - 1>0) && (z - 1 >0) && (z + 2 < height) && (x + 2 < width))
+	if ((x > 1) && (z > 1) && (z < height - 2) && (x < width - 2))
 	{
-		vec3 tempVec1 = { vertexArray[indexArray[(x - 1 + (z - 1) * (width - 1)) * 6 + 0] * 3],
-			vertexArray[indexArray[(x - 1 + (z - 1) * (width - 1)) * 6 + 0] * 3 + 1],
-			vertexArray[indexArray[(x - 1 + (z - 1) * (width - 1)) * 6 + 0] * 3 + 2] };
+		vec3 tempVec1 = { vertexArray[indexArray[((x - 1) + (z - 1) * (width - 1)) * 6 + 0] * 3],
+			vertexArray[indexArray[((x - 1) + (z - 1) * (width - 1)) * 6 + 0] * 3 + 1],
+			vertexArray[indexArray[((x - 1) + (z - 1) * (width - 1)) * 6 + 0] * 3 + 2] };
 
-		vec3 tempVec2 = { vertexArray[indexArray[(x + (z - 1) * (width - 1)) * 6 + 0] * 3],
-			vertexArray[indexArray[(x + (z - 1) * (width - 1)) * 6 + 0] * 3 + 1],
-			vertexArray[indexArray[(x + (z - 1) * (width - 1)) * 6 + 0] * 3 + 2] };
+		vec3 tempVec2 = { vertexArray[indexArray[((x)+(z - 1) * (width - 1)) * 6 + 0] * 3],
+			vertexArray[indexArray[((x)+(z - 1) * (width - 1)) * 6 + 0] * 3 + 1],
+			vertexArray[indexArray[((x)+(z - 1) * (width - 1)) * 6 + 0] * 3 + 2] };
 
-		vec3 tempVec3 = { vertexArray[indexArray[(x - 1 + (z)* (width - 1)) * 6 + 0] * 3],
-			vertexArray[indexArray[(x - 1 + (z)* (width - 1)) * 6 + 0] * 3 + 1],
-			vertexArray[indexArray[(x - 1 + (z)* (width - 1)) * 6 + 0] * 3 + 2] };
+		vec3 tempVec3 = { vertexArray[indexArray[((x - 1) + (z)* (width - 1)) * 6 + 0] * 3],
+			vertexArray[indexArray[((x - 1) + (z)* (width - 1)) * 6 + 0] * 3 + 1],
+			vertexArray[indexArray[((x - 1) + (z)* (width - 1)) * 6 + 0] * 3 + 2] };
 
-		vec3 tempVec4 = { vertexArray[indexArray[(x + 1 + (z)* (width - 1)) * 6 + 0] * 3],
-			vertexArray[indexArray[(x + 1 + (z)* (width - 1)) * 6 + 0] * 3 + 1],
-			vertexArray[indexArray[(x + 1 + (z)* (width - 1)) * 6 + 0] * 3 + 2] };
+		vec3 tempVec4 = { vertexArray[indexArray[((x + 1) + (z)* (width - 1)) * 6 + 0] * 3],
+			vertexArray[indexArray[((x + 1) + (z)* (width - 1)) * 6 + 0] * 3 + 1],
+			vertexArray[indexArray[((x + 1) + (z)* (width - 1)) * 6 + 0] * 3 + 2] };
 
-		vec3 tempVec5 = { vertexArray[indexArray[(x + 1 + (z + 1) * (width - 1)) * 6 + 0] * 3],
-			vertexArray[indexArray[(x + 1 + (z + 1) * (width - 1)) * 6 + 0] * 3 + 1],
-			vertexArray[indexArray[(x + 1 + (z + 1) * (width - 1)) * 6 + 0] * 3 + 2] };
+		vec3 tempVec5 = { vertexArray[indexArray[((x + 1) + (z + 1) * (width - 1)) * 6 + 0] * 3],
+			vertexArray[indexArray[((x + 1) + (z + 1) * (width - 1)) * 6 + 0] * 3 + 1],
+			vertexArray[indexArray[((x + 1) + (z + 1) * (width - 1)) * 6 + 0] * 3 + 2] };
 
-		vec3 tempVec6 = { vertexArray[indexArray[(x + (z + 1) * (width - 1)) * 6 + 0] * 3],
-			vertexArray[indexArray[(x + (z + 1) * (width - 1)) * 6 + 0] * 3 + 1],
-			vertexArray[indexArray[(x + (z + 1) * (width - 1)) * 6 + 0] * 3 + 2] };
+		vec3 tempVec6 = { vertexArray[indexArray[((x)+(z + 1) * (width - 1)) * 6 + 0] * 3],
+			vertexArray[indexArray[((x)+(z + 1) * (width - 1)) * 6 + 0] * 3 + 1],
+			vertexArray[indexArray[((x)+(z + 1) * (width - 1)) * 6 + 0] * 3 + 2] };
 
 
 		normal1 = CrossProduct(VectorSub(tempVec1, vertex), VectorSub(tempVec2, vertex));
-		normal2 = CrossProduct(VectorSub(tempVec2, vertex), VectorSub(tempVec4, vertex));
-		normal3 = CrossProduct(VectorSub(tempVec5, vertex), VectorSub(tempVec5, vertex));
-		normal4 = CrossProduct(VectorSub(tempVec5, vertex), VectorSub(tempVec6, vertex));
-		normal5 = CrossProduct(VectorSub(tempVec6, vertex), VectorSub(tempVec3, vertex));
-		normal6 = CrossProduct(VectorSub(tempVec3, vertex), VectorSub(tempVec1, vertex));
+		normal2 = CrossProduct(VectorSub(tempVec3, vertex), VectorSub(tempVec1, vertex));
+		vec3 weighted1 = Normalize(VectorAdd(Normalize(normal1), Normalize(normal2)));
+		normal3 = CrossProduct(VectorSub(tempVec2, vertex), VectorSub(tempVec4, vertex));
+		vec3 weighted2 = Normalize(normal3);
+		normal4 = CrossProduct(VectorSub(tempVec4, vertex), VectorSub(tempVec5, vertex));
+		normal5 = CrossProduct(VectorSub(tempVec5, vertex), VectorSub(tempVec6, vertex));
+		vec3 weighted3 = Normalize(VectorAdd(Normalize(normal4), Normalize(normal5)));
+		normal6 = CrossProduct(VectorSub(tempVec6, vertex), VectorSub(tempVec3, vertex));
+		vec3 weighted4 = Normalize(normal6);
 
-		normal = Normalize(VectorAdd(normal1, VectorAdd(normal2, VectorAdd(normal3, VectorAdd(normal4, VectorAdd(normal5, normal6))))));
+		normal = Normalize(VectorAdd(weighted1, VectorAdd(weighted2, VectorAdd(weighted3, weighted4))));
 
 	}
 	return normal;
