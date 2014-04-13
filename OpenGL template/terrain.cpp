@@ -162,39 +162,45 @@ GLfloat findHeight(GLfloat x, GLfloat z, GLfloat *vertexArray, int width, int he
 	int vertX3 = 0;
 	int vertZ3 = 0;
 
-	if ((vertX1 - 1>0) && (vertZ1 - 1 >0) && (vertX2 + 2 < height) && (vertZ2 + 2 < width))
+	if ((vertX1 > 1) && (vertZ1 > 1) && (vertX2 < height - 2) && (vertZ2 < width - 2))
 	{
 
 		GLfloat dist1 = vertX1 - x;
 		GLfloat dist2 = vertZ1 - z;
 
-		if (dist1 <= dist2)
+		if (dist1 > dist2)
 		{
 			vertX3 = vertX1;
 			vertZ3 = vertZ1 + 1;
 
 		}
-		if (dist1 > dist2)
+		else
 		{
 			vertX3 = vertX1 + 1;
 			vertZ3 = vertZ1;
 
 		}
-		int vertY1;
-		vertY1 = vertexArray[(vertX1 + vertZ1 * width) * 3 + 1]; // H��R ��R DET FEL!!!!!!!!!!!!1111111111111
+		GLfloat vertY1 = vertexArray[(vertX1 + vertZ1 * width) * 3 + 1];
 
-		int vertY2;
-		vertY2 = vertexArray[(vertX2 + vertZ2 * width) * 3 + 1];
+		GLfloat vertY2 = vertexArray[(vertX2 + vertZ2 * width) * 3 + 1];
 
-		int vertY3;
-		vertY3 = vertexArray[(vertX3 + vertZ3 * width) * 3 + 1];
+		GLfloat vertY3 = vertexArray[(vertX3 + vertZ3 * width) * 3 + 1];
 
-		vec3 p1 = { GLfloat(vertX1), GLfloat(vertY1), GLfloat(vertZ1) };
-		vec3 p2 = { GLfloat(vertX2), GLfloat(vertY2), GLfloat(vertZ2) };
-		vec3 p3 = { GLfloat(vertX3), GLfloat(vertY3), GLfloat(vertZ3) };
+		vec3 p1 = { vertexArray[(vertX1 + vertZ1 * width) * 3 + 0], vertY1, vertexArray[(vertX1 + vertZ1 * width) * 3 + 2] };
+		vec3 p2 = { vertexArray[(vertX2 + vertZ2 * width) * 3 + 0], vertY2, vertexArray[(vertX2 + vertZ2 * width) * 3 + 2] };
+		vec3 p3 = { vertexArray[(vertX3 + vertZ3 * width) * 3 + 0], vertY3, vertexArray[(vertX3 + vertZ3 * width) * 3 + 2] };
 
 		vec3 planeNormal = { 0, 0, 0 };
-		planeNormal = Normalize(CrossProduct(VectorSub(p2, p1), VectorSub(p3, p1)));
+
+		// This if/else might not be making any difference whatsoever.
+		if (dist1 > dist2)
+		{
+			planeNormal = Normalize(CrossProduct(VectorSub(p2, p1), VectorSub(p3, p1)));
+		}
+		else
+		{
+			planeNormal = Normalize(CrossProduct(VectorSub(p3, p1), VectorSub(p2, p1)));
+		}
 
 		GLfloat D;
 		D = DotProduct(planeNormal, p1);

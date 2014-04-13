@@ -264,7 +264,10 @@ void display(void)
 
 	// Extra objects.
 	bunnyTrans = T(-20.0, 0.55, -20.0);
-	teapotTrans = T(-20.0, 0.0, 20.0);
+	// Testing height function.
+	float tempx = 100 + 50 * cosf(0.0005 * t);
+	float tempz = 100 + 50 * sinf(0.0005 * t);
+	teapotTrans = T(tempx, findHeight(tempx, tempz, terrain->vertexArray, terrainW, terrainH), tempz);
 	carTrans = T(20.0, 0.0, -20.0);
 	teddyTrans = T(20.0, 1.1, 20.0);
 	glBindTexture(GL_TEXTURE_2D, bunnyTex);
