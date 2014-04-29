@@ -125,51 +125,51 @@ void init(void)
 	// ----------------------OBJECT(S)----------------------
 
 	// Load terrain data
-	LoadTGATextureData("terrain/fft-terrain.tga", &ttex);
+LoadTGATextureData("terrain/fft-terrain.tga", &ttex);
 
-	terrain = GenerateTerrain(&ttex);
-	terrainW = getWidth(&ttex);
-	terrainH = getHeight(&ttex);
-	printError("init terrain");
+terrain = GenerateTerrain(&ttex);
+terrainW = getWidth(&ttex);
+terrainH = getHeight(&ttex);
+printError("init terrain");
 
-	// Loading models.
-	windmillWalls = LoadModelPlus("models/windmill/windmill-walls.obj");
-	windmillRoof = LoadModelPlus("models/windmill/windmill-roof.obj");
-	windmillBalcony = LoadModelPlus("models/windmill/windmill-balcony.obj");
-	windmillBlade = LoadModelPlus("models/windmill/blade.obj");
-	ground = LoadModelPlus("models/ground.obj");
-	skybox = LoadModelPlus("models/skybox.obj");
-	bunny = LoadModelPlus("models/bunnyplus.obj");
-	teapot = LoadModelPlus("models/teapot.obj");
-	car = LoadModelPlus("models/bilskiss.obj");
-	teddy = LoadModelPlus("models/teddy.obj");
-	plane = LoadModelPlus("models/LPNoBladeobj.obj");
-	planeRot = LoadModelPlus("models/Blade.obj");
+// Loading models.
+windmillWalls = LoadModelPlus("models/windmill/windmill-walls.obj");
+windmillRoof = LoadModelPlus("models/windmill/windmill-roof.obj");
+windmillBalcony = LoadModelPlus("models/windmill/windmill-balcony.obj");
+windmillBlade = LoadModelPlus("models/windmill/blade.obj");
+ground = LoadModelPlus("models/ground.obj");
+skybox = LoadModelPlus("models/skybox.obj");
+bunny = LoadModelPlus("models/bunnyplus.obj");
+teapot = LoadModelPlus("models/teapot.obj");
+car = LoadModelPlus("models/bilskiss.obj");
+teddy = LoadModelPlus("models/teddy.obj");
+plane = LoadModelPlus("models/LPNoBladeobj.obj");
+planeRot = LoadModelPlus("models/Blade.obj");
 
 
-	// Loading textures.
-	LoadTGATextureSimple("textures/grass.tga", &groundTex);
-	LoadTGATextureSimple("textures/conc.tga", &millTex);
-	LoadTGATextureSimple("textures/Skybox512.tga", &skyTex);
-	LoadTGATextureSimple("textures/dirt.tga", &bunnyTex);
-	LoadTGATextureSimple("textures/rutor.tga", &teapotTex);
-	LoadTGATextureSimple("textures/bilskissred.tga", &carTex);
-	LoadTGATextureSimple("textures/maskros512.tga", &teddyTex);
-	// -----------------------------------------------------
+// Loading textures.
+LoadTGATextureSimple("textures/grass.tga", &groundTex);
+LoadTGATextureSimple("textures/conc.tga", &millTex);
+LoadTGATextureSimple("textures/Skybox512.tga", &skyTex);
+LoadTGATextureSimple("textures/dirt.tga", &bunnyTex);
+LoadTGATextureSimple("textures/rutor.tga", &teapotTex);
+LoadTGATextureSimple("textures/bilskissred.tga", &carTex);
+LoadTGATextureSimple("textures/maskros512.tga", &teddyTex);
+// -----------------------------------------------------
 
-	// Multitexturing.
-	glUniform1i(glGetUniformLocation(program, "texUnit"), 0);
-	glUniform1i(glGetUniformLocation(program, "texUnit2"), 1);
+// Multitexturing.
+glUniform1i(glGetUniformLocation(program, "texUnit"), 0);
+glUniform1i(glGetUniformLocation(program, "texUnit2"), 1);
 
-	// Initializing "keyboard".
-	initKeymapManager();
+// Initializing "keyboard".
+initKeymapManager();
 
-	// "Initializing" camera.
-	s = Normalize(s);
-	camMatrix = lookAtv(p, l, v);
+// "Initializing" camera.
+s = Normalize(s);
+camMatrix = lookAtv(p, l, v);
 
-	//glEnable(GL_CULL_FACE);
-	//glDisable(GL_CULL_FACE);
+//glEnable(GL_CULL_FACE);
+//glDisable(GL_CULL_FACE);
 }
 
 void display(void)
@@ -227,6 +227,25 @@ void display(void)
 	planeTotal = Mult(planeTrans, temp2);
 	planeTotal = Mult(temp, planeTotal);
 	UploadAndDraw(planeTotal.m, planeRot, 0, 0);
+	//Försök att placera planet framför kameran. Funkar snart!
+//	vec3 planePos = VectorAdd(ScalarMult(Normalize(vec3{ s.x, -0.5, s.z }), 20), p);	// Move plane a bit forward in looking direction and a bit down
+//	mat4 planeTrans = T(planePos.x, planePos.y, planePos.z); //plane to camera pos
+//	vec3 projSVec = { s.x, 0, s.z }; // Project s-vec to xz-plane
+//	GLfloat scal = (DotProduct(projSVec, vec3{ 0, 0, 1 })) / (Norm(projSVec)*Norm(vec3{ 0, 0, 1 })); //Find scal-prod between (0,0,1) and looking-direction
+//	GLfloat angle = acos(scal); // Rot the plane to lookat-vec
+//	mat4 planeRotation = Ry(angle);
+	//mat4 planeTotalPlane = Mult(planeTrans, planeRotation);
+//	printf("Scal: %f \n", scal);
+//	printf("Angle: %f \n", angle*(180/PI));
+//	mat4 temp = Ry(0);
+
+	// Plane
+//	glBindTexture(GL_TEXTURE_2D, skyTex);
+//	UploadAndDraw(planeTotalPlane.m, plane, 0, 0);
+//	mat4 temp2 = Rz(0.03*t);
+//	planeTotal = Mult(temp, temp2);
+//	mat4 planeTotalBlades = Mult(planeTotalPlane, planeTotal);
+//	UploadAndDraw(planeTotalBlades.m, planeRot, 0, 0);
 	/*
 	// Ground.
 	glBindTexture(GL_TEXTURE_2D, groundTex);
