@@ -31,8 +31,8 @@ mat4 camMatrix;
 GLfloat skyMatrix[16];
 
 // Camera variables.
-vec3 p = vec3(0.0, 5.0, 20.0);	// Camera placement.
-vec3 l = vec3(0.0, 0.0, 0.0);	// Point the camera is looking at.
+vec3 p = vec3(10.0, 25.0, 20.0);	// Camera placement.
+vec3 l = vec3(10.0, 25.0, 0.0);	// Point the camera is looking at.
 vec3 v = vec3(0.0, 1.0, 0.0);	// "Up" vector for the camera.
 vec3 s = l - p;					// "Forward" vector for the camera.
 
@@ -213,6 +213,7 @@ void display(void)
 	glBindTexture(GL_TEXTURE_2D, groundTex);
 	UploadAndDraw(statTotal.m, terrain, 0, 0);
 
+	/* Planet som det var förut
 	planeTrans = T(15.0, 15.0, 0.0);
 	mat4 temp0 = Ry(-PI*0.5);
 	mat4 temp = Ry(0.0001*t);
@@ -227,25 +228,30 @@ void display(void)
 	planeTotal = Mult(planeTrans, temp2);
 	planeTotal = Mult(temp, planeTotal);
 	UploadAndDraw(planeTotal.m, planeRot, 0, 0);
-	//Försök att placera planet framför kameran. Funkar snart!
-//	vec3 planePos = VectorAdd(ScalarMult(Normalize(vec3{ s.x, -0.5, s.z }), 20), p);	// Move plane a bit forward in looking direction and a bit down
-//	mat4 planeTrans = T(planePos.x, planePos.y, planePos.z); //plane to camera pos
-//	vec3 projSVec = { s.x, 0, s.z }; // Project s-vec to xz-plane
-//	GLfloat scal = (DotProduct(projSVec, vec3{ 0, 0, 1 })) / (Norm(projSVec)*Norm(vec3{ 0, 0, 1 })); //Find scal-prod between (0,0,1) and looking-direction
-//	GLfloat angle = acos(scal); // Rot the plane to lookat-vec
-//	mat4 planeRotation = Ry(angle);
-	//mat4 planeTotalPlane = Mult(planeTrans, planeRotation);
-//	printf("Scal: %f \n", scal);
-//	printf("Angle: %f \n", angle*(180/PI));
-//	mat4 temp = Ry(0);
+*/
+
+	//Försök att placera planet på ett vettigt sätt framför kameran. 
+	// TODO att vinkla planet runt x- och z-axeln när kameran tittar upp/ner
+	//      att vinkla planet något när det svänger
+
+	vec3 planePos = VectorAdd(ScalarMult(Normalize(vec3{ s.x, -0.5, s.z }), 10), p);	// Move plane a bit forward in looking direction and a bit down
+	mat4 planeTrans = T(planePos.x, planePos.y, planePos.z); //plane to camera pos
+	vec3 projSVec = { s.x, 0, s.z }; // Project s-vec to xz-plane
+	GLfloat angle = acos((DotProduct(projSVec, vec3{ 0, 0, 1 })) / (Norm(projSVec)*Norm(vec3{ 0, 0, 1 }))); // Rot the plane to lookat-vec
+	if (VectorSub(l,p).x>0){
+		angle = -angle ;
+	}
+	mat4 planeRotation = Ry(angle);
+	mat4 planeTotalPlane = Mult(planeTrans, planeRotation);
+
+	p += 0.1 * s; // Plane is allways moving forward with speed 0.1
 
 	// Plane
-//	glBindTexture(GL_TEXTURE_2D, skyTex);
-//	UploadAndDraw(planeTotalPlane.m, plane, 0, 0);
-//	mat4 temp2 = Rz(0.03*t);
-//	planeTotal = Mult(temp, temp2);
-//	mat4 planeTotalBlades = Mult(planeTotalPlane, planeTotal);
-//	UploadAndDraw(planeTotalBlades.m, planeRot, 0, 0);
+	glBindTexture(GL_TEXTURE_2D, skyTex);
+	UploadAndDraw(planeTotalPlane.m, plane, 0, 0);
+	mat4 temp2 = Rz(0.03*t);
+	mat4 planeTotalBlades = Mult(planeTotalPlane, temp2);
+	UploadAndDraw(planeTotalBlades.m, planeRot, 0, 0);
 	/*
 	// Ground.
 	glBindTexture(GL_TEXTURE_2D, groundTex);
