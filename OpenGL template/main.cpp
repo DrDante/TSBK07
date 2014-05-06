@@ -7,6 +7,7 @@
 #include "VectorUtils3.h"
 #include "LoadTGA.h"
 #include "terrain.h"
+#include "plane.h"
 
 // ---Globals---
 #define PI 3.14159265358979323846
@@ -218,8 +219,8 @@ void display(void)
 	// Ny terräng
 	glBindTexture(GL_TEXTURE_2D, groundTex);
 	UploadAndDraw(statTotal.m, terrain, 0, 0);
-
-	/* Planet som det var förut
+	/* Ta bort denna kommentar om du vill styra runt utan planet!
+	// Planet som det var förut
 	planeTrans = T(15.0, 15.0, 0.0);
 	mat4 temp0 = Ry(-PI*0.5);
 	mat4 temp = Ry(0.0001*t);
@@ -234,26 +235,10 @@ void display(void)
 	planeTotal = Mult(planeTrans, temp2);
 	planeTotal = Mult(temp, planeTotal);
 	UploadAndDraw(planeTotal.m, planeRot, 0, 0);
-*/
-
-	//Försök att placera planet på ett vettigt sätt framför kameran. 
-	// TODO att vinkla planet runt x- och z-axeln när kameran tittar upp/ner
-	//      att vinkla planet något när det svänger
-	vec3 planePos = VectorAdd(ScalarMult(Normalize(vec3{ 10*s.x, -2, 10*s.z }), 10), p);	// Move plane a bit forward in looking direction and a bit down
-	mat4 planeTrans = T(planePos.x, planePos.y, planePos.z); //plane to camera pos
-	vec3 projSVec = { s.x, 0, s.z }; // Project s-vec to xz-plane
-	GLfloat angle = acos((DotProduct(projSVec, vec3{ 0, 0, 1 })) / (Norm(projSVec)*Norm(vec3{ 0, 0, 1 }))); // Rot the plane to lookat-vec
-	if (VectorSub(l,p).x>0){
-		angle = -angle ;
-	}
-	mat4 planeYRotation = Ry(angle);
-	// Rotation around x- and z-axis -TODO
-	mat4 planeXRotation = Rx(0);
-	mat4 planeZRotation = Ry(0);
-	// Make total plane transformation matrix
-	mat4 planeRotation = Mult(Mult(planeYRotation,planeXRotation),planeZRotation);
-	mat4 planeTotalPlane = Mult(planeTrans, planeRotation);
-
+	*/
+	
+	mat4 planeTotalPlane;
+	planeTotalPlane= placingPlane(l, p, s); // func from plane.cpp
 	p += 0.1* s; // Plane is allways moving forward with speed 0.1
 
 	// Plane
@@ -262,6 +247,7 @@ void display(void)
 	mat4 temp2 = Rz(0.03*t);
 	mat4 planeTotalBlades = Mult(planeTotalPlane, temp2);
 	UploadAndDraw(planeTotalBlades.m, planeRot, 0, 0);
+
 	/*
 	// Ground.
 	glBindTexture(GL_TEXTURE_2D, groundTex);
