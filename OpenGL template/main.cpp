@@ -92,6 +92,9 @@ mat4 bladeTotal1, bladeTotal2, bladeTotal3, bladeTotal4;
 mat4 planeTrans;
 mat4 planeTotal;
 
+// Plane speed
+GLuint planeSpeed;
+
 // References to textures.
 GLuint groundTex;
 GLuint millTex;
@@ -168,6 +171,9 @@ initKeymapManager();
 s = Normalize(s);
 camMatrix = lookAtv(p, l, v);
 
+// plane speed
+planeSpeed = 0.1; // Vill sätta en global plan-hast. Får inte att funka :(
+
 //glEnable(GL_CULL_FACE);
 //glDisable(GL_CULL_FACE);
 }
@@ -233,18 +239,22 @@ void display(void)
 	//Försök att placera planet på ett vettigt sätt framför kameran. 
 	// TODO att vinkla planet runt x- och z-axeln när kameran tittar upp/ner
 	//      att vinkla planet något när det svänger
-
-	vec3 planePos = VectorAdd(ScalarMult(Normalize(vec3{ s.x, -0.5, s.z }), 10), p);	// Move plane a bit forward in looking direction and a bit down
+	vec3 planePos = VectorAdd(ScalarMult(Normalize(vec3{ 10*s.x, -2, 10*s.z }), 10), p);	// Move plane a bit forward in looking direction and a bit down
 	mat4 planeTrans = T(planePos.x, planePos.y, planePos.z); //plane to camera pos
 	vec3 projSVec = { s.x, 0, s.z }; // Project s-vec to xz-plane
 	GLfloat angle = acos((DotProduct(projSVec, vec3{ 0, 0, 1 })) / (Norm(projSVec)*Norm(vec3{ 0, 0, 1 }))); // Rot the plane to lookat-vec
 	if (VectorSub(l,p).x>0){
 		angle = -angle ;
 	}
-	mat4 planeRotation = Ry(angle);
+	mat4 planeYRotation = Ry(angle);
+	// Rotation around x- and z-axis -TODO
+	mat4 planeXRotation = Rx(0);
+	mat4 planeZRotation = Ry(0);
+	// Make total plane transformation matrix
+	mat4 planeRotation = Mult(Mult(planeYRotation,planeXRotation),planeZRotation);
 	mat4 planeTotalPlane = Mult(planeTrans, planeRotation);
 
-	p += 0.1 * s; // Plane is allways moving forward with speed 0.1
+	p += 0.1* s; // Plane is allways moving forward with speed 0.1
 
 	// Plane
 	glBindTexture(GL_TEXTURE_2D, skyTex);
@@ -424,7 +434,7 @@ void CheckKeys()	// Checks if keys are being pressed.
 	{
 		p -= moveSpeed * Normalize(CrossProduct(s, v));
 	}
-	// 'w' moves the camera backwards.
+	// 's' moves the camera backwards.
 	if (keyIsDown('s'))
 	{
 		p -= moveSpeed * s;
