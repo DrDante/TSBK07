@@ -410,49 +410,49 @@ void SetCameraVector(float fi, float theta)	// Sets the camera matrix.
 
 void CheckKeys()	// Checks if keys are being pressed.
 {
-	float moveSpeed = 0.01;
+	float turnSpeed = 0.01;
 	// 'w' moves the camera forwards.
 	if (keyIsDown('w'))
 	{
 		//p += moveSpeed * s;
-		l = VectorAdd(moveSpeed*Normalize(v), l);
+		l = VectorAdd(turnSpeed*Normalize(v), l);
 		s = l - p;
 	}
 	// 'a' moves the camera to the left.
 	if (keyIsDown('a'))
 	{
-		l = VectorAdd(l, -moveSpeed*(CrossProduct(s, v)));
+		l = VectorAdd(l, -turnSpeed*(CrossProduct(s, v)));
 		s = l - p;
 		//p -= moveSpeed * Normalize(CrossProduct(s, v));
-		yawTurn(TRUE);
+		yawTurn(TRUE, FALSE);
 	}
 	else{
-		yawTurn(FALSE);
+		yawTurn(FALSE, FALSE);
 	}
 	// 's' moves the camera backwards.
 	if (keyIsDown('s'))
 	{
 		//p -= moveSpeed * s;
-		l = VectorSub(l, moveSpeed*Normalize(v));
+		l = VectorSub(l, turnSpeed*Normalize(v));
 		s = l - p;
 	}
 
 	// 'd' moves the camera to the left.
 	if (keyIsDown('d'))
 	{
-		l = VectorAdd(l, moveSpeed*Normalize(CrossProduct(s, v)));
+		l = VectorAdd(l, turnSpeed*Normalize(CrossProduct(s, v)));
 		s = l - p;
 		//p += moveSpeed * Normalize(CrossProduct(s, v));
 	}
 	// 'a' moves the camera up.
 	if (keyIsDown('e'))
 	{
-		p += moveSpeed * v;
+		p += turnSpeed * v;
 	}
 	// 'c' moves the camera to the down.
 	if (keyIsDown('c'))
 	{
-		p -= moveSpeed * v;
+		p -= turnSpeed * v;
 	}
 	l = p + s;
 	// Update the v-vec

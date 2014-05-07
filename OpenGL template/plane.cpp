@@ -59,11 +59,11 @@ mat4 placingPlane(vec3 l, vec3 p, vec3 s, vec3 v){
 	return totalTransform ;
 }
 
-// Hanterar planets transf-matris när planet svänger (ska vinkla lite åt sväng-hållet)
-void yawTurn(bool isTurn){
-	isTurning = isTurn; 
+// Hanterar planets transf-matris när planet svänger (ska vinkla planet lite åt sväng-hållet)
+void yawTurn(bool isTurnLeft,bool isTurnRight){
+	isTurning = isTurnLeft || isTurnRight; 
 }
-// Hanterar planets transf-matris när planet pitchar (så den vinklas lite upp/ner)
-void pichTurn(bool isUpDown){
-	isPitching = isUpDown; 
+// Hanterar planets transf-matris när planet pitchar (så den vinklas lite upp/ner, eller ska bara höjdrodrenra ändras?)
+void pichTurn(bool isUp, bool isDown){
+	isPitching = isUp || isDown; 
 }
