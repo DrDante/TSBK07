@@ -219,7 +219,7 @@ void display(void)
 	// Ny terräng
 	glBindTexture(GL_TEXTURE_2D, groundTex);
 	UploadAndDraw(statTotal.m, terrain, 0, 0);
-	/* Ta bort denna kommentar om du vill styra runt utan planet!
+	/* Ta bort denna kommentar o kommentera ut koden nedan om du vill styra runt utan planet!
 	// Planet som det var förut
 	planeTrans = T(15.0, 15.0, 0.0);
 	mat4 temp0 = Ry(-PI*0.5);
@@ -238,8 +238,9 @@ void display(void)
 	*/
 	
 	mat4 planeTotalPlane;
-	planeTotalPlane= placingPlane(l, p, s); // func from plane.cpp
-	p += 0.1* s; // Plane is allways moving forward with speed 0.1
+	planeTotalPlane= placingPlane(l, p, s, v); // func from plane.cpp
+	p += 0.3* s; // Plane is allways moving forward with speed 0.3
+	l = p + s; // Uppdating l
 
 	// Plane
 	glBindTexture(GL_TEXTURE_2D, skyTex);
@@ -409,26 +410,39 @@ void SetCameraVector(float fi, float theta)	// Sets the camera matrix.
 
 void CheckKeys()	// Checks if keys are being pressed.
 {
-	float moveSpeed = 0.1;
+	float moveSpeed = 0.01;
 	// 'w' moves the camera forwards.
 	if (keyIsDown('w'))
 	{
-		p += moveSpeed * s;
+		//p += moveSpeed * s;
+		l = VectorAdd(moveSpeed*Normalize(v), l);
+		s = l - p;
 	}
 	// 'a' moves the camera to the left.
 	if (keyIsDown('a'))
 	{
-		p -= moveSpeed * Normalize(CrossProduct(s, v));
+		l = VectorAdd(l, -moveSpeed*(CrossProduct(s, v)));
+		s = l - p;
+		//p -= moveSpeed * Normalize(CrossProduct(s, v));
+		yawTurn(TRUE);
+	}
+	else{
+		yawTurn(FALSE);
 	}
 	// 's' moves the camera backwards.
 	if (keyIsDown('s'))
 	{
-		p -= moveSpeed * s;
+		//p -= moveSpeed * s;
+		l = VectorSub(l, moveSpeed*Normalize(v));
+		s = l - p;
 	}
+
 	// 'd' moves the camera to the left.
 	if (keyIsDown('d'))
 	{
-		p += moveSpeed * Normalize(CrossProduct(s, v));
+		l = VectorAdd(l, moveSpeed*Normalize(CrossProduct(s, v)));
+		s = l - p;
+		//p += moveSpeed * Normalize(CrossProduct(s, v));
 	}
 	// 'a' moves the camera up.
 	if (keyIsDown('e'))
@@ -441,6 +455,14 @@ void CheckKeys()	// Checks if keys are being pressed.
 		p -= moveSpeed * v;
 	}
 	l = p + s;
+	// Update the v-vec
+	vec3 temp = CrossProduct(s, vec3{ 1, 0, 0 });
+	if (temp.x == 0 && temp.y == 0 && temp.z == 0){ // Take the crossprod between forward-vec and ground
+		v = -1*Normalize(CrossProduct(s, vec3{ 1, 0, 0 }));
+	}
+	else{ // Plane paralell to ground
+		v = { 0, 1, 0 };
+	}
 	// Updates the camera.
 	camMatrix = lookAtv(p, l, v);
 }

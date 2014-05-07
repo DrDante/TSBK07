@@ -8,6 +8,8 @@
 #include "LoadTGA.h"
 #include "math.h"
 
-mat4 placingPlane(vec3 l, vec3 p, vec3 s);
+mat4 placingPlane(vec3 l, vec3 p, vec3 s, vec3 v);
+void yawTurn(bool isTurn);
+void pitchTurn(bool isUpDown);
 
 #endif
