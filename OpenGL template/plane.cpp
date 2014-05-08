@@ -5,12 +5,14 @@
 mat4 planeTransl;
 mat4 planeYRotation;
 mat4 planeXRotation;
+mat4 planeZRotation;
 mat4 planeRotation;
 mat4 totalTransform;
-bool isTurningLeft;
-bool isTurningRight;
-bool isPitchingUp;
-bool isPitchingDown;
+bool isTurningLeft= FALSE;
+bool isTurningRight= FALSE;
+bool isPitchingUp= FALSE;
+bool isPitchingDown= FALSE;
+GLfloat rollAngle=0;
 
 mat4 placingPlane(vec3 l, vec3 p, vec3 s, vec3 v){
 
@@ -36,6 +38,9 @@ mat4 placingPlane(vec3 l, vec3 p, vec3 s, vec3 v){
 	planeTransl = T(planePos.x, planePos.y, planePos.z); //plane to camera pos
 
 	//Rotation around y-axis 
+
+	// Check if turning
+
 	vec3 projSVec = { s.x, 0, s.z }; // Project s-vec to xz-plane
 	GLfloat angleY = acos((DotProduct(projSVec, vec3{ 0, 0, 1 })) / (Norm(projSVec)*Norm(vec3{ 0, 0, 1 }))); // Rot the plane to lookat-vec
 	if (VectorSub(l, p).x>0){
@@ -52,8 +57,22 @@ mat4 placingPlane(vec3 l, vec3 p, vec3 s, vec3 v){
 	}
 	planeXRotation = Rx(-angleX);
 
+	// Rotation arounf z-axis
+	if (isTurningLeft || isTurningRight){
+		if ((rollAngle<(PI/4) && isTurningLeft) || (~isTurningLeft && ~isTurningRight && rollAngle <0)){
+			rollAngle = rollAngle - 0.4;
+			printf("Hej!");
+		}
+		if ((rollAngle<-1 * PI / 4 && isTurningRight) || (~isTurningLeft && ~isTurningRight && rollAngle >0)){
+			rollAngle = rollAngle  + 1;
+		}
+
+	}
+	planeZRotation = Rz(rollAngle);
+	printf("rollAngle: %f",rollAngle);
+
 	//Total rotation matrix
-	planeRotation = Mult(planeYRotation, planeXRotation);
+	planeRotation = Mult(planeYRotation,Mult(planeXRotation,planeZRotation));
 
 	// Make total plane transformation matrix
 	totalTransform = Mult(planeTransl, planeRotation);

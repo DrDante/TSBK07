@@ -96,7 +96,7 @@ mat4 planeTrans;
 mat4 planeTotal;
 
 // Plane speed
-GLfloat planeSpeed= 0.1;
+GLfloat planeSpeed= 1.0;
 
 // References to textures.
 GLuint groundTex;
@@ -246,8 +246,8 @@ void display(void)
 	
 	mat4 planeTotalPlane;
 	planeTotalPlane= placingPlane(l, p, s, v); // func from plane.cpp
-	printf("planeSpeed: %d \n" , planeSpeed);
-	p += planeSpeed* s; // Plane is allways moving forward with speed 0.3
+	printf("planeSpeed: %i \n" , (int)(planeSpeed*10));
+	p += planeSpeed* s; // Plane is allways moving forward with planeSpeed
 	l = p + s; // Uppdating l
 
 	// Plane
@@ -464,10 +464,10 @@ void CheckKeys()	// Checks if keys are being pressed.
 		l = VectorAdd(l, -turnSpeed*(CrossProduct(s, v)));
 		s = l - p;
 		//p -= moveSpeed * Normalize(CrossProduct(s, v));
-		yawTurn(TRUE, FALSE);
+		//yawTurn(TRUE, FALSE);
 	}
 	else{
-		yawTurn(FALSE, FALSE);
+		//yawTurn(FALSE, FALSE);
 	}
 	// 's' moves the camera backwards.
 	if (keyIsDown('s'))
