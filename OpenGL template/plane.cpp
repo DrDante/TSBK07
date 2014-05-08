@@ -7,8 +7,10 @@ mat4 planeYRotation;
 mat4 planeXRotation;
 mat4 planeRotation;
 mat4 totalTransform;
-bool isTurning;
-bool isPitching;
+bool isTurningLeft;
+bool isTurningRight;
+bool isPitchingUp;
+bool isPitchingDown;
 
 mat4 placingPlane(vec3 l, vec3 p, vec3 s, vec3 v){
 
@@ -22,12 +24,12 @@ mat4 placingPlane(vec3 l, vec3 p, vec3 s, vec3 v){
 	//      att vinkla planet något när det svänger
 
 	// Find down-vec to plane
-	vec3 down = { 0, 0, 0 };
+	vec3 down = -1*v;
 	vec3 temp = CrossProduct(s, vec3{ 1, 0, 0 });
 	if (temp.x == 0 && temp.y == 0 && temp.z == 0){ // Take the crossprod between forward-vec and ground
 		down = Normalize( CrossProduct(s, vec3{ 1, 0, 0 }));
 	}
-	else{ // Plane paralell to ground
+	else{ // Plane parallell to ground
 		down = { 0, -1, 0 };
 	}
 	vec3 planePos = VectorSub(VectorAdd(p, 10*Normalize(s)), -2*down); // Moves plane a bit in front of the cam and down
@@ -61,9 +63,11 @@ mat4 placingPlane(vec3 l, vec3 p, vec3 s, vec3 v){
 
 // Hanterar planets transf-matris när planet svänger (ska vinkla planet lite åt sväng-hållet)
 void yawTurn(bool isTurnLeft,bool isTurnRight){
-	isTurning = isTurnLeft || isTurnRight; 
+	isTurningLeft = isTurnLeft;
+	isTurningRight=isTurnRight; 
 }
 // Hanterar planets transf-matris när planet pitchar (så den vinklas lite upp/ner, eller ska bara höjdrodrenra ändras?)
 void pichTurn(bool isUp, bool isDown){
-	isPitching = isUp || isDown; 
+	isPitchingUp = isUp;
+	isPitchingDown = isDown; 
 }
