@@ -8,6 +8,7 @@
 #include "LoadTGA.h"
 #include "terrain.h"
 #include "plane.h"
+#include "GenerateGridPositions.h"
 
 // ---Globals---
 #define PI 3.14159265358979323846
@@ -80,6 +81,7 @@ Model *teddy;
 Model *terrain;
 Model *plane;
 Model *planeRot;
+Model *treeModel1;
 
 // Rotation, translation and result matrices for the models.
 mat4 bunnyTrans, teapotTrans, carTrans, teddyTrans;
@@ -107,6 +109,9 @@ TextureData ttex;
 
 int terrainW;
 int terrainH;
+// Trees
+int* treePosArray;
+int* treeSizeArray;
 
 // -----------------------------------------------------
 // -------------
@@ -149,6 +154,7 @@ car = LoadModelPlus("models/bilskiss.obj");
 teddy = LoadModelPlus("models/teddy.obj");
 plane = LoadModelPlus("models/LPNoBladeobj.obj");
 planeRot = LoadModelPlus("models/Blade.obj");
+treeModel1 = LoadModelPlus("models/EU55_1.obj");
 
 
 // Loading textures.
@@ -171,6 +177,10 @@ initKeymapManager();
 // "Initializing" camera.
 s = Normalize(s);
 camMatrix = lookAtv(p, l, v);
+
+//Tree grid.
+treePosArray = GenerateGridPositions(terrain->vertexArray, terrainW, terrainH, 30);
+treeSizeArray = getSizeArray();
 
 //glEnable(GL_CULL_FACE);
 //glDisable(GL_CULL_FACE);
@@ -254,6 +264,38 @@ void display(void)
 	UploadAndDraw(statTotal.m, ground, 0);
 	glUniform1i(glGetUniformLocation(program, "lambert"), 0);	// Re-enables specular lighting.
 	*/
+
+	// Trees.
+	GLfloat treeX;
+	GLfloat treeY;
+	GLfloat treeZ;
+
+	GLfloat size;
+
+	//printf("%d \n %d \n %d \n ", (int)treeX,(int)treeY,(int)treeZ);
+	mat4 treeTrans;
+	mat4 treeRot;
+	mat4 treeScale;
+	mat4 treeTotal;
+	
+
+	for (int i = 0; i < getNrZPoints(); i++)
+	{
+		for (int j = 0; j < getNrXPoints(); j++)
+		{
+			treeX = treePosArray[(i + j * getNrXPoints()) * 3 + 0];
+			treeY = treePosArray[(i + j * getNrXPoints()) * 3 + 1];
+			treeZ = treePosArray[(i + j * getNrXPoints()) * 3 + 2];
+			size = treeSizeArray[(i + j * getNrXPoints()) * 3 + 0];
+			treeTrans = T(treeX, treeY, treeZ);
+			treeRot = Rx(-PI*0.5);
+			treeScale = S(size, size, size);
+			treeTotal = Mult(treeRot, treeScale);
+			treeTotal = Mult(treeTrans, treeTotal);
+
+			UploadAndDraw(treeTotal.m, treeModel1, 0, 0);
+		}
+	}
 	// Windmill.
 	glBindTexture(GL_TEXTURE_2D, millTex);
 	// Walls, roof and balcony.
