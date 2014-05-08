@@ -116,6 +116,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="GenerateGridPositions.cpp" />
     <ClCompile Include="GL_utilities.c" />
     <ClCompile Include="loadobj.cpp" />
     <ClCompile Include="LoadTGA.cpp" />
@@ -124,6 +125,7 @@
     <ClCompile Include="VectorUtils3.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="GenerateGridPositions.h" />
     <ClInclude Include="GL_utilities.h" />
     <ClInclude Include="loadobj.h" />
     <ClInclude Include="LoadTGA.h" />
