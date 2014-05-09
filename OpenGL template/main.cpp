@@ -246,7 +246,6 @@ void display(void)
 	
 	mat4 planeTotalPlane;
 	planeTotalPlane= placingPlane(l, p, s, v); // func from plane.cpp
-	printf("planeSpeed: %i \n" , (int)(planeSpeed*10));
 	p += planeSpeed* s; // Plane is allways moving forward with planeSpeed
 	l = p + s; // Uppdating l
 
@@ -371,6 +370,7 @@ void OnTimer(int value)
 int main(int argc, const char *argv[])
 {
 	glutInit(&argc, (char**)argv);
+	initPlane();
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowSize(800, 600);	// Window size.
 	glutCreateWindow("OpenGL template");	// Window title.
@@ -464,11 +464,9 @@ void CheckKeys()	// Checks if keys are being pressed.
 		l = VectorAdd(l, -turnSpeed*(CrossProduct(s, v)));
 		s = l - p;
 		//p -= moveSpeed * Normalize(CrossProduct(s, v));
-		//yawTurn(TRUE, FALSE);
+		planeSideTurn(TRUE, FALSE);
 	}
-	else{
-		//yawTurn(FALSE, FALSE);
-	}
+
 	// 's' moves the camera backwards.
 	if (keyIsDown('s'))
 	{
@@ -481,6 +479,7 @@ void CheckKeys()	// Checks if keys are being pressed.
 	{
 		l = VectorAdd(l, turnSpeed*Normalize(CrossProduct(s, v)));
 		s = l - p;
+		planeSideTurn(FALSE, TRUE);
 		//p += moveSpeed * Normalize(CrossProduct(s, v));
 	}
 	// 'e' moves the camera up.
@@ -498,6 +497,9 @@ void CheckKeys()	// Checks if keys are being pressed.
 		if (planeSpeed > 0.1){
 			planeSpeed = planeSpeed - 0.01;
 		}
+	}
+	if (!keyIsDown('a') && !keyIsDown('d')){
+		planeSideTurn(FALSE, FALSE);
 	}
 	l = p + s;
 	// Update the v-vec

@@ -8,8 +8,10 @@
 #include "LoadTGA.h"
 #include "math.h"
 
+void initPlane();
 mat4 placingPlane(vec3 l, vec3 p, vec3 s, vec3 v);
-void yawTurn(bool isTurnLeft, bool isTurnRight);
+void planeSideTurn(bool isTurnLeft, bool isTurnRight);
+bool planeReadyToTurn();
 void pitchTurn(bool isUp, bool isDown);
 
 #endif
