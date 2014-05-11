@@ -14,4 +14,33 @@ void planeSideTurn(bool isTurnLeft, bool isTurnRight);
 bool planeReadyToTurn();
 void pitchTurn(bool isUp, bool isDown);
 
+class Plane{
+	vec3 pos = { 0, 0, 0 };
+	vec3 dir = { 1, 0, 0 };
+	float vel = 0.0;
+public:
+	Plane(vec3 position, vec3 direction, float velocity)
+	{
+		pos = position;
+		dir = direction;
+		vel = velocity;
+	}
+	vec3 GetPosition()
+	{
+		return pos;
+	}
+	vec3 GetDirection()
+	{
+		return dir;
+	}
+	float GetVelocity()
+	{
+		return vel;
+	}
+	void MovePlane()
+	{
+		pos += dir * vel;
+	}
+};
+
 #endif
