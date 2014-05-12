@@ -16,7 +16,8 @@ void pitchTurn(bool isUp, bool isDown);
 
 class Plane{
 	vec3 pos = { 0, 0, 0 };
-	vec3 dir = { 1, 0, 0 };
+	vec3 dir = { 1, 0, 0 }; // Should always be normalized.
+	vec3 up = { 0, 1, 0 }; // Should always be normalized.
 	float vel = 0.0;
 public:
 	Plane(vec3 position, vec3 direction, float velocity)
@@ -33,9 +34,22 @@ public:
 	{
 		return dir;
 	}
+	vec3 GetUpVector()
+	{
+		return up;
+	}
+	void SetDirection(vec3 direction, vec3 upVector)
+	{
+		dir = direction;
+		up = upVector;
+	}
 	float GetVelocity()
 	{
 		return vel;
+	}
+	void SetVelocity(float velocity)
+	{
+		vel = velocity;
 	}
 	void MovePlane()
 	{
