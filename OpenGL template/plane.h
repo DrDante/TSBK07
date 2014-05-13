@@ -54,17 +54,13 @@ public:
 		pos += dir * vel;
 		//pos.y -= 0.1; // Gravity.
 		//pos.y += 0.1 * DotProduct(up, vec3(0.0, 1.0, 0.0)); // Lift force.
-		//pos += vec3(up.x, 0, up.z); // "Turning" force.
+
+		// OBS! Subjektivt, bör diskuteras.
 		vec3 tempRight = Normalize(CrossProduct(dir, up));
-		if (tempRight.y < 0.0)
+		if (tempRight.y != 0.0)
 		{
-			dir = Normalize(dir + 0.015 * DotProduct(tempRight, vec3(0.0, -1.0, 0.0)) * tempRight); // Turn right.
-			// 0.01 above could use some fine tuning.
-		}
-		else if (tempRight.y > 0.0)
-		{
-			dir = Normalize(dir - 0.015 * DotProduct(tempRight, vec3(0.0, 1.0, 0.0)) * tempRight); // Turn left.
-			// 0.01 above could use some fine tuning.
+			dir = Normalize(dir - 0.015 * DotProduct(tempRight, vec3(0.0, 1.0, 0.0)) * tempRight); // Turning.
+			// 0.015 above could use some fine tuning.
 		}
 	}
 };

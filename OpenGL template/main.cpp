@@ -48,6 +48,8 @@ void CheckMouse(int x, int y);
 void SetCameraVector(float fi, float theta);
 void CheckKeys();
 bool checkCollisionWithGround(GLfloat x, GLfloat y, GLfloat z);
+vec3 ConfinedUpVector(vec3 forward);
+mat4 RotatePlaneModel();
 
 
 // Glew initialization... thing.
@@ -137,55 +139,55 @@ void init(void)
 	// ----------------------OBJECT(S)----------------------
 
 	// Load terrain data
-LoadTGATextureData("terrain/fft-terrain.tga", &ttex);
+	LoadTGATextureData("terrain/fft-terrain.tga", &ttex);
 
-terrain = GenerateTerrain(&ttex);
-terrainW = getWidth(&ttex);
-terrainH = getHeight(&ttex);
-printError("init terrain");
+	terrain = GenerateTerrain(&ttex);
+	terrainW = getWidth(&ttex);
+	terrainH = getHeight(&ttex);
+	printError("init terrain");
 
-// Loading models.
-windmillWalls = LoadModelPlus("models/windmill/windmill-walls.obj");
-windmillRoof = LoadModelPlus("models/windmill/windmill-roof.obj");
-windmillBalcony = LoadModelPlus("models/windmill/windmill-balcony.obj");
-windmillBlade = LoadModelPlus("models/windmill/blade.obj");
-ground = LoadModelPlus("models/ground.obj");
-skybox = LoadModelPlus("models/skybox.obj");
-bunny = LoadModelPlus("models/bunnyplus.obj");
-teapot = LoadModelPlus("models/teapot.obj");
-car = LoadModelPlus("models/bilskiss.obj");
-teddy = LoadModelPlus("models/teddy.obj");
-plane = LoadModelPlus("models/LPNoBladeobj.obj");
-planeRot = LoadModelPlus("models/Blade.obj");
-treeModel1 = LoadModelPlus("models/EU55_1.obj");
+	// Loading models.
+	windmillWalls = LoadModelPlus("models/windmill/windmill-walls.obj");
+	windmillRoof = LoadModelPlus("models/windmill/windmill-roof.obj");
+	windmillBalcony = LoadModelPlus("models/windmill/windmill-balcony.obj");
+	windmillBlade = LoadModelPlus("models/windmill/blade.obj");
+	ground = LoadModelPlus("models/ground.obj");
+	skybox = LoadModelPlus("models/skybox.obj");
+	bunny = LoadModelPlus("models/bunnyplus.obj");
+	teapot = LoadModelPlus("models/teapot.obj");
+	car = LoadModelPlus("models/bilskiss.obj");
+	teddy = LoadModelPlus("models/teddy.obj");
+	plane = LoadModelPlus("models/LPNoBladeobj.obj");
+	planeRot = LoadModelPlus("models/Blade.obj");
+	treeModel1 = LoadModelPlus("models/EU55_1.obj");
 
 
-// Loading textures.
-LoadTGATextureSimple("textures/grass.tga", &groundTex);
-LoadTGATextureSimple("textures/conc.tga", &millTex);
-LoadTGATextureSimple("textures/Skybox512.tga", &skyTex);
-LoadTGATextureSimple("textures/dirt.tga", &bunnyTex);
-LoadTGATextureSimple("textures/rutor.tga", &teapotTex);
-LoadTGATextureSimple("textures/bilskissred.tga", &carTex);
-LoadTGATextureSimple("textures/maskros512.tga", &teddyTex);
-// -----------------------------------------------------
+	// Loading textures.
+	LoadTGATextureSimple("textures/grass.tga", &groundTex);
+	LoadTGATextureSimple("textures/conc.tga", &millTex);
+	LoadTGATextureSimple("textures/Skybox512.tga", &skyTex);
+	LoadTGATextureSimple("textures/dirt.tga", &bunnyTex);
+	LoadTGATextureSimple("textures/rutor.tga", &teapotTex);
+	LoadTGATextureSimple("textures/bilskissred.tga", &carTex);
+	LoadTGATextureSimple("textures/maskros512.tga", &teddyTex);
+	// -----------------------------------------------------
 
-// Multitexturing.
-glUniform1i(glGetUniformLocation(program, "texUnit"), 0);
-glUniform1i(glGetUniformLocation(program, "texUnit2"), 1);
+	// Multitexturing.
+	glUniform1i(glGetUniformLocation(program, "texUnit"), 0);
+	glUniform1i(glGetUniformLocation(program, "texUnit2"), 1);
 
-// Initializing "keyboard".
-initKeymapManager();
+	// Initializing "keyboard".
+	initKeymapManager();
 
-// "Initializing" camera.
-s = Normalize(s);
-camMatrix = lookAtv(p, l, v);
+	// "Initializing" camera.
+	s = Normalize(s);
+	camMatrix = lookAtv(p, l, v);
 
-// Initialize forest.
-treeArray = GetForest(terrain->vertexArray, terrainW, terrainH, 30);
+	// Initialize forest.
+	treeArray = GetForest(terrain->vertexArray, terrainW, terrainH, 30);
 
-//glEnable(GL_CULL_FACE);
-//glDisable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
+	//glDisable(GL_CULL_FACE);
 }
 
 void display(void)
@@ -251,7 +253,10 @@ void display(void)
 	l = player.GetPosition(); // What the camera is looking at.
 	p = l - s * 20.0; // Camera placement, 20.0 behind the plane.
 
-	camMatrix = lookAtv(p, l, player.GetUpVector());
+	// OBS! Subjektivt, bör diskuteras.
+	v = ConfinedUpVector(player.GetDirection());
+	//camMatrix = lookAtv(p, l, player.GetUpVector());
+	camMatrix = lookAtv(p, l, v);
 
 
 	player.MovePlane();
@@ -259,19 +264,8 @@ void display(void)
 	player.SetCollision(checkCollisionWithGround(player.GetPosition().x, player.GetPosition().y, player.GetPosition().z));
 
 	// Rotating model.
-	mat4 PlaneMatrix = IdentityMatrix();
-	vec3 tempRight = Normalize(CrossProduct(player.GetDirection(), player.GetUpVector()));
-	PlaneMatrix.m[0] = tempRight.x;
-	PlaneMatrix.m[4] = tempRight.y;
-	PlaneMatrix.m[8] = tempRight.z;
-	PlaneMatrix.m[1] = player.GetUpVector().x;
-	PlaneMatrix.m[5] = player.GetUpVector().y;
-	PlaneMatrix.m[9] = player.GetUpVector().z;
-	PlaneMatrix.m[2] = player.GetDirection().x;
-	PlaneMatrix.m[6] = player.GetDirection().y;
-	PlaneMatrix.m[10] = player.GetDirection().z;
+	mat4 PlaneMatrix = RotatePlaneModel();
 	// Moving model.
-	//PlayerMat = Mult(T(player.GetPosition().x, player.GetPosition().y, player.GetPosition().z), PlayerMat);
 	PlaneMatrix = Mult(T(player.GetPosition().x, player.GetPosition().y, player.GetPosition().z), PlaneMatrix);
 
 	glBindTexture(GL_TEXTURE_2D, skyTex);
@@ -443,65 +437,54 @@ void CheckKeys()	// Checks if keys are being pressed.
 {
 	float turnSpeed = 0.02;
 	float returnSpeed = 0.01;
-	// 'w' moves the camera forwards.
+	// 'w' pitches the plane forwards.
 	if (keyIsDown('w'))
 	{
 		vec3 tempForward = Normalize(player.GetDirection() - turnSpeed * player.GetUpVector());
 		vec3 tempUp = Normalize(player.GetUpVector() + turnSpeed * player.GetDirection());
 		player.SetDirection(tempForward, tempUp);
 	}
-	// 'a' moves the camera to the left.
+	// 'a' pitches the plane to the left.
 	if (keyIsDown('a'))
 	{
-		/*OLD
-		vec3 tempForward = Normalize(player.GetDirection() - turnSpeed * CrossProduct(player.GetDirection(), player.GetUpVector()));
-		player.SetDirection(tempForward, player.GetUpVector());
-		*/
 		vec3 tempRight = Normalize(CrossProduct(player.GetDirection(), player.GetUpVector()));
 		player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() - turnSpeed * tempRight));
 		wasTurningRight = false;
 	}
 
-	// 's' moves the camera backwards.
+	// 's' pitches the plane backwards.
 	if (keyIsDown('s'))
 	{
 		vec3 tempForward = Normalize(player.GetDirection() + turnSpeed * player.GetUpVector());
 		vec3 tempUp = Normalize(player.GetUpVector() - turnSpeed * player.GetDirection());
 		player.SetDirection(tempForward, tempUp);
 	}
-	// 'd' moves the camera to the left.
+	// 'd' pitches the plane to the right.
 	if (keyIsDown('d'))
 	{
-		/*OLD
-		vec3 tempForward = Normalize(player.GetDirection() + turnSpeed * CrossProduct(player.GetDirection(), player.GetUpVector()));
-		player.SetDirection(tempForward, player.GetUpVector());
-		*/
-
 		vec3 tempRight = Normalize(CrossProduct(player.GetDirection(), player.GetUpVector()));
 		player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() + turnSpeed * tempRight));
 		wasTurningLeft = false;
 
 	}
-	// 'e' moves the camera up.
+	// 'e' increases the speed.
 	if (keyIsDown('e'))
 	{
-		player.SetVelocity(player.GetVelocity() + 0.01); // ** NEW: INCREASES SPEED ***
+		player.SetVelocity(player.GetVelocity() + 0.01);
 	}
-	// 'c' moves the camera to the down.
+	// 'c' decreases the speed.
 	if (keyIsDown('c'))
 	{
-		player.SetVelocity(player.GetVelocity() - 0.01); // ** NEW: DECREASES SPEED ***
+		player.SetVelocity(player.GetVelocity() - 0.01);
 	}
-	if (!keyIsDown('a') && !keyIsDown('d')/* && !keyIsDown('w') && !keyIsDown('s')*/)
+	if (!keyIsDown('a') && !keyIsDown('d')/* && !keyIsDown('w') && !keyIsDown('s')*/) // OBS! Subjektivt, bör diskuteras.
 	{
 		vec3 tempRight = Normalize(CrossProduct(player.GetDirection(), player.GetUpVector()));
-		vec3 yUp = { 0.0, 1.0, 0.0 };
 		if (tempRight.y < -0.001)
 		{
 			if (wasTurningLeft)
 			{
-				//player.SetDirection(player.GetDirection(), yUp);
-				player.SetDirection(player.GetDirection(), Normalize(yUp - DotProduct(yUp, player.GetDirection()) * player.GetDirection()));
+				player.SetDirection(player.GetDirection(), ConfinedUpVector(player.GetDirection()));
 				wasTurningLeft = false;
 			}
 			else
@@ -514,8 +497,7 @@ void CheckKeys()	// Checks if keys are being pressed.
 		{
 			if (wasTurningRight)
 			{
-				//player.SetDirection(player.GetDirection(), yUp);
-				player.SetDirection(player.GetDirection(), Normalize(yUp - DotProduct(yUp, player.GetDirection()) * player.GetDirection()));
+				player.SetDirection(player.GetDirection(), ConfinedUpVector(player.GetDirection()));
 				wasTurningRight = false;
 			}
 			else
@@ -526,7 +508,7 @@ void CheckKeys()	// Checks if keys are being pressed.
 		}
 		else
 		{
-			player.SetDirection(player.GetDirection(), Normalize(yUp - DotProduct(yUp, player.GetDirection()) * player.GetDirection()));
+			player.SetDirection(player.GetDirection(), ConfinedUpVector(player.GetDirection()));
 		}
 	}
 }
@@ -543,6 +525,29 @@ bool checkCollisionWithGround(GLfloat x, GLfloat y, GLfloat z){
 		isCollision = TRUE;
 	}
 	return isCollision;
+}
+
+vec3 ConfinedUpVector(vec3 forward) // Returns an "up" vector confined to the plane spanned by the forward vector and the y axis.
+{
+	vec3 yUp = { 0.0, 1.0, 0.0 };
+	return Normalize(yUp - DotProduct(yUp, forward) * forward);
+}
+
+mat4 RotatePlaneModel()
+{
+	mat4 PlaneMatrix = IdentityMatrix();
+	vec3 tempRight = Normalize(CrossProduct(player.GetDirection(), player.GetUpVector()));
+	PlaneMatrix.m[0] = tempRight.x;
+	PlaneMatrix.m[4] = tempRight.y;
+	PlaneMatrix.m[8] = tempRight.z;
+	PlaneMatrix.m[1] = player.GetUpVector().x;
+	PlaneMatrix.m[5] = player.GetUpVector().y;
+	PlaneMatrix.m[9] = player.GetUpVector().z;
+	PlaneMatrix.m[2] = player.GetDirection().x;
+	PlaneMatrix.m[6] = player.GetDirection().y;
+	PlaneMatrix.m[10] = player.GetDirection().z;
+
+	return PlaneMatrix;
 }
 
 int main(int argc, const char *argv[])
