@@ -10,6 +10,7 @@
 #include "plane.h"
 #include "GenerateGridPositions.h"
 #include "tree.h"
+#include "cloud.h"
 
 // ---Globals---
 #define PI 3.14159265358979323846
@@ -118,6 +119,7 @@ int terrainH;
 Plane player(vec3(0.0, 20.0, 0.0), vec3(1.0, 0.0, 0.0), 0.1);
 
 tree* treeArray;
+cloud* cloudArray;
 
 void init(void)
 {
@@ -183,6 +185,7 @@ camMatrix = lookAtv(p, l, v);
 
 // Initialize forest.
 treeArray = GetForest(terrain->vertexArray, terrainW, terrainH, 30);
+cloudArray = GetClouds(terrain->vertexArray, terrainW, terrainH, 60);
 
 //glEnable(GL_CULL_FACE);
 //glDisable(GL_CULL_FACE);
@@ -296,6 +299,8 @@ void display(void)
 
 		UploadAndDraw(treeTotal.m, treeModel1, 0, 0);
 	}
+
+
 
 	// Windmill.
 	glBindTexture(GL_TEXTURE_2D, millTex);

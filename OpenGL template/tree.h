@@ -1,11 +1,8 @@
 #ifndef tree_h
 #define tree_h
 
-#include "GL/glew.h"
-#include "loadobj.h"
 #include "VectorUtils3.h"
 #include "GL_utilities.h"
-#include "LoadTGA.h"
 #include "math.h"
 
 // Type 1 is EU55_1
@@ -62,8 +59,7 @@ class tree{
 		{
 			type = typeIn;
 		}
-
-
+		
 		bool CheckHitBox(vec3 objectPos);
 };
 
