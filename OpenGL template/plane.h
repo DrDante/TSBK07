@@ -19,6 +19,7 @@ class Plane{
 	vec3 dir = { 1.0, 0.0, 0.0 }; // Should always be normalized.
 	vec3 up = { 0.0, 1.0, 0.0 }; // Should always be normalized.
 	float vel = 0.0;
+	bool isCollided; // TRUE if collision, FALSE if not
 public:
 	Plane(vec3 position, vec3 direction, float velocity)
 	{
@@ -50,6 +51,10 @@ public:
 	void SetVelocity(float velocity)
 	{
 		vel = velocity;
+	}
+	void SetCollision(bool isCol){ // A func that can be used to change isCollided to TRUE/ FALSE. isCollided needs to be handled futher
+		isCollided = isCol;
+		printf(isCollided ? "true" : "false");
 	}
 	void MovePlane()
 	{
