@@ -2,6 +2,7 @@
 #include "plane.h"
 
 #define PI 3.14159265358979323846
+/*
 mat4 planeTransl;
 mat4 planeYRotation;
 mat4 planeXRotation;
@@ -87,4 +88,4 @@ bool planeReadyToTurn(){
 void pichTurn(bool isUp, bool isDown){
 	isPitchingUp = isUp;
 	isPitchingDown = isDown; 
-}
+}*/

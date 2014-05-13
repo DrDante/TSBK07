@@ -116,7 +116,7 @@ int* treeSizeArray;
 // -----------------------------------------------------
 // -------------
 
-Plane player(vec3(0.0, 20.0, 0.0), vec3(1.0, 0.0, 0.0), 1.0);
+Plane player(vec3(0.0, 20.0, 0.0), vec3(1.0, 0.0, 0.0), 0.1);
 
 void init(void)
 {
@@ -481,9 +481,13 @@ void SetCameraVector(float fi, float theta)	// Sets the camera matrix.
 	camMatrix = lookAtv(p, l, v);
 }
 
+bool wasTurningRight = false;
+bool wasTurningLeft = false;
+
 void CheckKeys()	// Checks if keys are being pressed.
 {
-	float turnSpeed = 0.01;
+	float turnSpeed = 0.02;
+	float returnSpeed = 0.01;
 	// 'w' moves the camera forwards.
 	if (keyIsDown('w'))
 	{
@@ -497,8 +501,14 @@ void CheckKeys()	// Checks if keys are being pressed.
 	// 'a' moves the camera to the left.
 	if (keyIsDown('a'))
 	{
+		/*OLD
 		vec3 tempForward = Normalize(player.GetDirection() - turnSpeed * CrossProduct(player.GetDirection(), player.GetUpVector()));
 		player.SetDirection(tempForward, player.GetUpVector());
+		*/
+		vec3 tempRight = Normalize(CrossProduct(player.GetDirection(), player.GetUpVector()));
+		player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() - turnSpeed * tempRight));
+		wasTurningRight = false;
+
 		//l = VectorAdd(l, -turnSpeed*(CrossProduct(s, v)));
 		//s = l - p;
 		//p -= moveSpeed * Normalize(CrossProduct(s, v));
@@ -518,8 +528,15 @@ void CheckKeys()	// Checks if keys are being pressed.
 	// 'd' moves the camera to the left.
 	if (keyIsDown('d'))
 	{
+		/*OLD
 		vec3 tempForward = Normalize(player.GetDirection() + turnSpeed * CrossProduct(player.GetDirection(), player.GetUpVector()));
 		player.SetDirection(tempForward, player.GetUpVector());
+		*/
+
+		vec3 tempRight = Normalize(CrossProduct(player.GetDirection(), player.GetUpVector()));
+		player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() + turnSpeed * tempRight));
+		wasTurningLeft = false;
+
 		//l = VectorAdd(l, turnSpeed*Normalize(CrossProduct(s, v)));
 		//s = l - p;
 		//planeSideTurn(FALSE, TRUE);
@@ -543,9 +560,46 @@ void CheckKeys()	// Checks if keys are being pressed.
 		//	planeSpeed = planeSpeed - 0.01;
 		//}
 	}
-	//if (!keyIsDown('a') && !keyIsDown('d')){
+	if (!keyIsDown('a') && !keyIsDown('d')/* && !keyIsDown('w') && !keyIsDown('s')*/)
+	{
+		vec3 tempRight = Normalize(CrossProduct(player.GetDirection(), player.GetUpVector()));
+		vec3 yUp = { 0.0, 1.0, 0.0 };
+		if (tempRight.y < -0.001)
+		{
+			if (wasTurningLeft)
+			{
+				//player.SetDirection(player.GetDirection(), yUp);
+				player.SetDirection(player.GetDirection(), Normalize(yUp - DotProduct(yUp, player.GetDirection()) * player.GetDirection()));
+				wasTurningLeft = false;
+			}
+			else
+			{
+				player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() - returnSpeed * tempRight));
+				wasTurningRight = true;
+			}
+		}
+		else if (tempRight.y > 0.001)
+		{
+			if (wasTurningRight)
+			{
+				//player.SetDirection(player.GetDirection(), yUp);
+				player.SetDirection(player.GetDirection(), Normalize(yUp - DotProduct(yUp, player.GetDirection()) * player.GetDirection()));
+				wasTurningRight = false;
+			}
+			else
+			{
+				player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() + returnSpeed * tempRight));
+				wasTurningLeft = true;
+			}
+		}
+		else
+		{
+			player.SetDirection(player.GetDirection(), Normalize(yUp - DotProduct(yUp, player.GetDirection()) * player.GetDirection()));
+		}
+
+
 	//	planeSideTurn(FALSE, FALSE);
-	//}
+	}
 	//l = p + s;
 	// Update the v-vec
 	//vec3 temp = CrossProduct(s, vec3{ 1, 0, 0 });
