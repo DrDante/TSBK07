@@ -251,24 +251,28 @@ void display(void)
 	l = player.GetPosition(); // What the camera is looking at.
 	p = l - s * 20.0; // Camera placement, 20.0 behind the plane.
 
-	camMatrix = lookAtv(p, l, v);
+	camMatrix = lookAtv(p, l, player.GetUpVector());
 
 	player.MovePlane();
 
 	// Rotating model.
-	// KODEN NEDAN FUNKAR INTE ÄN. Den ska rotera modellen så att den pekar längs planets riktning. Spännande bugg.
-	vec3 tempX = { 1, 0, 0 }; // temptemp
-	vec3 tempZ = { 0, 0, 1 }; // temptemp
-	vec3 tempVec = Normalize(player.GetDirection() - player.GetDirection().z * tempZ);
-	mat4 PlayerRotZ = Rz(acosf(DotProduct(tempX, tempVec)));
-	vec3 rotAxis = CrossProduct(Normalize(tempVec), tempZ);
-	mat4 PlayerRotArb = ArbRotate(rotAxis, acosf(DotProduct(player.GetDirection(), Normalize(tempVec))));
-	mat4 PlayerMat = Mult(PlayerRotArb, PlayerRotZ);
+	mat4 PlaneMatrix = IdentityMatrix();
+	vec3 tempRight = Normalize(CrossProduct(player.GetDirection(), player.GetUpVector()));
+	PlaneMatrix.m[0] = tempRight.x;
+	PlaneMatrix.m[4] = tempRight.y;
+	PlaneMatrix.m[8] = tempRight.z;
+	PlaneMatrix.m[1] = player.GetUpVector().x;
+	PlaneMatrix.m[5] = player.GetUpVector().y;
+	PlaneMatrix.m[9] = player.GetUpVector().z;
+	PlaneMatrix.m[2] = player.GetDirection().x;
+	PlaneMatrix.m[6] = player.GetDirection().y;
+	PlaneMatrix.m[10] = player.GetDirection().z;
 	// Moving model.
-	PlayerMat = Mult(T(player.GetPosition().x, player.GetPosition().y, player.GetPosition().z), PlayerMat);
+	//PlayerMat = Mult(T(player.GetPosition().x, player.GetPosition().y, player.GetPosition().z), PlayerMat);
+	PlaneMatrix = Mult(T(player.GetPosition().x, player.GetPosition().y, player.GetPosition().z), PlaneMatrix);
 
 	glBindTexture(GL_TEXTURE_2D, skyTex);
-	UploadAndDraw(PlayerMat.m, plane, 0, 0);
+	UploadAndDraw(PlaneMatrix.m, plane, 0, 0);
 	// **********************
 
 	/*
@@ -399,7 +403,7 @@ void OnTimer(int value)
 int main(int argc, const char *argv[])
 {
 	glutInit(&argc, (char**)argv);
-	initPlane();
+	//initPlane();
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowSize(800, 600);	// Window size.
 	glutCreateWindow("OpenGL template");	// Window title.
@@ -539,18 +543,18 @@ void CheckKeys()	// Checks if keys are being pressed.
 		//	planeSpeed = planeSpeed - 0.01;
 		//}
 	}
-	if (!keyIsDown('a') && !keyIsDown('d')){
-		planeSideTurn(FALSE, FALSE);
-	}
+	//if (!keyIsDown('a') && !keyIsDown('d')){
+	//	planeSideTurn(FALSE, FALSE);
+	//}
 	//l = p + s;
 	// Update the v-vec
-	vec3 temp = CrossProduct(s, vec3{ 1, 0, 0 });
-	if (temp.x == 0 && temp.y == 0 && temp.z == 0){ // Take the crossprod between forward-vec and ground
-		v = -1*Normalize(CrossProduct(s, vec3{ 1, 0, 0 }));
-	}
-	else{ // Plane parallell to ground
-		v = { 0, 1, 0 };
-	}
+	//vec3 temp = CrossProduct(s, vec3{ 1, 0, 0 });
+	//if (temp.x == 0 && temp.y == 0 && temp.z == 0){ // Take the crossprod between forward-vec and ground
+	//	v = -1*Normalize(CrossProduct(s, vec3{ 1, 0, 0 }));
+	//}
+	//else{ // Plane parallell to ground
+	//	v = { 0, 1, 0 };
+	//}
 	// Updates the camera.
 	//camMatrix = lookAtv(p, l, v);
 }
