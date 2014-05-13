@@ -6,8 +6,15 @@
 #include "math.h"
 #include "terrain.h"
 
+// Type 1 is EU55_1
+class tree{
+public: 
+	vec3 pos;
+	GLfloat size;
+	GLfloat hitBoxHeigth;
+	GLfloat hitBoxRad;
+	int type;
 
-int* GenerateGridPositions(GLfloat *vertexArray, int xMax, int zMax, int square_size);
-int getNrXPoints();
-int getNrZPoints();
-int* getSizeArray();
+private:
+	void GenerateHitBox();
+};
