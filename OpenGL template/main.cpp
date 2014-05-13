@@ -277,29 +277,8 @@ void display(void)
 
 	glBindTexture(GL_TEXTURE_2D, skyTex);
 	UploadAndDraw(PlaneMatrix.m, plane, 0, 0);
-	// **********************
 
-	/*
-	mat4 planeTotalPlane;
-	planeTotalPlane= placingPlane(l, p, s, v); // func from plane.cpp
-	p += planeSpeed* s; // Plane is allways moving forward with planeSpeed
-	l = p + s; // Uppdating l
-
-	// Plane
-	glBindTexture(GL_TEXTURE_2D, skyTex);
-	UploadAndDraw(planeTotalPlane.m, plane, 0, 0);
-	mat4 temp2 = Rz(0.03*t);
-	mat4 planeTotalBlades = Mult(planeTotalPlane, temp2);
-	UploadAndDraw(planeTotalBlades.m, planeRot, 0, 0);
-	*/
-
-	/*
-	// Ground.
-	glBindTexture(GL_TEXTURE_2D, groundTex);
-	glUniform1i(glGetUniformLocation(program, "lambert"), 1);	// Disables specular lighting.
-	UploadAndDraw(statTotal.m, ground, 0);
-	glUniform1i(glGetUniformLocation(program, "lambert"), 0);	// Re-enables specular lighting.
-	*/
+	// *** END PLANE CODE ***
 
 	// Trees.
 	GLfloat treeX;
@@ -484,9 +463,6 @@ void CheckKeys()	// Checks if keys are being pressed.
 		vec3 tempForward = Normalize(player.GetDirection() - turnSpeed * player.GetUpVector());
 		vec3 tempUp = Normalize(player.GetUpVector() + turnSpeed * player.GetDirection());
 		player.SetDirection(tempForward, tempUp);
-		//p += moveSpeed * s;
-		//l = VectorAdd(turnSpeed*Normalize(v), l);
-		//s = l - p;
 	}
 	// 'a' moves the camera to the left.
 	if (keyIsDown('a'))
@@ -498,11 +474,6 @@ void CheckKeys()	// Checks if keys are being pressed.
 		vec3 tempRight = Normalize(CrossProduct(player.GetDirection(), player.GetUpVector()));
 		player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() - turnSpeed * tempRight));
 		wasTurningRight = false;
-
-		//l = VectorAdd(l, -turnSpeed*(CrossProduct(s, v)));
-		//s = l - p;
-		//p -= moveSpeed * Normalize(CrossProduct(s, v));
-		//planeSideTurn(TRUE, FALSE);
 	}
 
 	// 's' moves the camera backwards.
@@ -511,9 +482,6 @@ void CheckKeys()	// Checks if keys are being pressed.
 		vec3 tempForward = Normalize(player.GetDirection() + turnSpeed * player.GetUpVector());
 		vec3 tempUp = Normalize(player.GetUpVector() - turnSpeed * player.GetDirection());
 		player.SetDirection(tempForward, tempUp);
-		//p -= moveSpeed * s;
-		//l = VectorSub(l, turnSpeed*Normalize(v));
-		//s = l - p;
 	}
 	// 'd' moves the camera to the left.
 	if (keyIsDown('d'))
@@ -527,28 +495,16 @@ void CheckKeys()	// Checks if keys are being pressed.
 		player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() + turnSpeed * tempRight));
 		wasTurningLeft = false;
 
-		//l = VectorAdd(l, turnSpeed*Normalize(CrossProduct(s, v)));
-		//s = l - p;
-		//planeSideTurn(FALSE, TRUE);
-		//p += moveSpeed * Normalize(CrossProduct(s, v));
 	}
 	// 'e' moves the camera up.
 	if (keyIsDown('e'))
 	{
 		player.SetVelocity(player.GetVelocity() + 0.01); // ** NEW: INCREASES SPEED ***
-		//p += turnSpeed * v;
-		//if (planeSpeed < 2){
-		//	planeSpeed = planeSpeed + 0.01;
-		//}
 	}
 	// 'c' moves the camera to the down.
 	if (keyIsDown('c'))
 	{
 		player.SetVelocity(player.GetVelocity() - 0.01); // ** NEW: DECREASES SPEED ***
-		//p -= turnSpeed * v;
-		//if (planeSpeed > 0.1){
-		//	planeSpeed = planeSpeed - 0.01;
-		//}
 	}
 	if (!keyIsDown('a') && !keyIsDown('d')/* && !keyIsDown('w') && !keyIsDown('s')*/)
 	{
@@ -586,29 +542,15 @@ void CheckKeys()	// Checks if keys are being pressed.
 		{
 			player.SetDirection(player.GetDirection(), Normalize(yUp - DotProduct(yUp, player.GetDirection()) * player.GetDirection()));
 		}
-
-
-	//	planeSideTurn(FALSE, FALSE);
 	}
-	//l = p + s;
-	// Update the v-vec
-	//vec3 temp = CrossProduct(s, vec3{ 1, 0, 0 });
-	//if (temp.x == 0 && temp.y == 0 && temp.z == 0){ // Take the crossprod between forward-vec and ground
-	//	v = -1*Normalize(CrossProduct(s, vec3{ 1, 0, 0 }));
-	//}
-	//else{ // Plane parallell to ground
-	//	v = { 0, 1, 0 };
-	//}
-	// Updates the camera.
-	//camMatrix = lookAtv(p, l, v);
 }
 
-/* Check if collision with groud given object (x,y,z), returns TRUE if collision
-*/
+/* Check if collision with groud given object (x,y,z), 
+returns TRUE if collision */
 bool checkCollisionWithGround(GLfloat x, GLfloat y, GLfloat z){
 	bool isCollision = FALSE;
 	GLfloat groundHeight = findHeight(x, z, terrain->vertexArray, terrainW, terrainH);
-	if (isnan(groundHeight) == 1){ // is outside terrain?
+	if (isnan(groundHeight) == 1){ // is outside terrain? (Should not happen in finished game!)
 		groundHeight = 0;
 	}
 	if (groundHeight > y){
@@ -616,7 +558,6 @@ bool checkCollisionWithGround(GLfloat x, GLfloat y, GLfloat z){
 	}
 	return isCollision;
 }
-
 
 int main(int argc, const char *argv[])
 {
