@@ -8,17 +8,12 @@
 #include "LoadTGA.h"
 #include "math.h"
 
-//void initPlane();
-//mat4 placingPlane(vec3 l, vec3 p, vec3 s, vec3 v);
-//void planeSideTurn(bool isTurnLeft, bool isTurnRight);
-//bool planeReadyToTurn();
-//void pitchTurn(bool isUp, bool isDown);
-
 class Plane{
 	vec3 pos = { 0.0, 0.0, 0.0 };
 	vec3 dir = { 1.0, 0.0, 0.0 }; // Should always be normalized.
 	vec3 up = { 0.0, 1.0, 0.0 }; // Should always be normalized.
 	float vel = 0.0;
+	bool isCollided=FALSE; // TRUE if collision, FALSE if not (Right now: TRUE if pos.y under ground height, FALSE otherwise)
 public:
 	Plane(vec3 position, vec3 direction, float velocity)
 	{
@@ -50,6 +45,9 @@ public:
 	void SetVelocity(float velocity)
 	{
 		vel = velocity;
+	}
+	void SetCollision(bool isCol){ // A func that can be used to change isCollided to TRUE/ FALSE. isCollided needs to be handled futher
+		isCollided = isCol;
 	}
 	void MovePlane()
 	{
