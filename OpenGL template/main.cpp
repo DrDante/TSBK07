@@ -10,6 +10,7 @@
 #include "plane.h"
 #include "GenerateGridPositions.h"
 #include "tree.h"
+#include "cloud.h"
 
 // ---Globals---
 #define PI 3.14159265358979323846
@@ -120,6 +121,7 @@ int terrainH;
 Plane player(vec3(0.0, 20.0, 0.0), vec3(1.0, 0.0, 0.0), 0.1);
 
 tree* treeArray;
+cloud* cloudArray;
 
 void init(void)
 {
@@ -139,55 +141,56 @@ void init(void)
 	// ----------------------OBJECT(S)----------------------
 
 	// Load terrain data
-	LoadTGATextureData("terrain/fft-terrain.tga", &ttex);
+LoadTGATextureData("terrain/fft-terrain.tga", &ttex);
 
-	terrain = GenerateTerrain(&ttex);
-	terrainW = getWidth(&ttex);
-	terrainH = getHeight(&ttex);
-	printError("init terrain");
+terrain = GenerateTerrain(&ttex);
+terrainW = getWidth(&ttex);
+terrainH = getHeight(&ttex);
+printError("init terrain");
 
-	// Loading models.
-	windmillWalls = LoadModelPlus("models/windmill/windmill-walls.obj");
-	windmillRoof = LoadModelPlus("models/windmill/windmill-roof.obj");
-	windmillBalcony = LoadModelPlus("models/windmill/windmill-balcony.obj");
-	windmillBlade = LoadModelPlus("models/windmill/blade.obj");
-	ground = LoadModelPlus("models/ground.obj");
-	skybox = LoadModelPlus("models/skybox.obj");
-	bunny = LoadModelPlus("models/bunnyplus.obj");
-	teapot = LoadModelPlus("models/teapot.obj");
-	car = LoadModelPlus("models/bilskiss.obj");
-	teddy = LoadModelPlus("models/teddy.obj");
-	plane = LoadModelPlus("models/LPNoBladeobj.obj");
-	planeRot = LoadModelPlus("models/Blade.obj");
-	treeModel1 = LoadModelPlus("models/EU55_1.obj");
+// Loading models.
+windmillWalls = LoadModelPlus("models/windmill/windmill-walls.obj");
+windmillRoof = LoadModelPlus("models/windmill/windmill-roof.obj");
+windmillBalcony = LoadModelPlus("models/windmill/windmill-balcony.obj");
+windmillBlade = LoadModelPlus("models/windmill/blade.obj");
+ground = LoadModelPlus("models/ground.obj");
+skybox = LoadModelPlus("models/skybox.obj");
+bunny = LoadModelPlus("models/bunnyplus.obj");
+teapot = LoadModelPlus("models/teapot.obj");
+car = LoadModelPlus("models/bilskiss.obj");
+teddy = LoadModelPlus("models/teddy.obj");
+plane = LoadModelPlus("models/LPNoBladeobj.obj");
+planeRot = LoadModelPlus("models/Blade.obj");
+treeModel1 = LoadModelPlus("models/EU55_1.obj");
 
 
-	// Loading textures.
-	LoadTGATextureSimple("textures/grass.tga", &groundTex);
-	LoadTGATextureSimple("textures/conc.tga", &millTex);
-	LoadTGATextureSimple("textures/Skybox512.tga", &skyTex);
-	LoadTGATextureSimple("textures/dirt.tga", &bunnyTex);
-	LoadTGATextureSimple("textures/rutor.tga", &teapotTex);
-	LoadTGATextureSimple("textures/bilskissred.tga", &carTex);
-	LoadTGATextureSimple("textures/maskros512.tga", &teddyTex);
-	// -----------------------------------------------------
+// Loading textures.
+LoadTGATextureSimple("textures/grass.tga", &groundTex);
+LoadTGATextureSimple("textures/conc.tga", &millTex);
+LoadTGATextureSimple("textures/Skybox512.tga", &skyTex);
+LoadTGATextureSimple("textures/dirt.tga", &bunnyTex);
+LoadTGATextureSimple("textures/rutor.tga", &teapotTex);
+LoadTGATextureSimple("textures/bilskissred.tga", &carTex);
+LoadTGATextureSimple("textures/maskros512.tga", &teddyTex);
+// -----------------------------------------------------
 
-	// Multitexturing.
-	glUniform1i(glGetUniformLocation(program, "texUnit"), 0);
-	glUniform1i(glGetUniformLocation(program, "texUnit2"), 1);
+// Multitexturing.
+glUniform1i(glGetUniformLocation(program, "texUnit"), 0);
+glUniform1i(glGetUniformLocation(program, "texUnit2"), 1);
 
-	// Initializing "keyboard".
-	initKeymapManager();
+// Initializing "keyboard".
+initKeymapManager();
 
-	// "Initializing" camera.
-	s = Normalize(s);
-	camMatrix = lookAtv(p, l, v);
+// "Initializing" camera.
+s = Normalize(s);
+camMatrix = lookAtv(p, l, v);
 
-	// Initialize forest.
-	treeArray = GetForest(terrain->vertexArray, terrainW, terrainH, 30);
+// Initialize forest.
+treeArray = GetForest(terrain->vertexArray, terrainW, terrainH, 30);
+cloudArray = GetClouds(terrain->vertexArray, terrainW, terrainH, 60);
 
-	//glEnable(GL_CULL_FACE);
-	//glDisable(GL_CULL_FACE);
+//glEnable(GL_CULL_FACE);
+//glDisable(GL_CULL_FACE);
 }
 
 void display(void)
@@ -290,6 +293,8 @@ void display(void)
 
 		UploadAndDraw(treeTotal.m, treeModel1, 0, 0);
 	}
+
+
 
 	// Windmill.
 	glBindTexture(GL_TEXTURE_2D, millTex);
