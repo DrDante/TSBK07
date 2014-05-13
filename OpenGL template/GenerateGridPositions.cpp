@@ -9,7 +9,6 @@ int *sizeArray;
 // Width = xMax  Might fk up.
 int* GenerateGridPositions(GLfloat *vertexArray, int xMax, int zMax, int square_size)
 {
-
 	GLfloat tempW = xMax / square_size;
 	GLfloat tempH = zMax / square_size;
 

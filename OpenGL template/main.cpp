@@ -9,6 +9,7 @@
 #include "terrain.h"
 #include "plane.h"
 #include "GenerateGridPositions.h"
+#include "tree.h"
 
 // ---Globals---
 #define PI 3.14159265358979323846
@@ -109,14 +110,13 @@ TextureData ttex;
 
 int terrainW;
 int terrainH;
-// Trees
-int* treePosArray;
-int* treeSizeArray;
 
 // -----------------------------------------------------
 // -------------
 
 Plane player(vec3(0.0, 20.0, 0.0), vec3(1.0, 0.0, 0.0), 0.1);
+
+tree* treeArray;
 
 void init(void)
 {
@@ -180,9 +180,8 @@ initKeymapManager();
 s = Normalize(s);
 camMatrix = lookAtv(p, l, v);
 
-//Tree grid.
-treePosArray = GenerateGridPositions(terrain->vertexArray, terrainW, terrainH, 30);
-treeSizeArray = getSizeArray();
+//
+treeArray = GetForest(terrain->vertexArray, terrainW, terrainH, 30);
 
 //glEnable(GL_CULL_FACE);
 //glDisable(GL_CULL_FACE);
@@ -298,36 +297,23 @@ void display(void)
 	*/
 
 	// Trees.
-	GLfloat treeX;
-	GLfloat treeY;
-	GLfloat treeZ;
-
-	GLfloat size;
-
-	//printf("%d \n %d \n %d \n ", (int)treeX,(int)treeY,(int)treeZ);
 	mat4 treeTrans;
 	mat4 treeRot;
 	mat4 treeScale;
 	mat4 treeTotal;
 	
-
-	for (int i = 0; i < getNrZPoints(); i++)
+	for (int i = 0; i < GetNrOfTrees(); i++)
 	{
-		for (int j = 0; j < getNrXPoints(); j++)
-		{
-			treeX = treePosArray[(i + j * getNrXPoints()) * 3 + 0];
-			treeY = treePosArray[(i + j * getNrXPoints()) * 3 + 1];
-			treeZ = treePosArray[(i + j * getNrXPoints()) * 3 + 2];
-			size = treeSizeArray[(i + j * getNrXPoints()) * 3 + 0];
-			treeTrans = T(treeX, treeY, treeZ);
-			treeRot = Rx(-PI*0.5);
-			treeScale = S(size, size, size);
-			treeTotal = Mult(treeRot, treeScale);
-			treeTotal = Mult(treeTrans, treeTotal);
+		treeTrans = T(treeArray[i].GetPosition().x, treeArray[i].GetPosition().y, treeArray[i].GetPosition().z);
+		treeRot = Rx(-PI*0.5);
+		treeScale = S(treeArray[i].GetSize(), treeArray[i].GetSize(), treeArray[i].GetSize());
 
-			UploadAndDraw(treeTotal.m, treeModel1, 0, 0);
-		}
+		treeTotal = Mult(treeRot, treeScale);
+		treeTotal = Mult(treeTrans, treeTotal);
+
+		UploadAndDraw(treeTotal.m, treeModel1, 0, 0);
 	}
+
 	// Windmill.
 	glBindTexture(GL_TEXTURE_2D, millTex);
 	// Walls, roof and balcony.

@@ -3,6 +3,7 @@
 // terrain variables
 //int terrainW; //width
 //int terrainH; //height
+int nrOfTrees;
 
 // Model
 //Model *terrain;
@@ -214,3 +215,34 @@ GLfloat findHeight(GLfloat x, GLfloat z, GLfloat *vertexArray, int width, int he
 }
 
 
+
+tree* GetForest(GLfloat *vertexArray, int xMax, int zMax, int square_size)
+{
+	tree* treeArray = (tree *)malloc(sizeof(tree)*xMax*zMax * 3);
+	int* positionsArray = (int *)malloc(sizeof(int)*xMax*zMax * 3);
+	int* sizeArray = (int *)malloc(sizeof(int)*xMax*zMax * 3);
+
+	positionsArray = GenerateGridPositions(vertexArray, xMax, zMax, square_size);
+	sizeArray = getSizeArray();
+
+	for (int i = 0; i < getNrZPoints(); i++)
+	{
+		
+		for (int j = 0; j < getNrXPoints(); j++)
+		{
+			treeArray[(i + j * getNrXPoints())].SetXPos(positionsArray[(i + j * getNrXPoints()) * 3 + 0]);
+			treeArray[(i + j * getNrXPoints())].SetYPos(positionsArray[(i + j * getNrXPoints()) * 3 + 1]);
+			treeArray[(i + j * getNrXPoints())].SetZPos(positionsArray[(i + j * getNrXPoints()) * 3 + 2]);
+			treeArray[(i + j * getNrXPoints())].SetSize(sizeArray[(i + j * getNrXPoints()) * 3 + 0]);
+			treeArray[(i + j * getNrXPoints())].GenerateHitBox();
+			treeArray[(i + j * getNrXPoints())].SetType(1);
+		}
+	}
+	nrOfTrees = getNrZPoints() * getNrXPoints();
+	return treeArray;
+}
+
+int GetNrOfTrees()
+{
+	return nrOfTrees;
+}
