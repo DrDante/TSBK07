@@ -116,6 +116,8 @@ int* treeSizeArray;
 // -----------------------------------------------------
 // -------------
 
+Plane player(vec3(0.0, 20.0, 0.0), vec3(1.0, 0.0, 0.0), 0.1);
+
 void init(void)
 {
 	err = glewInit();
@@ -244,9 +246,38 @@ void display(void)
 	UploadAndDraw(planeTotal.m, planeRot, 0, 0);
 	*/
 	
+	// *** NEW PLANE CODE ***
+	s = player.GetDirection(); // Forward vector.
+	l = player.GetPosition(); // What the camera is looking at.
+	p = l - s * 20.0; // Camera placement, 20.0 behind the plane.
+
+	camMatrix = lookAtv(p, l, player.GetUpVector());
+
+	player.MovePlane();
+
+	// Rotating model.
+	mat4 PlaneMatrix = IdentityMatrix();
+	vec3 tempRight = Normalize(CrossProduct(player.GetDirection(), player.GetUpVector()));
+	PlaneMatrix.m[0] = tempRight.x;
+	PlaneMatrix.m[4] = tempRight.y;
+	PlaneMatrix.m[8] = tempRight.z;
+	PlaneMatrix.m[1] = player.GetUpVector().x;
+	PlaneMatrix.m[5] = player.GetUpVector().y;
+	PlaneMatrix.m[9] = player.GetUpVector().z;
+	PlaneMatrix.m[2] = player.GetDirection().x;
+	PlaneMatrix.m[6] = player.GetDirection().y;
+	PlaneMatrix.m[10] = player.GetDirection().z;
+	// Moving model.
+	//PlayerMat = Mult(T(player.GetPosition().x, player.GetPosition().y, player.GetPosition().z), PlayerMat);
+	PlaneMatrix = Mult(T(player.GetPosition().x, player.GetPosition().y, player.GetPosition().z), PlaneMatrix);
+
+	glBindTexture(GL_TEXTURE_2D, skyTex);
+	UploadAndDraw(PlaneMatrix.m, plane, 0, 0);
+	// **********************
+
+	/*
 	mat4 planeTotalPlane;
 	planeTotalPlane= placingPlane(l, p, s, v); // func from plane.cpp
-	printf("planeSpeed: %i \n" , (int)(planeSpeed*10));
 	p += planeSpeed* s; // Plane is allways moving forward with planeSpeed
 	l = p + s; // Uppdating l
 
@@ -256,6 +287,7 @@ void display(void)
 	mat4 temp2 = Rz(0.03*t);
 	mat4 planeTotalBlades = Mult(planeTotalPlane, temp2);
 	UploadAndDraw(planeTotalBlades.m, planeRot, 0, 0);
+	*/
 
 	/*
 	// Ground.
@@ -371,6 +403,7 @@ void OnTimer(int value)
 int main(int argc, const char *argv[])
 {
 	glutInit(&argc, (char**)argv);
+	//initPlane();
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowSize(800, 600);	// Window size.
 	glutCreateWindow("OpenGL template");	// Window title.
@@ -434,7 +467,7 @@ void CheckMouse(int x, int y)	// Aligns camera direction after mouse cursor loca
 	float xSensMultiplier = 2.0;
 	float fi = 2 * PI * (float)x / glutGet(GLUT_WINDOW_WIDTH);
 	float theta = PI * (float)y / glutGet(GLUT_WINDOW_HEIGHT);
-	SetCameraVector(xSensMultiplier * (PI - fi), -theta);
+	//SetCameraVector(xSensMultiplier * (PI - fi), -theta);
 }
 
 void SetCameraVector(float fi, float theta)	// Sets the camera matrix.
@@ -448,66 +481,134 @@ void SetCameraVector(float fi, float theta)	// Sets the camera matrix.
 	camMatrix = lookAtv(p, l, v);
 }
 
+bool wasTurningRight = false;
+bool wasTurningLeft = false;
+
 void CheckKeys()	// Checks if keys are being pressed.
 {
-	float turnSpeed = 0.01;
+	float turnSpeed = 0.02;
+	float returnSpeed = 0.01;
 	// 'w' moves the camera forwards.
 	if (keyIsDown('w'))
 	{
+		vec3 tempForward = Normalize(player.GetDirection() - turnSpeed * player.GetUpVector());
+		vec3 tempUp = Normalize(player.GetUpVector() + turnSpeed * player.GetDirection());
+		player.SetDirection(tempForward, tempUp);
 		//p += moveSpeed * s;
-		l = VectorAdd(turnSpeed*Normalize(v), l);
-		s = l - p;
+		//l = VectorAdd(turnSpeed*Normalize(v), l);
+		//s = l - p;
 	}
 	// 'a' moves the camera to the left.
 	if (keyIsDown('a'))
 	{
-		l = VectorAdd(l, -turnSpeed*(CrossProduct(s, v)));
-		s = l - p;
+		/*OLD
+		vec3 tempForward = Normalize(player.GetDirection() - turnSpeed * CrossProduct(player.GetDirection(), player.GetUpVector()));
+		player.SetDirection(tempForward, player.GetUpVector());
+		*/
+		vec3 tempRight = Normalize(CrossProduct(player.GetDirection(), player.GetUpVector()));
+		player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() - turnSpeed * tempRight));
+		wasTurningRight = false;
+
+		//l = VectorAdd(l, -turnSpeed*(CrossProduct(s, v)));
+		//s = l - p;
 		//p -= moveSpeed * Normalize(CrossProduct(s, v));
-		//yawTurn(TRUE, FALSE);
+		//planeSideTurn(TRUE, FALSE);
 	}
-	else{
-		//yawTurn(FALSE, FALSE);
-	}
+
 	// 's' moves the camera backwards.
 	if (keyIsDown('s'))
 	{
+		vec3 tempForward = Normalize(player.GetDirection() + turnSpeed * player.GetUpVector());
+		vec3 tempUp = Normalize(player.GetUpVector() - turnSpeed * player.GetDirection());
+		player.SetDirection(tempForward, tempUp);
 		//p -= moveSpeed * s;
-		l = VectorSub(l, turnSpeed*Normalize(v));
-		s = l - p;
+		//l = VectorSub(l, turnSpeed*Normalize(v));
+		//s = l - p;
 	}
 	// 'd' moves the camera to the left.
 	if (keyIsDown('d'))
 	{
-		l = VectorAdd(l, turnSpeed*Normalize(CrossProduct(s, v)));
-		s = l - p;
+		/*OLD
+		vec3 tempForward = Normalize(player.GetDirection() + turnSpeed * CrossProduct(player.GetDirection(), player.GetUpVector()));
+		player.SetDirection(tempForward, player.GetUpVector());
+		*/
+
+		vec3 tempRight = Normalize(CrossProduct(player.GetDirection(), player.GetUpVector()));
+		player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() + turnSpeed * tempRight));
+		wasTurningLeft = false;
+
+		//l = VectorAdd(l, turnSpeed*Normalize(CrossProduct(s, v)));
+		//s = l - p;
+		//planeSideTurn(FALSE, TRUE);
 		//p += moveSpeed * Normalize(CrossProduct(s, v));
 	}
 	// 'e' moves the camera up.
 	if (keyIsDown('e'))
 	{
+		player.SetVelocity(player.GetVelocity() + 0.01); // ** NEW: INCREASES SPEED ***
 		//p += turnSpeed * v;
-		if (planeSpeed < 2){
-			planeSpeed = planeSpeed + 0.01;
-		}
+		//if (planeSpeed < 2){
+		//	planeSpeed = planeSpeed + 0.01;
+		//}
 	}
 	// 'c' moves the camera to the down.
 	if (keyIsDown('c'))
 	{
+		player.SetVelocity(player.GetVelocity() - 0.01); // ** NEW: DECREASES SPEED ***
 		//p -= turnSpeed * v;
-		if (planeSpeed > 0.1){
-			planeSpeed = planeSpeed - 0.01;
+		//if (planeSpeed > 0.1){
+		//	planeSpeed = planeSpeed - 0.01;
+		//}
+	}
+	if (!keyIsDown('a') && !keyIsDown('d')/* && !keyIsDown('w') && !keyIsDown('s')*/)
+	{
+		vec3 tempRight = Normalize(CrossProduct(player.GetDirection(), player.GetUpVector()));
+		vec3 yUp = { 0.0, 1.0, 0.0 };
+		if (tempRight.y < -0.001)
+		{
+			if (wasTurningLeft)
+			{
+				//player.SetDirection(player.GetDirection(), yUp);
+				player.SetDirection(player.GetDirection(), Normalize(yUp - DotProduct(yUp, player.GetDirection()) * player.GetDirection()));
+				wasTurningLeft = false;
+			}
+			else
+			{
+				player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() - returnSpeed * tempRight));
+				wasTurningRight = true;
+			}
 		}
+		else if (tempRight.y > 0.001)
+		{
+			if (wasTurningRight)
+			{
+				//player.SetDirection(player.GetDirection(), yUp);
+				player.SetDirection(player.GetDirection(), Normalize(yUp - DotProduct(yUp, player.GetDirection()) * player.GetDirection()));
+				wasTurningRight = false;
+			}
+			else
+			{
+				player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() + returnSpeed * tempRight));
+				wasTurningLeft = true;
+			}
+		}
+		else
+		{
+			player.SetDirection(player.GetDirection(), Normalize(yUp - DotProduct(yUp, player.GetDirection()) * player.GetDirection()));
+		}
+
+
+	//	planeSideTurn(FALSE, FALSE);
 	}
-	l = p + s;
+	//l = p + s;
 	// Update the v-vec
-	vec3 temp = CrossProduct(s, vec3{ 1, 0, 0 });
-	if (temp.x == 0 && temp.y == 0 && temp.z == 0){ // Take the crossprod between forward-vec and ground
-		v = -1*Normalize(CrossProduct(s, vec3{ 1, 0, 0 }));
-	}
-	else{ // Plane parallell to ground
-		v = { 0, 1, 0 };
-	}
+	//vec3 temp = CrossProduct(s, vec3{ 1, 0, 0 });
+	//if (temp.x == 0 && temp.y == 0 && temp.z == 0){ // Take the crossprod between forward-vec and ground
+	//	v = -1*Normalize(CrossProduct(s, vec3{ 1, 0, 0 }));
+	//}
+	//else{ // Plane parallell to ground
+	//	v = { 0, 1, 0 };
+	//}
 	// Updates the camera.
-	camMatrix = lookAtv(p, l, v);
+	//camMatrix = lookAtv(p, l, v);
 }
