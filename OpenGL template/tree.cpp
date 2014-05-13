@@ -1,11 +1,17 @@
 #include "tree.h"
 
-void tree::GenerateHitBox(){
+// Absolutely not working
+bool tree::CheckHitBox(vec3 objectPos){
+	GLfloat R = 0.001;
+	GLfloat gg;
 	switch (type)
 	{
-	case 1:
-		hitBoxRad = sqrt(pow((pos.x - 0.2), 2) + pow((pos.z - 0.2), 2));
-		hitBoxHeigth = 1 + pos.y;
+	case 1:		
+		gg = sqrt(pow((pos.x - objectPos.x), 2) + pow((pos.z - objectPos.z), 2));
+		if (gg < R)
+		{
+			return true;
+		}
 		break;
 	case 2:
 		// Do something

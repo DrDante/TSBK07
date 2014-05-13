@@ -157,7 +157,7 @@ car = LoadModelPlus("models/bilskiss.obj");
 teddy = LoadModelPlus("models/teddy.obj");
 plane = LoadModelPlus("models/LPNoBladeobj.obj");
 planeRot = LoadModelPlus("models/Blade.obj");
-treeModel1 = LoadModelPlus("models/stamm.obj");
+treeModel1 = LoadModelPlus("models/EU55_1.obj");
 
 
 // Loading textures.
@@ -181,7 +181,7 @@ initKeymapManager();
 s = Normalize(s);
 camMatrix = lookAtv(p, l, v);
 
-//
+// Initialize forest.
 treeArray = GetForest(terrain->vertexArray, terrainW, terrainH, 30);
 
 //glEnable(GL_CULL_FACE);
@@ -284,7 +284,7 @@ void display(void)
 	mat4 treeRot;
 	mat4 treeScale;
 	mat4 treeTotal;
-	
+	glBindTexture(GL_TEXTURE_2D, millTex);
 	for (int i = 0; i < GetNrOfTrees(); i++)
 	{
 		treeTrans = T(treeArray[i].GetPosition().x, treeArray[i].GetPosition().y, treeArray[i].GetPosition().z);

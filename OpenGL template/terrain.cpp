@@ -234,7 +234,7 @@ tree* GetForest(GLfloat *vertexArray, int xMax, int zMax, int square_size)
 			treeArray[(i + j * getNrXPoints())].SetYPos(positionsArray[(i + j * getNrXPoints()) * 3 + 1]);
 			treeArray[(i + j * getNrXPoints())].SetZPos(positionsArray[(i + j * getNrXPoints()) * 3 + 2]);
 			treeArray[(i + j * getNrXPoints())].SetSize(sizeArray[(i + j * getNrXPoints()) * 3 + 0]);
-			treeArray[(i + j * getNrXPoints())].GenerateHitBox();
+			//treeArray[(i + j * getNrXPoints())].GenerateHitBox();
 			treeArray[(i + j * getNrXPoints())].SetType(1);
 		}
 	}

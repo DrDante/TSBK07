@@ -13,8 +13,8 @@ class tree{
 
 	vec3 pos{ 0.0, 0.0, 0.0};
 	GLfloat size = 0;
-	GLfloat hitBoxHeigth = 0;
-	GLfloat hitBoxRad = 0;
+	//GLfloat hitBoxHeigth = 0;
+	//GLfloat hitBoxRad = 0;
 	int type = 1;
 	public: 
 		tree(vec3 pos, GLfloat size)
@@ -30,14 +30,14 @@ class tree{
 		{
 			return size;
 		}
-		GLfloat GetHitBoxHeigth()
-		{
-			return hitBoxHeigth;
-		}
-		GLfloat GetHitBoxRad()
-		{
-			return hitBoxRad;
-		}
+		//GLfloat GetHitBoxHeigth()
+		//{
+		//	return hitBoxHeigth;
+		//}
+		//GLfloat GetHitBoxRad()
+		//{
+		//	return hitBoxRad;
+		//}
 		int GetType()
 		{
 			return type;
@@ -64,7 +64,7 @@ class tree{
 		}
 
 
-		void GenerateHitBox();
+		bool CheckHitBox(vec3 objectPos);
 };
 
 #endif
