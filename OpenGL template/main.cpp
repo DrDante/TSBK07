@@ -157,7 +157,7 @@ car = LoadModelPlus("models/bilskiss.obj");
 teddy = LoadModelPlus("models/teddy.obj");
 plane = LoadModelPlus("models/LPNoBladeobj.obj");
 planeRot = LoadModelPlus("models/Blade.obj");
-treeModel1 = LoadModelPlus("models/stamm.obj");
+treeModel1 = LoadModelPlus("models/EU55_1.obj");
 
 
 // Loading textures.
