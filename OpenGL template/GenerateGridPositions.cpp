@@ -4,6 +4,7 @@ int nrXPoints;
 int nrZPoints;
 int *sizeArray;
 
+
 // Height = zMax
 // Width = xMax  Might fk up.
 int* GenerateGridPositions(GLfloat *vertexArray, int xMax, int zMax, int square_size)
