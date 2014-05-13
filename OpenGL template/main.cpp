@@ -141,56 +141,56 @@ void init(void)
 	// ----------------------OBJECT(S)----------------------
 
 	// Load terrain data
-LoadTGATextureData("terrain/fft-terrain.tga", &ttex);
+	LoadTGATextureData("terrain/fft-terrain.tga", &ttex);
 
-terrain = GenerateTerrain(&ttex);
-terrainW = getWidth(&ttex);
-terrainH = getHeight(&ttex);
-printError("init terrain");
+	terrain = GenerateTerrain(&ttex);
+	terrainW = getWidth(&ttex);
+	terrainH = getHeight(&ttex);
+	printError("init terrain");
 
-// Loading models.
-windmillWalls = LoadModelPlus("models/windmill/windmill-walls.obj");
-windmillRoof = LoadModelPlus("models/windmill/windmill-roof.obj");
-windmillBalcony = LoadModelPlus("models/windmill/windmill-balcony.obj");
-windmillBlade = LoadModelPlus("models/windmill/blade.obj");
-ground = LoadModelPlus("models/ground.obj");
-skybox = LoadModelPlus("models/skybox.obj");
-bunny = LoadModelPlus("models/bunnyplus.obj");
-teapot = LoadModelPlus("models/teapot.obj");
-car = LoadModelPlus("models/bilskiss.obj");
-teddy = LoadModelPlus("models/teddy.obj");
-plane = LoadModelPlus("models/LPNoBladeobj.obj");
-planeRot = LoadModelPlus("models/Blade.obj");
-treeModel1 = LoadModelPlus("models/EU55_1.obj");
+	// Loading models.
+	windmillWalls = LoadModelPlus("models/windmill/windmill-walls.obj");
+	windmillRoof = LoadModelPlus("models/windmill/windmill-roof.obj");
+	windmillBalcony = LoadModelPlus("models/windmill/windmill-balcony.obj");
+	windmillBlade = LoadModelPlus("models/windmill/blade.obj");
+	ground = LoadModelPlus("models/ground.obj");
+	skybox = LoadModelPlus("models/skybox.obj");
+	bunny = LoadModelPlus("models/bunnyplus.obj");
+	teapot = LoadModelPlus("models/teapot.obj");
+	car = LoadModelPlus("models/bilskiss.obj");
+	teddy = LoadModelPlus("models/teddy.obj");
+	plane = LoadModelPlus("models/LPNoBladeobj.obj");
+	planeRot = LoadModelPlus("models/Blade.obj");
+	treeModel1 = LoadModelPlus("models/EU55_1.obj");
 
 
-// Loading textures.
-LoadTGATextureSimple("textures/grass.tga", &groundTex);
-LoadTGATextureSimple("textures/conc.tga", &millTex);
-LoadTGATextureSimple("textures/Skybox512.tga", &skyTex);
-LoadTGATextureSimple("textures/dirt.tga", &bunnyTex);
-LoadTGATextureSimple("textures/rutor.tga", &teapotTex);
-LoadTGATextureSimple("textures/bilskissred.tga", &carTex);
-LoadTGATextureSimple("textures/maskros512.tga", &teddyTex);
-// -----------------------------------------------------
+	// Loading textures.
+	LoadTGATextureSimple("textures/grass.tga", &groundTex);
+	LoadTGATextureSimple("textures/conc.tga", &millTex);
+	LoadTGATextureSimple("textures/Skybox512.tga", &skyTex);
+	LoadTGATextureSimple("textures/dirt.tga", &bunnyTex);
+	LoadTGATextureSimple("textures/rutor.tga", &teapotTex);
+	LoadTGATextureSimple("textures/bilskissred.tga", &carTex);
+	LoadTGATextureSimple("textures/maskros512.tga", &teddyTex);
+	// -----------------------------------------------------
 
-// Multitexturing.
-glUniform1i(glGetUniformLocation(program, "texUnit"), 0);
-glUniform1i(glGetUniformLocation(program, "texUnit2"), 1);
+	// Multitexturing.
+	glUniform1i(glGetUniformLocation(program, "texUnit"), 0);
+	glUniform1i(glGetUniformLocation(program, "texUnit2"), 1);
 
-// Initializing "keyboard".
-initKeymapManager();
+	// Initializing "keyboard".
+	initKeymapManager();
 
-// "Initializing" camera.
-s = Normalize(s);
-camMatrix = lookAtv(p, l, v);
+	// "Initializing" camera.
+	s = Normalize(s);
+	camMatrix = lookAtv(p, l, v);
 
-// Initialize forest.
-treeArray = GetForest(terrain->vertexArray, terrainW, terrainH, 30);
-cloudArray = GetClouds(terrain->vertexArray, terrainW, terrainH, 60);
+	// Initialize forest.
+	treeArray = GetForest(terrain->vertexArray, terrainW, terrainH, 30);
+	cloudArray = GetClouds(terrain->vertexArray, terrainW, terrainH, 60);
 
-//glEnable(GL_CULL_FACE);
-//glDisable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
+	//glDisable(GL_CULL_FACE);
 }
 
 void display(void)
