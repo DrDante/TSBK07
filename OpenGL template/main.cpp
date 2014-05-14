@@ -304,6 +304,11 @@ void display(void)
 		UploadAndDraw(treeTotal.m, trunk, 0, 0);
 		glBindTexture(GL_TEXTURE_2D, leafTex);
 		UploadAndDraw(treeTotal.m, leaves, 0, 0);
+
+		if (treeArray[i].CheckHitBox(player.GetPosition()))
+		{
+			printf("%d", 1);
+		}
 	}
 
 
