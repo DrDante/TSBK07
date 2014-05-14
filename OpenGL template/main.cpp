@@ -86,7 +86,8 @@ Model *teddy;
 Model *terrain;
 Model *plane;
 Model *planeRot;
-Model *treeModel1;
+Model *trunk;
+Model *leaves;
 
 // Rotation, translation and result matrices for the models.
 mat4 bunnyTrans, teapotTrans, carTrans, teddyTrans;
@@ -108,6 +109,7 @@ GLuint groundTex;
 GLuint millTex;
 GLuint skyTex;
 GLuint bunnyTex, teapotTex, carTex, teddyTex;
+GLuint trunkTex, leafTex;
 
 // terrain
 TextureData ttex;
@@ -141,7 +143,7 @@ void init(void)
 	// ----------------------OBJECT(S)----------------------
 
 	// Load terrain data
-	LoadTGATextureData("terrain/fft-terrain.tga", &ttex);
+	LoadTGATextureData("terrain/arnoldterrang.tga", &ttex);
 
 	terrain = GenerateTerrain(&ttex);
 	terrainW = getWidth(&ttex);
@@ -161,7 +163,8 @@ void init(void)
 	teddy = LoadModelPlus("models/teddy.obj");
 	plane = LoadModelPlus("models/LPNoBladeobj.obj");
 	planeRot = LoadModelPlus("models/Blade.obj");
-	treeModel1 = LoadModelPlus("models/EU55_1.obj");
+	trunk = LoadModelPlus("models/stamm.obj");
+	leaves = LoadModelPlus("models/blad.obj");
 
 
 	// Loading textures.
@@ -172,6 +175,8 @@ void init(void)
 	LoadTGATextureSimple("textures/rutor.tga", &teapotTex);
 	LoadTGATextureSimple("textures/bilskissred.tga", &carTex);
 	LoadTGATextureSimple("textures/maskros512.tga", &teddyTex);
+	LoadTGATextureSimple("textures/EU55brk1.tga", &trunkTex);
+	LoadTGATextureSimple("textures/arnold.tga", &leafTex);
 	// -----------------------------------------------------
 
 	// Multitexturing.
@@ -286,7 +291,7 @@ void display(void)
 	mat4 treeRot;
 	mat4 treeScale;
 	mat4 treeTotal;
-	glBindTexture(GL_TEXTURE_2D, millTex);
+
 	for (int i = 0; i < GetNrOfTrees(); i++)
 	{
 		treeTrans = T(treeArray[i].GetPosition().x, treeArray[i].GetPosition().y, treeArray[i].GetPosition().z);
@@ -295,8 +300,15 @@ void display(void)
 
 		treeTotal = Mult(treeRot, treeScale);
 		treeTotal = Mult(treeTrans, treeTotal);
+		glBindTexture(GL_TEXTURE_2D, trunkTex);
+		UploadAndDraw(treeTotal.m, trunk, 0, 0);
+		glBindTexture(GL_TEXTURE_2D, leafTex);
+		UploadAndDraw(treeTotal.m, leaves, 0, 0);
 
-		UploadAndDraw(treeTotal.m, treeModel1, 0, 0);
+		if (treeArray[i].CheckHitBox(player.GetPosition()))
+		{
+			printf("%d", 1);
+		}
 	}
 
 

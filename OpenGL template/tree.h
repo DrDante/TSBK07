@@ -60,7 +60,28 @@ class tree{
 			type = typeIn;
 		}
 		
-		bool CheckHitBox(vec3 objectPos);
+		bool CheckHitBox(vec3 objectPos){
+			GLfloat R = 2;
+			GLfloat gg;
+			bool ishit = false;
+			switch (type)
+			{
+			case 1:
+				gg = sqrt(pow((pos.x - objectPos.x), 2) + pow((pos.z - objectPos.z), 2));
+				if (gg < R)
+				{
+					ishit = true;
+				}
+				break;
+			case 2:
+				// Do something
+				break;
+			case 3:
+				// Do something
+				break;
+			}
+			return ishit;
+		}
 };
 
 #endif
