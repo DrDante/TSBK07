@@ -118,7 +118,7 @@ int terrainH;
 // -----------------------------------------------------
 // -------------
 
-Plane player(vec3(0.0, 20.0, 0.0), vec3(1.0, 0.0, 0.0), 0.1);
+Plane player(vec3(0.0, 20.0, 0.0), vec3(1.0, 0.0, 0.0), 0.5);
 
 tree* treeArray;
 cloud* cloudArray;
@@ -273,6 +273,11 @@ void display(void)
 
 	glBindTexture(GL_TEXTURE_2D, skyTex);
 	UploadAndDraw(PlaneMatrix.m, plane, 0, 0);
+
+	// Blades
+	mat4 temp2 = Rz(0.03*t);
+	planeTotal = Mult(PlaneMatrix, temp2);
+	UploadAndDraw(planeTotal.m, planeRot, 0, 0);
 
 	// *** END PLANE CODE ***
 
