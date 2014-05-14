@@ -141,7 +141,7 @@ void init(void)
 	// ----------------------OBJECT(S)----------------------
 
 	// Load terrain data
-	LoadTGATextureData("terrain/fft-terrain2.tga", &ttex);
+	LoadTGATextureData("terrain/fft-terrain.tga", &ttex);
 
 	terrain = GenerateTerrain(&ttex);
 	terrainW = getWidth(&ttex);
@@ -501,10 +501,14 @@ void CheckKeys()	// Checks if keys are being pressed.
 	{
 		if (tempRight.y < -0.001)
 		{
-			if (wasTurningLeft && DotProduct(player.GetUpVector(), vec3(0.0, 1.0, 0.0)) > 0)
+			if (wasTurningLeft)
 			{
-				player.SetDirection(player.GetDirection(), ConfinedUpVector(player.GetDirection()));
-				wasTurningLeft = false;
+				vec3 yUp = vec3(0.0, 1.0, 0.0);
+				if (DotProduct(player.GetUpVector(), yUp) > 0 && DotProduct(player.GetDirection(), yUp) < 0.9)
+				{
+					player.SetDirection(player.GetDirection(), ConfinedUpVector(player.GetDirection()));
+					wasTurningLeft = false;
+				}
 			}
 			else
 			{
@@ -514,10 +518,14 @@ void CheckKeys()	// Checks if keys are being pressed.
 		}
 		else if (tempRight.y > 0.001)
 		{
-			if (wasTurningRight && DotProduct(player.GetUpVector(), vec3(0.0, 1.0, 0.0)) > 0)
+			if (wasTurningRight)
 			{
-				player.SetDirection(player.GetDirection(), ConfinedUpVector(player.GetDirection()));
-				wasTurningRight = false;
+				vec3 yUp = vec3(0.0, 1.0, 0.0);
+				if (DotProduct(player.GetUpVector(), yUp) > 0 && DotProduct(player.GetDirection(), yUp) < 0.9)
+				{
+					player.SetDirection(player.GetDirection(), ConfinedUpVector(player.GetDirection()));
+					wasTurningRight = false;
+				}
 			}
 			else
 			{
