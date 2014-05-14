@@ -497,14 +497,14 @@ void CheckKeys()	// Checks if keys are being pressed.
 	{
 		player.SetDirection(Normalize(player.GetDirection() + turnSpeedXZ * 0.5 * tempRight), player.GetUpVector());
 	}
-	if (!keyIsDown('a') && !keyIsDown('d')/* && !keyIsDown('w') && !keyIsDown('s')*/) // OBS! Subjektivt, bör diskuteras.
+	vec3 yUp = vec3(0.0, 1.0, 0.0);
+	if (!keyIsDown('a') && !keyIsDown('d')/* && !keyIsDown('w') && !keyIsDown('s')*/)
 	{
 		if (tempRight.y < -0.001)
 		{
 			if (wasTurningLeft)
 			{
-				vec3 yUp = vec3(0.0, 1.0, 0.0);
-				if (DotProduct(player.GetUpVector(), yUp) > 0 && DotProduct(player.GetDirection(), yUp) < 0.9)
+				if (DotProduct(player.GetUpVector(), yUp) > 0)
 				{
 					player.SetDirection(player.GetDirection(), ConfinedUpVector(player.GetDirection()));
 					wasTurningLeft = false;
@@ -521,7 +521,7 @@ void CheckKeys()	// Checks if keys are being pressed.
 			if (wasTurningRight)
 			{
 				vec3 yUp = vec3(0.0, 1.0, 0.0);
-				if (DotProduct(player.GetUpVector(), yUp) > 0 && DotProduct(player.GetDirection(), yUp) < 0.9)
+				if (DotProduct(player.GetUpVector(), yUp) > 0)
 				{
 					player.SetDirection(player.GetDirection(), ConfinedUpVector(player.GetDirection()));
 					wasTurningRight = false;
@@ -533,9 +533,11 @@ void CheckKeys()	// Checks if keys are being pressed.
 				wasTurningLeft = true;
 			}
 		}
-		else
+		else if (DotProduct(player.GetUpVector(), yUp) > 0)
 		{
 			player.SetDirection(player.GetDirection(), ConfinedUpVector(player.GetDirection()));
+			wasTurningRight = false;
+			wasTurningLeft = false;
 		}
 	}
 }
