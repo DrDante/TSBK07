@@ -118,7 +118,7 @@ int terrainH;
 // -----------------------------------------------------
 // -------------
 
-Plane player(vec3(0.0, 20.0, 0.0), vec3(1.0, 0.0, 0.0), 0.1);
+Plane player(vec3(0.0, 20.0, 0.0), vec3(1.0, 0.0, 0.0), 0.5);
 
 tree* treeArray;
 cloud* cloudArray;
@@ -273,6 +273,11 @@ void display(void)
 
 	glBindTexture(GL_TEXTURE_2D, skyTex);
 	UploadAndDraw(PlaneMatrix.m, plane, 0, 0);
+
+	// Blades
+	mat4 temp2 = Rz(0.03*t);
+	planeTotal = Mult(PlaneMatrix, temp2);
+	UploadAndDraw(planeTotal.m, planeRot, 0, 0);
 
 	// *** END PLANE CODE ***
 
@@ -442,6 +447,7 @@ void CheckKeys()	// Checks if keys are being pressed.
 {
 	float turnSpeed = 0.02;
 	float returnSpeed = 0.01;
+	vec3 tempRight = Normalize(CrossProduct(player.GetDirection(), player.GetUpVector()));
 	// 'w' pitches the plane forwards.
 	if (keyIsDown('w'))
 	{
@@ -452,7 +458,6 @@ void CheckKeys()	// Checks if keys are being pressed.
 	// 'a' pitches the plane to the left.
 	if (keyIsDown('a'))
 	{
-		vec3 tempRight = Normalize(CrossProduct(player.GetDirection(), player.GetUpVector()));
 		player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() - turnSpeed * tempRight));
 		wasTurningRight = false;
 	}
@@ -467,24 +472,32 @@ void CheckKeys()	// Checks if keys are being pressed.
 	// 'd' pitches the plane to the right.
 	if (keyIsDown('d'))
 	{
-		vec3 tempRight = Normalize(CrossProduct(player.GetDirection(), player.GetUpVector()));
 		player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() + turnSpeed * tempRight));
 		wasTurningLeft = false;
 
 	}
-	// 'e' increases the speed.
-	if (keyIsDown('e'))
+	// 'r' increases the speed.
+	if (keyIsDown('r'))
 	{
 		player.SetVelocity(player.GetVelocity() + 0.01);
 	}
-	// 'c' decreases the speed.
-	if (keyIsDown('c'))
+	// 'f' decreases the speed.
+	if (keyIsDown('f'))
 	{
 		player.SetVelocity(player.GetVelocity() - 0.01);
 	}
+	// 'q' turns the plane to the left.
+	if (keyIsDown('q'))
+	{
+		player.SetDirection(Normalize(player.GetDirection() - turnSpeed * 0.5 * tempRight), player.GetUpVector());
+	}
+	// 'e' turns the plane to the left.
+	if (keyIsDown('e'))
+	{
+		player.SetDirection(Normalize(player.GetDirection() + turnSpeed * 0.5 * tempRight), player.GetUpVector());
+	}
 	if (!keyIsDown('a') && !keyIsDown('d')/* && !keyIsDown('w') && !keyIsDown('s')*/) // OBS! Subjektivt, bör diskuteras.
 	{
-		vec3 tempRight = Normalize(CrossProduct(player.GetDirection(), player.GetUpVector()));
 		if (tempRight.y < -0.001)
 		{
 			if (wasTurningLeft)
