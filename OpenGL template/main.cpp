@@ -86,7 +86,8 @@ Model *teddy;
 Model *terrain;
 Model *plane;
 Model *planeRot;
-Model *treeModel1;
+Model *trunk;
+Model *leaves;
 
 // Rotation, translation and result matrices for the models.
 mat4 bunnyTrans, teapotTrans, carTrans, teddyTrans;
@@ -108,6 +109,7 @@ GLuint groundTex;
 GLuint millTex;
 GLuint skyTex;
 GLuint bunnyTex, teapotTex, carTex, teddyTex;
+GLuint trunkTex, leafTex;
 
 // terrain
 TextureData ttex;
@@ -141,7 +143,7 @@ void init(void)
 	// ----------------------OBJECT(S)----------------------
 
 	// Load terrain data
-	LoadTGATextureData("terrain/fft-terrain.tga", &ttex);
+	LoadTGATextureData("terrain/arnoldterrang.tga", &ttex);
 
 	terrain = GenerateTerrain(&ttex);
 	terrainW = getWidth(&ttex);
@@ -161,7 +163,8 @@ void init(void)
 	teddy = LoadModelPlus("models/teddy.obj");
 	plane = LoadModelPlus("models/LPNoBladeobj.obj");
 	planeRot = LoadModelPlus("models/Blade.obj");
-	treeModel1 = LoadModelPlus("models/EU55_1.obj");
+	trunk = LoadModelPlus("models/stamm.obj");
+	leaves = LoadModelPlus("models/blad.obj");
 
 
 	// Loading textures.
@@ -172,6 +175,8 @@ void init(void)
 	LoadTGATextureSimple("textures/rutor.tga", &teapotTex);
 	LoadTGATextureSimple("textures/bilskissred.tga", &carTex);
 	LoadTGATextureSimple("textures/maskros512.tga", &teddyTex);
+	LoadTGATextureSimple("textures/EU55brk1.tga", &trunkTex);
+	LoadTGATextureSimple("textures/arnold.tga", &leafTex);
 	// -----------------------------------------------------
 
 	// Multitexturing.
@@ -286,8 +291,7 @@ void display(void)
 	mat4 treeRot;
 	mat4 treeScale;
 	mat4 treeTotal;
-	bool isCollision;
-	glBindTexture(GL_TEXTURE_2D, millTex);
+
 	for (int i = 0; i < GetNrOfTrees(); i++)
 	{
 		treeTrans = T(treeArray[i].GetPosition().x, treeArray[i].GetPosition().y, treeArray[i].GetPosition().z);
@@ -296,12 +300,15 @@ void display(void)
 
 		treeTotal = Mult(treeRot, treeScale);
 		treeTotal = Mult(treeTrans, treeTotal);
+		glBindTexture(GL_TEXTURE_2D, trunkTex);
+		UploadAndDraw(treeTotal.m, trunk, 0, 0);
+		glBindTexture(GL_TEXTURE_2D, leafTex);
+		UploadAndDraw(treeTotal.m, leaves, 0, 0);
 
-		isCollision = treeArray[i].CheckHitBox(player.GetPosition());
-		if (isCollision){
-			printf("InsideTree \n");
+		if (treeArray[i].CheckHitBox(player.GetPosition()))
+		{
+			printf("%d", 1);
 		}
-		UploadAndDraw(treeTotal.m, treeModel1, 0, 0);
 	}
 
 
@@ -450,34 +457,35 @@ bool wasTurningLeft = false;
 
 void CheckKeys()	// Checks if keys are being pressed.
 {
-	float turnSpeed = 0.02;
-	float returnSpeed = 0.01;
+	float turnSpeedXZ = 0.08;
+	float turnSpeedY = 0.04;
+	float returnSpeed = 0.02;
 	vec3 tempRight = Normalize(CrossProduct(player.GetDirection(), player.GetUpVector()));
 	// 'w' pitches the plane forwards.
 	if (keyIsDown('w'))
 	{
-		vec3 tempForward = Normalize(player.GetDirection() - turnSpeed * player.GetUpVector());
-		vec3 tempUp = Normalize(player.GetUpVector() + turnSpeed * player.GetDirection());
+		vec3 tempForward = Normalize(player.GetDirection() - turnSpeedY * player.GetUpVector());
+		vec3 tempUp = Normalize(player.GetUpVector() + turnSpeedY * player.GetDirection());
 		player.SetDirection(tempForward, tempUp);
 	}
 	// 'a' pitches the plane to the left.
 	if (keyIsDown('a'))
 	{
-		player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() - turnSpeed * tempRight));
+		player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() - turnSpeedXZ * tempRight));
 		wasTurningRight = false;
 	}
 
 	// 's' pitches the plane backwards.
 	if (keyIsDown('s'))
 	{
-		vec3 tempForward = Normalize(player.GetDirection() + turnSpeed * player.GetUpVector());
-		vec3 tempUp = Normalize(player.GetUpVector() - turnSpeed * player.GetDirection());
+		vec3 tempForward = Normalize(player.GetDirection() + turnSpeedY * player.GetUpVector());
+		vec3 tempUp = Normalize(player.GetUpVector() - turnSpeedY * player.GetDirection());
 		player.SetDirection(tempForward, tempUp);
 	}
 	// 'd' pitches the plane to the right.
 	if (keyIsDown('d'))
 	{
-		player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() + turnSpeed * tempRight));
+		player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() + turnSpeedXZ * tempRight));
 		wasTurningLeft = false;
 
 	}
@@ -494,12 +502,12 @@ void CheckKeys()	// Checks if keys are being pressed.
 	// 'q' turns the plane to the left.
 	if (keyIsDown('q'))
 	{
-		player.SetDirection(Normalize(player.GetDirection() - turnSpeed * 0.5 * tempRight), player.GetUpVector());
+		player.SetDirection(Normalize(player.GetDirection() - turnSpeedXZ * 0.5 * tempRight), player.GetUpVector());
 	}
 	// 'e' turns the plane to the left.
 	if (keyIsDown('e'))
 	{
-		player.SetDirection(Normalize(player.GetDirection() + turnSpeed * 0.5 * tempRight), player.GetUpVector());
+		player.SetDirection(Normalize(player.GetDirection() + turnSpeedXZ * 0.5 * tempRight), player.GetUpVector());
 	}
 	if (!keyIsDown('a') && !keyIsDown('d')/* && !keyIsDown('w') && !keyIsDown('s')*/) // OBS! Subjektivt, bör diskuteras.
 	{
@@ -507,8 +515,12 @@ void CheckKeys()	// Checks if keys are being pressed.
 		{
 			if (wasTurningLeft)
 			{
-				player.SetDirection(player.GetDirection(), ConfinedUpVector(player.GetDirection()));
-				wasTurningLeft = false;
+				vec3 yUp = vec3(0.0, 1.0, 0.0);
+				if (DotProduct(player.GetUpVector(), yUp) > 0 && DotProduct(player.GetDirection(), yUp) < 0.9)
+				{
+					player.SetDirection(player.GetDirection(), ConfinedUpVector(player.GetDirection()));
+					wasTurningLeft = false;
+				}
 			}
 			else
 			{
@@ -520,8 +532,12 @@ void CheckKeys()	// Checks if keys are being pressed.
 		{
 			if (wasTurningRight)
 			{
-				player.SetDirection(player.GetDirection(), ConfinedUpVector(player.GetDirection()));
-				wasTurningRight = false;
+				vec3 yUp = vec3(0.0, 1.0, 0.0);
+				if (DotProduct(player.GetUpVector(), yUp) > 0 && DotProduct(player.GetDirection(), yUp) < 0.9)
+				{
+					player.SetDirection(player.GetDirection(), ConfinedUpVector(player.GetDirection()));
+					wasTurningRight = false;
+				}
 			}
 			else
 			{
@@ -549,7 +565,6 @@ bool checkCollisionWithGround(GLfloat x, GLfloat y, GLfloat z){
 	}
 	return isCollision;
 }
-
 
 vec3 ConfinedUpVector(vec3 forward) // Returns an "up" vector confined to the plane spanned by the forward vector and the y axis.
 {
