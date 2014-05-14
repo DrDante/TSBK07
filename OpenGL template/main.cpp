@@ -445,34 +445,35 @@ bool wasTurningLeft = false;
 
 void CheckKeys()	// Checks if keys are being pressed.
 {
-	float turnSpeed = 0.02;
-	float returnSpeed = 0.01;
+	float turnSpeedXZ = 0.08;
+	float turnSpeedY = 0.04;
+	float returnSpeed = 0.02;
 	vec3 tempRight = Normalize(CrossProduct(player.GetDirection(), player.GetUpVector()));
 	// 'w' pitches the plane forwards.
 	if (keyIsDown('w'))
 	{
-		vec3 tempForward = Normalize(player.GetDirection() - turnSpeed * player.GetUpVector());
-		vec3 tempUp = Normalize(player.GetUpVector() + turnSpeed * player.GetDirection());
+		vec3 tempForward = Normalize(player.GetDirection() - turnSpeedY * player.GetUpVector());
+		vec3 tempUp = Normalize(player.GetUpVector() + turnSpeedY * player.GetDirection());
 		player.SetDirection(tempForward, tempUp);
 	}
 	// 'a' pitches the plane to the left.
 	if (keyIsDown('a'))
 	{
-		player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() - turnSpeed * tempRight));
+		player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() - turnSpeedXZ * tempRight));
 		wasTurningRight = false;
 	}
 
 	// 's' pitches the plane backwards.
 	if (keyIsDown('s'))
 	{
-		vec3 tempForward = Normalize(player.GetDirection() + turnSpeed * player.GetUpVector());
-		vec3 tempUp = Normalize(player.GetUpVector() - turnSpeed * player.GetDirection());
+		vec3 tempForward = Normalize(player.GetDirection() + turnSpeedY * player.GetUpVector());
+		vec3 tempUp = Normalize(player.GetUpVector() - turnSpeedY * player.GetDirection());
 		player.SetDirection(tempForward, tempUp);
 	}
 	// 'd' pitches the plane to the right.
 	if (keyIsDown('d'))
 	{
-		player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() + turnSpeed * tempRight));
+		player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() + turnSpeedXZ * tempRight));
 		wasTurningLeft = false;
 
 	}
@@ -489,18 +490,18 @@ void CheckKeys()	// Checks if keys are being pressed.
 	// 'q' turns the plane to the left.
 	if (keyIsDown('q'))
 	{
-		player.SetDirection(Normalize(player.GetDirection() - turnSpeed * 0.5 * tempRight), player.GetUpVector());
+		player.SetDirection(Normalize(player.GetDirection() - turnSpeedXZ * 0.5 * tempRight), player.GetUpVector());
 	}
 	// 'e' turns the plane to the left.
 	if (keyIsDown('e'))
 	{
-		player.SetDirection(Normalize(player.GetDirection() + turnSpeed * 0.5 * tempRight), player.GetUpVector());
+		player.SetDirection(Normalize(player.GetDirection() + turnSpeedXZ * 0.5 * tempRight), player.GetUpVector());
 	}
 	if (!keyIsDown('a') && !keyIsDown('d')/* && !keyIsDown('w') && !keyIsDown('s')*/) // OBS! Subjektivt, bör diskuteras.
 	{
 		if (tempRight.y < -0.001)
 		{
-			if (wasTurningLeft)
+			if (wasTurningLeft && DotProduct(player.GetUpVector(), vec3(0.0, 1.0, 0.0)) > 0)
 			{
 				player.SetDirection(player.GetDirection(), ConfinedUpVector(player.GetDirection()));
 				wasTurningLeft = false;
@@ -513,7 +514,7 @@ void CheckKeys()	// Checks if keys are being pressed.
 		}
 		else if (tempRight.y > 0.001)
 		{
-			if (wasTurningRight)
+			if (wasTurningRight && DotProduct(player.GetUpVector(), vec3(0.0, 1.0, 0.0)) > 0)
 			{
 				player.SetDirection(player.GetDirection(), ConfinedUpVector(player.GetDirection()));
 				wasTurningRight = false;
