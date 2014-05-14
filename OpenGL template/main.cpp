@@ -286,6 +286,7 @@ void display(void)
 	mat4 treeRot;
 	mat4 treeScale;
 	mat4 treeTotal;
+	bool isCollision;
 	glBindTexture(GL_TEXTURE_2D, millTex);
 	for (int i = 0; i < GetNrOfTrees(); i++)
 	{
@@ -296,6 +297,10 @@ void display(void)
 		treeTotal = Mult(treeRot, treeScale);
 		treeTotal = Mult(treeTrans, treeTotal);
 
+		isCollision = treeArray[i].CheckHitBox(player.GetPosition());
+		if (isCollision){
+			printf("InsideTree \n");
+		}
 		UploadAndDraw(treeTotal.m, treeModel1, 0, 0);
 	}
 
@@ -544,6 +549,7 @@ bool checkCollisionWithGround(GLfloat x, GLfloat y, GLfloat z){
 	}
 	return isCollision;
 }
+
 
 vec3 ConfinedUpVector(vec3 forward) // Returns an "up" vector confined to the plane spanned by the forward vector and the y axis.
 {

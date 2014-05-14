@@ -3,14 +3,15 @@
 // Absolutely not working
 bool tree::CheckHitBox(vec3 objectPos){
 	GLfloat R = 0.001;
-	GLfloat gg;
+	GLfloat distanceToObj;
+	bool isHit=FALSE;
 	switch (type)
 	{
 	case 1:		
-		gg = sqrt(pow((pos.x - objectPos.x), 2) + pow((pos.z - objectPos.z), 2));
-		if (gg < R)
+		distanceToObj = sqrt(pow((pos.x - objectPos.x), 2) + pow((pos.z - objectPos.z), 2));
+		if (distanceToObj < R)
 		{
-			return true;
+			isHit=TRUE;
 		}
 		break;
 	case 2:
@@ -20,4 +21,6 @@ bool tree::CheckHitBox(vec3 objectPos){
 		// Do something
 		break;
 	}
+
+	return isHit;
 }
