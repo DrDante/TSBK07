@@ -141,7 +141,7 @@ void init(void)
 	// ----------------------OBJECT(S)----------------------
 
 	// Load terrain data
-	LoadTGATextureData("terrain/fft-terrain.tga", &ttex);
+	LoadTGATextureData("terrain/fft-terrain2.tga", &ttex);
 
 	terrain = GenerateTerrain(&ttex);
 	terrainW = getWidth(&ttex);
