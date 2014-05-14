@@ -56,10 +56,14 @@ public:
 		//pos.y += 0.1 * DotProduct(up, vec3(0.0, 1.0, 0.0)); // Lift force.
 
 		// OBS! Subjektivt, bör diskuteras.
+		//vec3 yUp = { 0.0, 1.0, 0.0 };
+
 		vec3 tempRight = Normalize(CrossProduct(dir, up));
+		//vec3 tempRight1 = Normalize(CrossProduct(dir, Normalize(yUp - DotProduct(yUp, dir) * dir)));
 		if (tempRight.y != 0.0)
 		{
 			dir = Normalize(dir - 0.015 * DotProduct(tempRight, vec3(0.0, 1.0, 0.0)) * tempRight); // Turning.
+			//dir = Normalize(dir - 0.015 * DotProduct(tempRight, vec3(0.0, 1.0, 0.0)) * tempRight1); // Turning.
 			// 0.015 above could use some fine tuning.
 		}
 	}
