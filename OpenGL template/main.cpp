@@ -48,10 +48,15 @@ void UploadAndDraw(GLfloat totalMat[], Model *currentModel, bool isSkybox, bool 
 void CheckMouse(int x, int y);
 void SetCameraVector(float fi, float theta);
 void CheckKeys();
-bool checkCollisionWithGround(GLfloat x, GLfloat y, GLfloat z);
+
 vec3 ConfinedUpVector(vec3 forward);
 mat4 RotatePlaneModel();
+void HandlePlaneCrash(vec3 pos);
 
+// Hitta rätt plats för!
+bool CheckCollisionWithGround(GLfloat x, GLfloat y, GLfloat z);
+bool isExplosion = FALSE;
+GLint count=0;
 
 // Glew initialization... thing.
 GLenum err;
@@ -91,6 +96,7 @@ Model *leaves;
 
 // Rotation, translation and result matrices for the models.
 mat4 bunnyTrans, teapotTrans, carTrans, teddyTrans;
+mat4 teapotScale, teapotTotal;
 mat4 statTrans, statTotal;
 mat4 wallsRot, wallsTrans;
 mat4 roofRot, roofTrans;
@@ -268,8 +274,12 @@ void display(void)
 
 
 	player.MovePlane();
+
 	// Check if collided with ground
-	player.SetCollision(checkCollisionWithGround(player.GetPosition().x, player.GetPosition().y, player.GetPosition().z));
+	if (CheckCollisionWithGround(player.GetPosition().x, player.GetPosition().y, player.GetPosition().z)){
+		isExplosion = TRUE;
+		player.SetCollision(TRUE);
+	}
 
 	// Rotating model.
 	mat4 PlaneMatrix = RotatePlaneModel();
@@ -303,11 +313,13 @@ void display(void)
 		glBindTexture(GL_TEXTURE_2D, trunkTex);
 		UploadAndDraw(treeTotal.m, trunk, 0, 0);
 		glBindTexture(GL_TEXTURE_2D, leafTex);
-		UploadAndDraw(treeTotal.m, leaves, 0, 0);
+		UploadAndDraw(treeTotal.m, leaves, 0, 0);	
 
-		if (treeArray[i].CheckHitBox(player.GetPosition()))
+		if (treeArray[i].CheckHitBox(player.GetPosition())) // Check player collision with tree
 		{
-			printf("%d", 1);
+			isExplosion = TRUE;
+			player.SetCollision(TRUE);
+			
 		}
 	}
 
@@ -340,6 +352,23 @@ void display(void)
 	UploadAndDraw(bladeTotal3.m, windmillBlade, 0, 0);
 	// Upload matrices, blade 4.
 	UploadAndDraw(bladeTotal4.m, windmillBlade, 0, 0);
+
+	// explosion
+	if (isExplosion){
+		teapotTrans = T(player.GetPosition().x, player.GetPosition().y-2, player.GetPosition().z);
+		teapotScale = S(0.1*count, 0.07*count, 0.1*count);
+		teapotTotal = Mult(teapotTrans,teapotScale);
+		UploadAndDraw(teapotTotal.m, teapot, 0, 0);
+		count += 1;
+		if (count > 80){
+			player.SetPosition(vec3(0.0, 20.0, 0.0));
+			player.SetDirection(vec3(1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0));
+			player.SetVelocity(0.5);
+			isExplosion = FALSE;
+			player.SetCollision(FALSE);
+			count = 0;
+		}
+	}
 
 	// Extra objects.
 	bunnyTrans = T(-20.0, 0.55, -20.0);
@@ -556,7 +585,7 @@ void CheckKeys()	// Checks if keys are being pressed.
 
 /* Check if collision with groud given object (x,y,z), 
 returns TRUE if collision */
-bool checkCollisionWithGround(GLfloat x, GLfloat y, GLfloat z){
+bool CheckCollisionWithGround(GLfloat x, GLfloat y, GLfloat z){
 	bool isCollision = FALSE;
 	GLfloat groundHeight = findHeight(x, z, terrain->vertexArray, terrainW, terrainH);
 	if (isnan(groundHeight) == 1){ // is outside terrain? (Should not happen in finished game!)
@@ -589,6 +618,14 @@ mat4 RotatePlaneModel()
 	PlaneMatrix.m[10] = player.GetDirection().z;
 
 	return PlaneMatrix;
+}
+
+void HandlePlaneCrash(vec3 pos){
+	/*Sleep(2000);
+	player.SetPosition(vec3(0.0, 20.0, 0.0));
+	player.SetDirection(vec3(1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0));
+	player.SetVelocity(0.5);
+	isExplosion = FALSE;*/
 }
 
 int main(int argc, const char *argv[])

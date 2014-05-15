@@ -13,7 +13,7 @@ class Plane{
 	vec3 dir = { 1.0, 0.0, 0.0 }; // Should always be normalized.
 	vec3 up = { 0.0, 1.0, 0.0 }; // Should always be normalized.
 	float vel = 0.0;
-	bool isCollided=FALSE; // TRUE if collision, FALSE if not (Right now: TRUE if pos.y under ground height, FALSE otherwise)
+	bool isCollided=FALSE; // TRUE if collision, FALSE if not
 public:
 	Plane(vec3 position, vec3 direction, float velocity)
 	{
@@ -46,25 +46,30 @@ public:
 	{
 		vel = velocity;
 	}
-	void SetCollision(bool isCol){ // A func that can be used to change isCollided to TRUE/ FALSE. isCollided needs to be handled futher
+	void SetCollision(bool isCol){ // A func that can be used to change isCollided to TRUE/ FALSE. 
 		isCollided = isCol;
+	}
+	void SetPosition(vec3 position){
+		pos = position;
 	}
 	void MovePlane()
 	{
-		pos += dir * vel;
-		//pos.y -= 0.1; // Gravity.
-		//pos.y += 0.1 * DotProduct(up, vec3(0.0, 1.0, 0.0)); // Lift force.
+		if (!isCollided){
+			pos += dir * vel;
+			//pos.y -= 0.1; // Gravity.
+			//pos.y += 0.1 * DotProduct(up, vec3(0.0, 1.0, 0.0)); // Lift force.
 
-		// OBS! Subjektivt, bör diskuteras.
-		//vec3 yUp = { 0.0, 1.0, 0.0 };
+			// OBS! Subjektivt, bör diskuteras.
+			//vec3 yUp = { 0.0, 1.0, 0.0 };
 
-		vec3 tempRight = Normalize(CrossProduct(dir, up));
-		//vec3 tempRight1 = Normalize(CrossProduct(dir, Normalize(yUp - DotProduct(yUp, dir) * dir)));
-		if (tempRight.y != 0.0)
-		{
-			dir = Normalize(dir - 0.015 * DotProduct(tempRight, vec3(0.0, 1.0, 0.0)) * tempRight); // Turning.
-			//dir = Normalize(dir - 0.015 * DotProduct(tempRight, vec3(0.0, 1.0, 0.0)) * tempRight1); // Turning.
-			// 0.015 above could use some fine tuning.
+			vec3 tempRight = Normalize(CrossProduct(dir, up));
+			//vec3 tempRight1 = Normalize(CrossProduct(dir, Normalize(yUp - DotProduct(yUp, dir) * dir)));
+			if (tempRight.y != 0.0)
+			{
+				dir = Normalize(dir - 0.015 * DotProduct(tempRight, vec3(0.0, 1.0, 0.0)) * tempRight); // Turning.
+				//dir = Normalize(dir - 0.015 * DotProduct(tempRight, vec3(0.0, 1.0, 0.0)) * tempRight1); // Turning.
+				// 0.015 above could use some fine tuning.
+			}
 		}
 	}
 };

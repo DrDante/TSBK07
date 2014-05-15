@@ -62,15 +62,16 @@ class tree{
 		
 		bool CheckHitBox(vec3 objectPos){
 			GLfloat R = 2;
-			GLfloat gg;
-			bool ishit = false;
+			GLfloat height = 0.9*size;
+			GLfloat dist;
+			bool isHit = false;
 			switch (type)
 			{
 			case 1:
-				gg = sqrt(pow((pos.x - objectPos.x), 2) + pow((pos.z - objectPos.z), 2));
-				if (gg < R)
+				dist = sqrt(pow((pos.x - objectPos.x), 2) + pow((pos.z - objectPos.z), 2));
+				if (dist < R && objectPos.y < height)
 				{
-					ishit = true;
+					isHit = true;
 				}
 				break;
 			case 2:
@@ -80,7 +81,7 @@ class tree{
 				// Do something
 				break;
 			}
-			return ishit;
+			return isHit;
 		}
 };
 
