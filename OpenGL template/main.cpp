@@ -486,35 +486,45 @@ bool wasTurningLeft = false;
 
 void CheckKeys()	// Checks if keys are being pressed.
 {
-	float turnSpeedXZ = 0.08;
-	float turnSpeedY = 0.04;
+	float pitchSpeed = 0.04;
+	float yawSpeed = 0.06;
+	float rollSpeed = 0.04;
 	float returnSpeed = 0.02;
 	vec3 tempRight = Normalize(CrossProduct(player.GetDirection(), player.GetUpVector()));
-	// 'w' pitches the plane forwards.
+	// 'w' pitches the plane downwards.
 	if (keyIsDown('w'))
 	{
-		vec3 tempForward = Normalize(player.GetDirection() - turnSpeedY * player.GetUpVector());
-		vec3 tempUp = Normalize(player.GetUpVector() + turnSpeedY * player.GetDirection());
+		vec3 tempForward = Normalize(player.GetDirection() - pitchSpeed * player.GetUpVector());
+		vec3 tempUp = Normalize(player.GetUpVector() + pitchSpeed * player.GetDirection());
 		player.SetDirection(tempForward, tempUp);
 	}
-	// 'a' pitches the plane to the left.
-	if (keyIsDown('a'))
-	{
-		player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() - turnSpeedXZ * tempRight));
-		wasTurningRight = false;
-	}
-
-	// 's' pitches the plane backwards.
+	// 's' pitches the plane upwards.
 	if (keyIsDown('s'))
 	{
-		vec3 tempForward = Normalize(player.GetDirection() + turnSpeedY * player.GetUpVector());
-		vec3 tempUp = Normalize(player.GetUpVector() - turnSpeedY * player.GetDirection());
+		vec3 tempForward = Normalize(player.GetDirection() + pitchSpeed * player.GetUpVector());
+		vec3 tempUp = Normalize(player.GetUpVector() - pitchSpeed * player.GetDirection());
 		player.SetDirection(tempForward, tempUp);
 	}
-	// 'd' pitches the plane to the right.
+	// 'a' yaws the plane to the left.
+	if (keyIsDown('a'))
+	{
+		player.SetDirection(Normalize(player.GetDirection() - yawSpeed * tempRight), player.GetUpVector());
+	}
+	// 'd' yaws the plane to the right.
 	if (keyIsDown('d'))
 	{
-		player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() + turnSpeedXZ * tempRight));
+		player.SetDirection(Normalize(player.GetDirection() + yawSpeed * tempRight), player.GetUpVector());
+	}
+	// 'q' rolls the plane counterclockwise.
+	if (keyIsDown('q'))
+	{
+		player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() - rollSpeed * tempRight));
+		wasTurningRight = false;
+	}
+	// 'e' rolls the plane clockwise.
+	if (keyIsDown('e'))
+	{
+		player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() + rollSpeed * tempRight));
 		wasTurningLeft = false;
 
 	}
@@ -528,18 +538,9 @@ void CheckKeys()	// Checks if keys are being pressed.
 	{
 		player.SetVelocity(player.GetVelocity() - 0.01);
 	}
-	// 'q' turns the plane to the left.
-	if (keyIsDown('q'))
-	{
-		player.SetDirection(Normalize(player.GetDirection() - turnSpeedXZ * 0.5 * tempRight), player.GetUpVector());
-	}
-	// 'e' turns the plane to the left.
-	if (keyIsDown('e'))
-	{
-		player.SetDirection(Normalize(player.GetDirection() + turnSpeedXZ * 0.5 * tempRight), player.GetUpVector());
-	}
+	// Slowly resets the roll.
 	vec3 yUp = vec3(0.0, 1.0, 0.0);
-	if (!keyIsDown('a') && !keyIsDown('d')/* && !keyIsDown('w') && !keyIsDown('s')*/)
+	if (!keyIsDown('q') && !keyIsDown('e')/* && !keyIsDown('w') && !keyIsDown('s')*/)
 	{
 		if (tempRight.y < -0.001)
 		{

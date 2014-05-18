@@ -121,7 +121,6 @@
     <ClCompile Include="loadobj.cpp" />
     <ClCompile Include="LoadTGA.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="plane.cpp" />
     <ClCompile Include="terrain.cpp" />
     <ClCompile Include="tree.cpp" />
     <ClCompile Include="VectorUtils3.c" />
