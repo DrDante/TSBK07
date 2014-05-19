@@ -12,6 +12,10 @@
 #include "tree.h"
 #include "cloud.h"
 
+
+
+
+
 // ---Globals---
 #define PI 3.14159265358979323846
 
@@ -51,7 +55,7 @@ void CheckKeys();
 
 vec3 ConfinedUpVector(vec3 forward);
 mat4 RotatePlaneModel();
-void HandlePlaneCrash(vec3 pos);
+void InitAfterCrash();
 
 // Hitta rätt plats för!
 bool CheckCollisionWithGround(GLfloat x, GLfloat y, GLfloat z);
@@ -319,10 +323,8 @@ void display(void)
 		{
 			isExplosion = TRUE;
 			player.SetCollision(TRUE);
-			
 		}
 	}
-
 
 
 	// Windmill.
@@ -353,7 +355,7 @@ void display(void)
 	// Upload matrices, blade 4.
 	UploadAndDraw(bladeTotal4.m, windmillBlade, 0, 0);
 
-	// explosion
+	// "explosion"
 	if (isExplosion){
 		teapotTrans = T(player.GetPosition().x, player.GetPosition().y-2, player.GetPosition().z);
 		teapotScale = S(0.1*count, 0.07*count, 0.1*count);
@@ -361,11 +363,7 @@ void display(void)
 		UploadAndDraw(teapotTotal.m, teapot, 0, 0);
 		count += 1;
 		if (count > 80){
-			player.SetPosition(vec3(0.0, 20.0, 0.0));
-			player.SetDirection(vec3(1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0));
-			player.SetVelocity(0.5);
-			isExplosion = FALSE;
-			player.SetCollision(FALSE);
+			InitAfterCrash();
 			count = 0;
 		}
 	}
@@ -621,13 +619,14 @@ mat4 RotatePlaneModel()
 	return PlaneMatrix;
 }
 
-void HandlePlaneCrash(vec3 pos){
-	/*Sleep(2000);
-	player.SetPosition(vec3(0.0, 20.0, 0.0));
+void InitAfterCrash(){
+	player.SetCollision(FALSE);
 	player.SetDirection(vec3(1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0));
+	player.SetPosition(vec3(0.0, 20.0, 0.0));
 	player.SetVelocity(0.5);
-	isExplosion = FALSE;*/
+	isExplosion = FALSE;
 }
+
 
 int main(int argc, const char *argv[])
 {

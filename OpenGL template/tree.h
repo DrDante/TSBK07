@@ -61,8 +61,8 @@ class tree{
 		}
 		
 		bool CheckHitBox(vec3 objectPos){
-			GLfloat R = 2;
-			GLfloat height = 0.9*size;
+			GLfloat R = 3;
+			GLfloat height = pos.y + 0.8*size;
 			GLfloat dist;
 			bool isHit = false;
 			switch (type)

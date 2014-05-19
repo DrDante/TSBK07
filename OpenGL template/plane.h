@@ -35,8 +35,10 @@ public:
 	}
 	void SetDirection(vec3 direction, vec3 upVector)
 	{
-		dir = direction;
-		up = upVector;
+		if (!isCollided){
+			dir = direction;
+			up = upVector;
+		}
 	}
 	float GetVelocity()
 	{
