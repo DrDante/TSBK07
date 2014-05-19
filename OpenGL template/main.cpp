@@ -55,6 +55,7 @@ void CheckKeys();
 
 vec3 ConfinedUpVector(vec3 forward);
 mat4 RotatePlaneModel();
+vec3 CameraPlacement(vec3 stiffPos, vec3 upVec, vec3 rightVec);
 void InitAfterCrash();
 
 // Hitta rätt plats för!
@@ -267,16 +268,6 @@ void display(void)
 	*/
 	
 	// *** NEW PLANE CODE ***
-	s = player.GetDirection(); // Forward vector.
-	l = player.GetPosition(); // What the camera is looking at.
-	p = l - s * 20.0; // Camera placement, 20.0 behind the plane.
-
-	// OBS! Subjektivt, bör diskuteras.
-	v = ConfinedUpVector(player.GetDirection());
-	//camMatrix = lookAtv(p, l, player.GetUpVector());
-	camMatrix = lookAtv(p, l, v);
-
-
 	player.MovePlane();
 
 	// Check if collided with ground
@@ -292,6 +283,20 @@ void display(void)
 
 	glBindTexture(GL_TEXTURE_2D, skyTex);
 	UploadAndDraw(PlaneMatrix.m, plane, 0, 0);
+
+	// Camera stuff.
+	s = player.GetDirection(); // Forward vector.
+	l = player.GetPosition(); // What the camera is looking at.
+	p = l - s * 20.0; // Stiff camera placement, 20.0 behind the plane.
+	vec3 sluggishCamPos = l + CameraPlacement(p, player.GetUpVector(), Normalize(CrossProduct(player.GetDirection(), player.GetUpVector())));
+
+	// OBS! Subjektivt, bör diskuteras.
+	v = ConfinedUpVector(player.GetDirection());
+	//camMatrix = lookAtv(p, l, player.GetUpVector());
+	//camMatrix = lookAtv(p, l, v);
+	camMatrix = lookAtv(sluggishCamPos, l, v);
+
+
 
 	// Blades
 	mat4 temp2 = Rz(0.03*t);
@@ -479,15 +484,23 @@ void SetCameraVector(float fi, float theta)	// Sets the camera matrix.
 	camMatrix = lookAtv(p, l, v);
 }
 
-bool wasTurningRight = false;
-bool wasTurningLeft = false;
+bool wasRollingRight = false;
+bool wasRollingLeft = false;
+
+
+float yawCamOffset = 0.0;
+float pitchCamOffset = 0.0;
+const float pitchSpeed = 0.02;
+const float yawSpeed = 0.01;
+const float rollSpeed = 0.04;
+const float returnSpeed = 0.02;
+const float camSpeed = 0.01; // Do not change.
+const float camReturnSpeed = 0.01; // Do not change.
+const float pitchCamLimit = 0.2; // Do not change.
+const float yawCamLimit = 0.2; // Do not change.
 
 void CheckKeys()	// Checks if keys are being pressed.
 {
-	float pitchSpeed = 0.04;
-	float yawSpeed = 0.06;
-	float rollSpeed = 0.04;
-	float returnSpeed = 0.02;
 	vec3 tempRight = Normalize(CrossProduct(player.GetDirection(), player.GetUpVector()));
 	// 'w' pitches the plane downwards.
 	if (keyIsDown('w'))
@@ -495,6 +508,10 @@ void CheckKeys()	// Checks if keys are being pressed.
 		vec3 tempForward = Normalize(player.GetDirection() - pitchSpeed * player.GetUpVector());
 		vec3 tempUp = Normalize(player.GetUpVector() + pitchSpeed * player.GetDirection());
 		player.SetDirection(tempForward, tempUp);
+		if (pitchCamOffset < pitchCamLimit)
+		{
+			pitchCamOffset += camSpeed;
+		}
 	}
 	// 's' pitches the plane upwards.
 	if (keyIsDown('s'))
@@ -502,29 +519,40 @@ void CheckKeys()	// Checks if keys are being pressed.
 		vec3 tempForward = Normalize(player.GetDirection() + pitchSpeed * player.GetUpVector());
 		vec3 tempUp = Normalize(player.GetUpVector() - pitchSpeed * player.GetDirection());
 		player.SetDirection(tempForward, tempUp);
+		if (pitchCamOffset > -pitchCamLimit)
+		{
+			pitchCamOffset -= camSpeed;
+		}
 	}
 	// 'a' yaws the plane to the left.
 	if (keyIsDown('a'))
 	{
 		player.SetDirection(Normalize(player.GetDirection() - yawSpeed * tempRight), player.GetUpVector());
+		if (yawCamOffset > -yawCamLimit)
+		{
+			yawCamOffset -= camSpeed;
+		}
 	}
 	// 'd' yaws the plane to the right.
 	if (keyIsDown('d'))
 	{
 		player.SetDirection(Normalize(player.GetDirection() + yawSpeed * tempRight), player.GetUpVector());
+		if (yawCamOffset < yawCamLimit)
+		{
+			yawCamOffset += camSpeed;
+		}
 	}
 	// 'q' rolls the plane counterclockwise.
 	if (keyIsDown('q'))
 	{
 		player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() - rollSpeed * tempRight));
-		wasTurningRight = false;
+		wasRollingRight = false;
 	}
 	// 'e' rolls the plane clockwise.
 	if (keyIsDown('e'))
 	{
 		player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() + rollSpeed * tempRight));
-		wasTurningLeft = false;
-
+		wasRollingLeft = false;
 	}
 	// 'r' increases the speed.
 	if (keyIsDown('r'))
@@ -542,42 +570,66 @@ void CheckKeys()	// Checks if keys are being pressed.
 	{
 		if (tempRight.y < -0.001)
 		{
-			if (wasTurningLeft)
+			if (wasRollingLeft)
 			{
 				if (DotProduct(player.GetUpVector(), yUp) > 0)
 				{
 					player.SetDirection(player.GetDirection(), ConfinedUpVector(player.GetDirection()));
-					wasTurningLeft = false;
+					wasRollingLeft = false;
 				}
 			}
 			else
 			{
 				player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() - returnSpeed * tempRight));
-				wasTurningRight = true;
+				wasRollingRight = true;
 			}
 		}
 		else if (tempRight.y > 0.001)
 		{
-			if (wasTurningRight)
+			if (wasRollingRight)
 			{
 				vec3 yUp = vec3(0.0, 1.0, 0.0);
 				if (DotProduct(player.GetUpVector(), yUp) > 0)
 				{
 					player.SetDirection(player.GetDirection(), ConfinedUpVector(player.GetDirection()));
-					wasTurningRight = false;
+					wasRollingRight = false;
 				}
 			}
 			else
 			{
 				player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() + returnSpeed * tempRight));
-				wasTurningLeft = true;
+				wasRollingLeft = true;
 			}
 		}
 		else if (DotProduct(player.GetUpVector(), yUp) > 0)
 		{
 			player.SetDirection(player.GetDirection(), ConfinedUpVector(player.GetDirection()));
-			wasTurningRight = false;
-			wasTurningLeft = false;
+			wasRollingRight = false;
+			wasRollingLeft = false;
+		}
+	}
+	// Slowly resets the pitch camera offset.
+	if (!keyIsDown('w') && !keyIsDown('s'))
+	{
+		if (pitchCamOffset > 0)
+		{
+			pitchCamOffset -= camReturnSpeed;
+		}
+		else if (pitchCamOffset < 0)
+		{
+			pitchCamOffset += camReturnSpeed;
+		}
+	}
+	// Slowly resets the yaw camera offset.
+	if (!keyIsDown('a') && !keyIsDown('d'))
+	{
+		if (yawCamOffset > 0)
+		{
+			yawCamOffset -= camReturnSpeed;
+		}
+		else if (yawCamOffset < 0)
+		{
+			yawCamOffset += camReturnSpeed;
 		}
 	}
 }
@@ -615,8 +667,16 @@ mat4 RotatePlaneModel()
 	PlaneMatrix.m[2] = player.GetDirection().x;
 	PlaneMatrix.m[6] = player.GetDirection().y;
 	PlaneMatrix.m[10] = player.GetDirection().z;
-
 	return PlaneMatrix;
+}
+
+vec3 CameraPlacement(vec3 stiffPos, vec3 upVec, vec3 rightVec)
+{
+	vec3 planeToCam = stiffPos - player.GetPosition();
+	mat4 offsetPitch = ArbRotate(rightVec, pitchCamOffset);
+	mat4 offsetYaw = ArbRotate(upVec, yawCamOffset);
+	mat4 camResult = Mult(offsetYaw, offsetPitch);
+	return vec3(camResult*planeToCam);
 }
 
 void InitAfterCrash(){
