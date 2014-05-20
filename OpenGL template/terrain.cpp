@@ -221,10 +221,12 @@ tree* GetForest(GLfloat *vertexArray, int xMax, int zMax, int square_size)
 {
 	tree* treeArray = (tree *)malloc(sizeof(tree)*xMax*zMax * 3);
 	int* positionsArray = (int *)malloc(sizeof(int)*xMax*zMax * 3);
-	int* sizeArray = (int *)malloc(sizeof(int)*xMax*zMax * 3);
+	GLfloat* sizeArray = (GLfloat *)malloc(sizeof(GLfloat)*xMax*zMax * 3);
+	int* typeArray = (int *)malloc(sizeof(int)*xMax*zMax * 3);
 
 	positionsArray = GenerateGridPositions(vertexArray, xMax, zMax, square_size);
 	sizeArray = getSizeArray();
+	typeArray = getTypeArray();
 
 	for (int i = 0; i < getNrZPoints(); i++)
 	{
@@ -236,7 +238,7 @@ tree* GetForest(GLfloat *vertexArray, int xMax, int zMax, int square_size)
 			treeArray[(i + j * getNrXPoints())].SetZPos(positionsArray[(i + j * getNrXPoints()) * 3 + 2]);
 			treeArray[(i + j * getNrXPoints())].SetSize(sizeArray[(i + j * getNrXPoints()) * 3 + 0]);
 			//treeArray[(i + j * getNrXPoints())].GenerateHitBox();
-			treeArray[(i + j * getNrXPoints())].SetType(1);
+			treeArray[(i + j * getNrXPoints())].SetType(typeArray[(i + j * getNrXPoints()) * 3 + 0]);
 		}
 	}
 	nrOfTrees = getNrZPoints() * getNrXPoints();
@@ -252,7 +254,7 @@ cloud* GetClouds(GLfloat *vertexArray, int xMax, int zMax, int square_size)
 {
 	cloud* cloudArray = (cloud *)malloc(sizeof(cloud)*xMax*zMax * 3);
 	int* positionsArray = (int *)malloc(sizeof(int)*xMax*zMax * 3);
-	int* sizeArray = (int *)malloc(sizeof(int)*xMax*zMax * 3);
+	GLfloat* sizeArray = (GLfloat *)malloc(sizeof(GLfloat)*xMax*zMax * 3);
 
 	positionsArray = GenerateGridPositions(vertexArray, xMax, zMax, square_size);
 	sizeArray = getSizeArray();

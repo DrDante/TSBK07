@@ -75,6 +75,11 @@ class tree{
 				}
 				break;
 			case 2:
+				dist = sqrt(pow((pos.x - objectPos.x), 2) + pow((pos.z - objectPos.z), 2));
+				if (dist < R && objectPos.y < height*3)
+				{
+					isHit = true;
+				}
 				// Do something
 				break;
 			case 3:

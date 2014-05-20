@@ -2,7 +2,8 @@
 
 int nrXPoints;
 int nrZPoints;
-int *sizeArray;
+GLfloat *sizeArray;
+int *typeArray;
 
 
 // Height = zMax
@@ -21,8 +22,10 @@ int* GenerateGridPositions(GLfloat *vertexArray, int xMax, int zMax, int square_
 
 	// Sizearraytemp to get correct size of the array.
 	int *positionsArray = (int *)malloc(sizeof(int)*nrXPoints*nrZPoints*3);
-	int *sizeArrayTemp = (int *)malloc(sizeof(int)*nrXPoints*nrZPoints*3);
+	GLfloat *sizeArrayTemp = (GLfloat *)malloc(sizeof(GLfloat)*nrXPoints*nrZPoints * 3);
+	int *typeArrayTemp = (int *)malloc(sizeof(int)*nrXPoints*nrZPoints * 3);
 
+	typeArray = typeArrayTemp;
 	sizeArray = sizeArrayTemp;
 
 	for (int i = 0; i < nrZPoints; i++)
@@ -56,16 +59,31 @@ int* GenerateGridPositions(GLfloat *vertexArray, int xMax, int zMax, int square_
 				positionsArray[(i + j * nrXPoints) * 3 + 2] = z;
 
 			// Random size for the tree.	
-				sizeArray[(i + j * nrXPoints) * 3 + 0] = 15 + rand() / 1000;
+		//		sizeArray[(i + j * nrXPoints) * 3 + 0] = 15 + rand() / 1000;
+
+			// Rand type 1=tree, 2=bush
+				GLfloat typeRand = rand();
+				if (typeRand > 5000){
+					typeArray[(i + j * nrXPoints) * 3 + 0] = 1;
+					sizeArray[(i + j * nrXPoints) * 3 + 0] = 15 + rand() / 1000;
+				}
+				else{
+					typeArray[(i + j * nrXPoints) * 3 + 0] = 2;
+					sizeArray[(i + j * nrXPoints) * 3 + 0] = 5;
+				}
 		}
 	}	
 	return positionsArray;
 }
 
 // Functions to be used from main.
-int* getSizeArray()
+GLfloat* getSizeArray()
 {
 	return sizeArray;
+}
+
+int* getTypeArray(){
+	return typeArray;
 }
 
 int getNrXPoints()

@@ -10,4 +10,5 @@
 int* GenerateGridPositions(GLfloat *vertexArray, int xMax, int zMax, int square_size);
 int getNrXPoints();
 int getNrZPoints();
-int* getSizeArray();
+GLfloat* getSizeArray();
+int* getTypeArray();
