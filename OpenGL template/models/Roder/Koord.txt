@@ -1,0 +1,25 @@
+Rotera kring X flytta sen till dessa koordinater.
+Kom på att de kan vara skeva.. säg till isf
+
+R_TopAileron: X:-2.65974
+	Y: -0.05488
+	Z: 1.01420
+
+L_TopAileron: X:2.65974
+	Y: -0.05488
+	Z: 1.01420
+
+R_BotAileron: X:-2.16824
+	Y: 0.18559
+	Z: -0.37998
+
+L_BotAileron: X:2.16824
+	Y: 0.18559
+	Z: -0.37998
+
+Elevator: X: 0
+	Y: 2.68
+	Z: 0.1818
+Rudder: X:0
+	Y: 2.73
+	Z: 0.1818
