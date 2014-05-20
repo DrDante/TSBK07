@@ -187,7 +187,7 @@ void init(void)
 	LoadTGATextureSimple("textures/bilskissred.tga", &carTex);
 	LoadTGATextureSimple("textures/maskros512.tga", &teddyTex);
 	LoadTGATextureSimple("textures/EU55brk1.tga", &trunkTex);
-	LoadTGATextureSimple("textures/arnold.tga", &leafTex);
+	LoadTGATextureSimple("textures/leaftext.tga", &leafTex);
 	// -----------------------------------------------------
 
 	// Multitexturing.
