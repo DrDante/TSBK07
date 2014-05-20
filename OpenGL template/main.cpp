@@ -186,7 +186,7 @@ void init(void)
 	LoadTGATextureSimple("textures/rutor.tga", &teapotTex);
 	LoadTGATextureSimple("textures/bilskissred.tga", &carTex);
 	LoadTGATextureSimple("textures/maskros512.tga", &teddyTex);
-	LoadTGATextureSimple("textures/EU55brk1.tga", &trunkTex);
+	LoadTGATextureSimple("textures/treetext2.tga", &trunkTex);
 	LoadTGATextureSimple("textures/leaftext.tga", &leafTex);
 	// -----------------------------------------------------
 
