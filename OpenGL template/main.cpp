@@ -22,7 +22,7 @@
 
 // Frustum.
 #define near 1.0
-#define far 3000.0	// Drawing distance.
+#define far 700.0	// Drawing distance.
 #define right 0.5
 #define left -0.5
 #define top 0.5
@@ -135,7 +135,7 @@ int terrainH;
 // -----------------------------------------------------
 // -------------
 
-Plane player(vec3(0.0, 20.0, 0.0), vec3(1.0, 0.0, 0.0), 0.5);
+Plane player(vec3(50.0, 70.0, 50.0), vec3(1.0, 0.0, 0.0), 0.5);
 
 tree* treeArray;
 cloud* cloudArray;
@@ -186,7 +186,7 @@ void init(void)
 	trunk = LoadModelPlus("models/stamm.obj");
 	leaves = LoadModelPlus("models/blad.obj");
 //	bush= LoadModelPlus("models/bush_SH20_1.obj");
-//	tree2 = LoadModelPlus("models/tree_EU55_3.obj");
+	tree2 = LoadModelPlus("models/tree_EU55_3.obj");
 //	leaveBush = LoadModelPlus("models/LeaveBushObj.obj");
 
 
@@ -214,7 +214,7 @@ void init(void)
 	camMatrix = lookAtv(p, l, v);
 
 	// Initialize forest.
-	treeArray = GetForest(terrain->vertexArray, terrainW, terrainH, 30);
+	treeArray = GetForest(terrain->vertexArray, terrainW, terrainH, 80);
 	cloudArray = GetClouds(terrain->vertexArray, terrainW, terrainH, 60);
 
 	//"Particles"
@@ -296,9 +296,10 @@ void display(void)
 	// Moving model.
 	PlaneMatrix = Mult(T(player.GetPosition().x, player.GetPosition().y, player.GetPosition().z), PlaneMatrix);
 
-	glBindTexture(GL_TEXTURE_2D, skyTex);
-	UploadAndDraw(PlaneMatrix.m, plane, 0, 0);
-
+	if (!isExplosion){
+		glBindTexture(GL_TEXTURE_2D, skyTex);
+		UploadAndDraw(PlaneMatrix.m, plane, 0, 0);
+	}
 	// Camera stuff.
 	s = player.GetDirection(); // Forward vector.
 	l = player.GetPosition(); // What the camera is looking at.
@@ -316,7 +317,9 @@ void display(void)
 	// Blades
 	mat4 temp2 = Rz(0.03*t);
 	planeTotal = Mult(PlaneMatrix, temp2);
-	UploadAndDraw(planeTotal.m, planeRot, 0, 0);
+	if (!isExplosion){
+		UploadAndDraw(planeTotal.m, planeRot, 0, 0);
+	}
 
 	// *** END PLANE CODE ***
 
@@ -334,7 +337,6 @@ void display(void)
 
 		treeTotal = Mult(treeRot, treeScale);
 		treeTotal = Mult(treeTrans, treeTotal);
-		printf("%i", treeArray[i].GetType());
 		if (treeArray[i].GetType() == 1){
 			glBindTexture(GL_TEXTURE_2D, trunkTex);
 			UploadAndDraw(treeTotal.m, trunk, 0, 0);
@@ -342,12 +344,12 @@ void display(void)
 			UploadAndDraw(treeTotal.m, leaves, 0, 0);
 		}
 		else{
-			glBindTexture(GL_TEXTURE_2D, trunkTex);
-			UploadAndDraw(treeTotal.m, trunk, 0, 0);
-			glBindTexture(GL_TEXTURE_2D, leafTex);
-			UploadAndDraw(treeTotal.m, leaves, 0, 0);
-		//	glBindTexture(GL_TEXTURE_2D, groundTex);
-		//	UploadAndDraw(treeTotal.m, leaveBush, 0, 0);
+		//	glBindTexture(GL_TEXTURE_2D, trunkTex);
+		//	UploadAndDraw(treeTotal.m, trunk, 0, 0);
+		//	glBindTexture(GL_TEXTURE_2D, leafTex);
+		//	UploadAndDraw(treeTotal.m, leaves, 0, 0);
+			glBindTexture(GL_TEXTURE_2D, groundTex);
+			UploadAndDraw(treeTotal.m, tree2, 0, 0);
 		}
 
 		if (treeArray[i].CheckHitBox(player.GetPosition())) // Check player collision with tree
@@ -724,7 +726,7 @@ vec3 CameraPlacement(vec3 stiffPos, vec3 upVec, vec3 rightVec)
 void InitAfterCrash(){
 	player.SetCollision(FALSE);
 	player.SetDirection(vec3(1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0));
-	player.SetPosition(vec3(0.0, 20.0, 0.0));
+	player.SetPosition(vec3(50.0, 70.0, 50.0));
 	player.SetVelocity(0.5);
 	isExplosion = FALSE;
 	collisionFirstLoop = TRUE;

@@ -69,7 +69,7 @@ int* GenerateGridPositions(GLfloat *vertexArray, int xMax, int zMax, int square_
 				}
 				else{
 					typeArray[(i + j * nrXPoints) * 3 + 0] = 2;
-					sizeArray[(i + j * nrXPoints) * 3 + 0] = 5;
+					sizeArray[(i + j * nrXPoints) * 3 + 0] = rand() / 1000;
 				}
 		}
 	}	
