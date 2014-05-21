@@ -12,6 +12,7 @@
 #include "tree.h"
 #include "cloud.h"
 
+#include "particle.h"
 
 
 
@@ -136,6 +137,11 @@ Plane player(vec3(0.0, 20.0, 0.0), vec3(1.0, 0.0, 0.0), 0.5);
 tree* treeArray;
 cloud* cloudArray;
 
+particle* particleArray;
+
+int nrOfParticles = 50;
+bool collisionFirstLoop = TRUE;
+
 void init(void)
 {
 	err = glewInit();
@@ -204,6 +210,9 @@ void init(void)
 	// Initialize forest.
 	treeArray = GetForest(terrain->vertexArray, terrainW, terrainH, 30);
 	cloudArray = GetClouds(terrain->vertexArray, terrainW, terrainH, 60);
+
+	//"Particles"
+	particleArray = GenerateParticles(nrOfParticles);
 
 	//glEnable(GL_CULL_FACE);
 	//glDisable(GL_CULL_FACE);
@@ -328,6 +337,15 @@ void display(void)
 		{
 			isExplosion = TRUE;
 			player.SetCollision(TRUE);
+
+			if (collisionFirstLoop)
+			{
+				for (int i = 0; i < nrOfParticles; i++)
+				{
+					particleArray[i].SetParticleOrigin(player.GetPosition());
+				}
+			}
+			collisionFirstLoop = FALSE;
 		}
 	}
 
@@ -362,10 +380,17 @@ void display(void)
 
 	// "explosion"
 	if (isExplosion){
-		teapotTrans = T(player.GetPosition().x, player.GetPosition().y-2, player.GetPosition().z);
-		teapotScale = S(0.1*count, 0.07*count, 0.1*count);
-		teapotTotal = Mult(teapotTrans,teapotScale);
-		UploadAndDraw(teapotTotal.m, teapot, 0, 0);
+
+		for (int i = 0; i < nrOfParticles; i++)
+		{	
+		teapotTrans = T(particleArray[i].GetPosition().x, particleArray[i].GetPosition().y - 2, particleArray[i].GetPosition().z);
+		printf("%f \n", particleArray[i].GetPosition().x);
+		particleArray[i].UpdateParticle();
+		//teapotScale = S(0.2, 0.2, 0.2);
+		teapotTotal = teapotTrans;
+		UploadAndDraw(teapotTrans.m, teapot, 0, 0);
+		}
+
 		count += 1;
 		if (count > 80){
 			InitAfterCrash();
@@ -685,6 +710,7 @@ void InitAfterCrash(){
 	player.SetPosition(vec3(0.0, 20.0, 0.0));
 	player.SetVelocity(0.5);
 	isExplosion = FALSE;
+	collisionFirstLoop = TRUE;
 }
 
 

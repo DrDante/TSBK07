@@ -121,6 +121,7 @@
     <ClCompile Include="loadobj.cpp" />
     <ClCompile Include="LoadTGA.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="particle.cpp" />
     <ClCompile Include="terrain.cpp" />
     <ClCompile Include="tree.cpp" />
     <ClCompile Include="VectorUtils3.c" />
@@ -131,6 +132,7 @@
     <ClInclude Include="GL_utilities.h" />
     <ClInclude Include="loadobj.h" />
     <ClInclude Include="LoadTGA.h" />
+    <ClInclude Include="particle.h" />
     <ClInclude Include="plane.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="terrain.h" />
