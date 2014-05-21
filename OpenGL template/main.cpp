@@ -140,10 +140,23 @@ Plane player(vec3(50.0, 70.0, 50.0), vec3(1.0, 0.0, 0.0), 0.5);
 tree* treeArray;
 cloud* cloudArray;
 
-particle* particleArray;
 
-int nrOfParticles = 50;
+// "Particles"
+particle* particleArray;
+int nrOfParticles = 250;
 bool collisionFirstLoop = TRUE;
+
+// Triangle
+GLfloat triangleSize = 0.25;
+GLfloat triangle[] =
+{
+	-triangleSize, -triangleSize, 0.0f,
+	-triangleSize, triangleSize, 0.0f,
+	triangleSize, -triangleSize, 0.0f
+};
+
+unsigned int vertexArrayObjID;
+GLuint particleProgram;
 
 void init(void)
 {
@@ -158,6 +171,8 @@ void init(void)
 
 	// Loading and compiling shaders.
 	program = loadShaders("main.vert", "main.frag");
+
+
 	printError("init shader");
 
 	// ----------------------OBJECT(S)----------------------
@@ -219,6 +234,20 @@ void init(void)
 
 	//"Particles"
 	particleArray = GenerateParticles(nrOfParticles);
+	//particleProgram = loadShaders("particle.vert", "particle.frag");
+	unsigned int vertexBufferObjID;
+	// Taken from lab 1.
+	// Allocate and activate Vertex Array Object
+	glGenVertexArrays(1, &vertexArrayObjID);
+	glBindVertexArray(vertexArrayObjID);
+	// Allocate Vertex Buffer Objects
+	glGenBuffers(1, &vertexBufferObjID);
+
+	// VBO for vertex data
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjID);
+	glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(GLfloat), triangle, GL_STATIC_DRAW);
+	glVertexAttribPointer(glGetAttribLocation(program, "inPosition"), 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(glGetAttribLocation(program, "inPosition"));
 
 	//glEnable(GL_CULL_FACE);
 	//glDisable(GL_CULL_FACE);
@@ -407,7 +436,13 @@ void display(void)
 		particleArray[i].UpdateParticle();
 		//teapotScale = S(0.2, 0.2, 0.2);
 		teapotTotal = teapotTrans;
-		UploadAndDraw(teapotTrans.m, teapot, 0, 0);
+		//UploadAndDraw(teapotTrans.m, teapot, 0, 0);
+		//Draw vertices.
+		glUniformMatrix4fv(glGetUniformLocation(program, "MTWMatrix"), 1, GL_TRUE, teapotTotal.m);
+		glUniformMatrix4fv(glGetUniformLocation(program, "WTVMatrix"), 1, GL_TRUE, camMatrix.m);
+		glUniformMatrix4fv(glGetUniformLocation(program, "VTPMatrix"), 1, GL_TRUE, projMatrix);
+		glBindVertexArray(vertexArrayObjID);	// Select VAO
+		glDrawArrays(GL_TRIANGLES, 0, 3);	// draw object
 		}
 
 		count += 1;
