@@ -99,6 +99,9 @@ Model *plane;
 Model *planeRot;
 Model *trunk;
 Model *leaves;
+Model *bush;
+Model *tree2;
+Model *leaveBush;
 
 // Rotation, translation and result matrices for the models.
 mat4 bunnyTrans, teapotTrans, carTrans, teddyTrans;
@@ -182,6 +185,9 @@ void init(void)
 	planeRot = LoadModelPlus("models/Blade.obj");
 	trunk = LoadModelPlus("models/stamm.obj");
 	leaves = LoadModelPlus("models/blad.obj");
+//	bush= LoadModelPlus("models/bush_SH20_1.obj");
+//	tree2 = LoadModelPlus("models/tree_EU55_3.obj");
+//	leaveBush = LoadModelPlus("models/LeaveBushObj.obj");
 
 
 	// Loading textures.
@@ -328,10 +334,21 @@ void display(void)
 
 		treeTotal = Mult(treeRot, treeScale);
 		treeTotal = Mult(treeTrans, treeTotal);
-		glBindTexture(GL_TEXTURE_2D, trunkTex);
-		UploadAndDraw(treeTotal.m, trunk, 0, 0);
-		glBindTexture(GL_TEXTURE_2D, leafTex);
-		UploadAndDraw(treeTotal.m, leaves, 0, 0);	
+		printf("%i", treeArray[i].GetType());
+		if (treeArray[i].GetType() == 1){
+			glBindTexture(GL_TEXTURE_2D, trunkTex);
+			UploadAndDraw(treeTotal.m, trunk, 0, 0);
+			glBindTexture(GL_TEXTURE_2D, leafTex);
+			UploadAndDraw(treeTotal.m, leaves, 0, 0);
+		}
+		else{
+			glBindTexture(GL_TEXTURE_2D, trunkTex);
+			UploadAndDraw(treeTotal.m, trunk, 0, 0);
+			glBindTexture(GL_TEXTURE_2D, leafTex);
+			UploadAndDraw(treeTotal.m, leaves, 0, 0);
+		//	glBindTexture(GL_TEXTURE_2D, groundTex);
+		//	UploadAndDraw(treeTotal.m, leaveBush, 0, 0);
+		}
 
 		if (treeArray[i].CheckHitBox(player.GetPosition())) // Check player collision with tree
 		{
