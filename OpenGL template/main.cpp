@@ -728,6 +728,7 @@ void InitAfterCrash(){
 	player.SetVelocity(0.5);
 	isExplosion = FALSE;
 	collisionFirstLoop = TRUE;
+	particleArray = GenerateParticles(nrOfParticles);
 }
 
 
