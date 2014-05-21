@@ -22,7 +22,7 @@
 
 // Frustum.
 #define near 1.0
-#define far 700.0	// Drawing distance.
+#define far 400.0	// Drawing distance.
 #define right 0.5
 #define left -0.5
 #define top 0.5
@@ -135,7 +135,7 @@ int terrainH;
 // -----------------------------------------------------
 // -------------
 
-Plane player(vec3(50.0, 70.0, 50.0), vec3(1.0, 0.0, 0.0), 0.5);
+Plane player(vec3(80.0, 30.0, 80.0), vec3(1.0, 0.0, 0.0), 0.5);
 
 tree* treeArray;
 cloud* cloudArray;
@@ -178,8 +178,8 @@ void init(void)
 	// ----------------------OBJECT(S)----------------------
 
 	// Load terrain data
+	//LoadTGATextureData("terrain/arnoldterrang_mountain_edges.tga", &ttex);
 	LoadTGATextureData("terrain/arnoldterrang.tga", &ttex);
-
 	terrain = GenerateTerrain(&ttex);
 	terrainW = getWidth(&ttex);
 	terrainH = getHeight(&ttex);
@@ -349,7 +349,7 @@ void display(void)
 	if (!isExplosion){
 		UploadAndDraw(planeTotal.m, planeRot, 0, 0);
 	}
-
+	printf("Height: %f", player.GetPosition().y);
 	// *** END PLANE CODE ***
 
 	// Trees.
@@ -761,7 +761,7 @@ vec3 CameraPlacement(vec3 stiffPos, vec3 upVec, vec3 rightVec)
 void InitAfterCrash(){
 	player.SetCollision(FALSE);
 	player.SetDirection(vec3(1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0));
-	player.SetPosition(vec3(50.0, 70.0, 50.0));
+	player.SetPosition(vec3(100.0, 100.0, 100.0));
 	player.SetVelocity(0.5);
 	isExplosion = FALSE;
 	collisionFirstLoop = TRUE;
