@@ -5,6 +5,7 @@
 //int terrainH; //height
 int nrOfTrees;
 int nrOfClouds;
+int nrOfBalls;
 
 // Model
 //Model *terrain;
@@ -268,7 +269,7 @@ cloud* GetClouds(GLfloat *vertexArray, int xMax, int zMax, int square_size)
 			cloudArray[(i + j * getNrXPoints())].SetYPos(5);
 			cloudArray[(i + j * getNrXPoints())].SetZPos(positionsArray[(i + j * getNrXPoints()) * 3 + 2]);
 			cloudArray[(i + j * getNrXPoints())].SetSize(sizeArray[(i + j * getNrXPoints()) * 3 + 0]);
-			//treeArray[(i + j * getNrXPoints())].GenerateHitBox();
+			
 			cloudArray[(i + j * getNrXPoints())].SetType(1);
 		}
 	}
@@ -279,4 +280,40 @@ cloud* GetClouds(GLfloat *vertexArray, int xMax, int zMax, int square_size)
 int GetNrOfClouds()
 {
 	return nrOfClouds;
+}
+
+ball* GetBalls(GLfloat *vertexArray, int xMax, int zMax, int square_size, tree* treeArray, int nrOfTrees)
+{
+	ball* ballArray = (ball *)malloc(sizeof(ball)*xMax*zMax * 3);
+	int* positionsArray = (int *)malloc(sizeof(int)*xMax*zMax * 3);
+
+	vec3 deltaPos = { 3.0f, 3.0f, 3.0f };
+
+	positionsArray = GenerateGridPositions(vertexArray, xMax, zMax, square_size);
+
+	for (int i = 0; i < getNrZPoints(); i++)
+	{
+
+		for (int j = 0; j < getNrXPoints(); j++)
+		{
+			ballArray[(i + j * getNrXPoints())].SetXPos(positionsArray[(i + j * getNrXPoints()) * 3 + 0]);
+			ballArray[(i + j * getNrXPoints())].SetYPos(positionsArray[(i + j * getNrXPoints()) * 3 + 1] + 10);
+			ballArray[(i + j * getNrXPoints())].SetZPos(positionsArray[(i + j * getNrXPoints()) * 3 + 2]);
+
+			for (int k = 0; k < nrOfTrees; k++)
+			{
+				if (ballArray[(i + j * getNrXPoints())].CheckOtherObject(treeArray[k].GetPosition()))
+				{
+					ballArray[(i + j * getNrXPoints())].ChangePosition(deltaPos);
+				}
+			}
+		}
+	}
+	nrOfBalls = getNrZPoints() * getNrXPoints();
+	return ballArray;
+}
+
+int GetNrOfBalls()
+{
+	return nrOfBalls;
 }
