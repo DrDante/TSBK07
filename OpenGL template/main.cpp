@@ -146,7 +146,7 @@ ball* ballArray;
 
 // "Particles"
 particle* particleArray;
-int nrOfParticles = 150;
+int nrOfParticles = 250;
 bool collisionFirstLoop = TRUE;
 bool cubeCollisionFirstLoop = TRUE;
 
@@ -235,9 +235,9 @@ void init(void)
 	camMatrix = lookAtv(p, l, v);
 
 	// Initialize forest.
-	treeArray = GetForest(terrain->vertexArray, terrainW, terrainH, 80);
+	treeArray = GetForest(terrain->vertexArray, terrainW, terrainH, 40);
 	cloudArray = GetClouds(terrain->vertexArray, terrainW, terrainH, 60);
-	ballArray = GetBalls(terrain->vertexArray, terrainW, terrainH, 80, treeArray, GetNrOfTrees());
+	ballArray = GetBalls(terrain->vertexArray, terrainW, terrainH, 40, treeArray, GetNrOfTrees());
 
 	//"Particles"
 	particleArray = GenerateParticles(nrOfParticles);
@@ -325,6 +325,15 @@ void display(void)
 	if (CheckCollisionWithGround(player.GetPosition().x, player.GetPosition().y, player.GetPosition().z)){
 		isExplosion = TRUE;
 		player.SetCollision(TRUE);
+		if (collisionFirstLoop)
+		{
+			for (int i = 0; i < nrOfParticles; i++)
+			{
+				particleArray[i].SetParticleOrigin(player.GetPosition());
+
+			}
+		}
+		collisionFirstLoop = FALSE;
 	}
 
 	// Rotating model.
@@ -356,7 +365,7 @@ void display(void)
 	if (!isExplosion){
 		UploadAndDraw(planeTotal.m, planeRot, 0, 0);
 	}
-	printf("Height: %f", player.GetPosition().y);
+	//printf("Height: %f", player.GetPosition().y);
 	// *** END PLANE CODE ***
 
 	// Trees.
@@ -495,7 +504,6 @@ void display(void)
 		for (int i = 0; i < nrOfParticles; i++)
 		{	
 		teapotTrans = T(particleArray[i].GetPosition().x, particleArray[i].GetPosition().y - 2, particleArray[i].GetPosition().z);
-		printf("%f \n", particleArray[i].GetPosition().x);
 		particleArray[i].UpdateParticle();
 		//teapotScale = S(0.2, 0.2, 0.2);
 		teapotTotal = teapotTrans;
