@@ -23,7 +23,7 @@
 
 // Frustum.
 #define near 1.0
-#define far 400.0	// Drawing distance.
+#define far 500.0	// Drawing distance.
 #define right 0.5
 #define left -0.5
 #define top 0.5
@@ -144,9 +144,7 @@ int terrainH;
 // -----------------------------------------------------
 // -------------
 
-Plane player(vec3(80.0, 30.0, 80.0), vec3(1.0, 0.0, 0.0), 0.5);
-
-float propSpeed = 0.5;
+Plane player(vec3(80.0, 70.0, 80.0), vec3(1.0, 0.0, 0.0), 0.5);
 
 tree* treeArray;
 cloud* cloudArray;
@@ -194,13 +192,10 @@ void init(void)
 	// Load terrain data
 	//LoadTGATextureData("terrain/arnoldterrang_mountain_edges.tga", &ttex);
 	LoadTGATextureData("terrain/arnoldterrang.tga", &ttex);
-	terrain = GenerateTerrain(&ttex, 1);
+	terrain = GenerateTerrain(&ttex, 10);
 	terrainW = getWidth(&ttex);
 	terrainH = getHeight(&ttex);
 	printError("init terrain");
-
-	//LoadTGATextureData("terrain/test_terrain.tga", &ttex2);
-	//mountains = GenerateTerrain(&ttex2, 2);
 	
 
 	// Loading models.
@@ -313,8 +308,8 @@ void display(void)
 	glBindTexture(GL_TEXTURE_2D, groundTex);
 	UploadAndDraw(statTotal.m, terrain, 0, 0);
 	//Mountains
-//	glBindTexture(GL_TEXTURE_2D, bunnyTex);
-//	UploadAndDraw(statTotal.m, mountains, 0, 0);
+	glBindTexture(GL_TEXTURE_2D, bunnyTex);
+	UploadAndDraw(statTotal.m, mountains, 0, 0);
 	
 	// *** NEW PLANE CODE ***
 	player.MovePlane();
@@ -349,7 +344,7 @@ void display(void)
 
 
 	// Blades
-	mat4 temp2 = Rz(propSpeed*t);
+	mat4 temp2 = Rz(0.03*t);
 	planeTotal = Mult(PlaneMatrix, temp2);
 	if (!isExplosion){
 		UploadAndDraw(planeTotal.m, planeRot, 0, 0);
@@ -371,20 +366,11 @@ void display(void)
 
 		treeTotal = Mult(treeRot, treeScale);
 		treeTotal = Mult(treeTrans, treeTotal);
-		if (treeArray[i].GetType() == 1){
 			glBindTexture(GL_TEXTURE_2D, trunkTex);
 			UploadAndDraw(treeTotal.m, trunk, 0, 0);
 			glBindTexture(GL_TEXTURE_2D, leafTex);
 			UploadAndDraw(treeTotal.m, leaves, 0, 0);
-		}
-		else{
-		//	glBindTexture(GL_TEXTURE_2D, trunkTex);
-		//	UploadAndDraw(treeTotal.m, trunk, 0, 0);
-		//	glBindTexture(GL_TEXTURE_2D, leafTex);
-		//	UploadAndDraw(treeTotal.m, leaves, 0, 0);
-			glBindTexture(GL_TEXTURE_2D, leafTex);
-			UploadAndDraw(treeTotal.m, tree2, 0, 0);
-		}
+
 
 		if (treeArray[i].CheckHitBox(player.GetPosition())) // Check player collision with tree
 		{
@@ -493,7 +479,7 @@ void display(void)
 		for (int i = 0; i < nrOfParticles; i++)
 		{	
 		teapotTrans = T(particleArray[i].GetPosition().x, particleArray[i].GetPosition().y - 2, particleArray[i].GetPosition().z);
-		//printf("%f \n", particleArray[i].GetPosition().x);
+	//	printf("%f \n", particleArray[i].GetPosition().x);
 		particleArray[i].UpdateParticle();
 		//teapotScale = S(0.2, 0.2, 0.2);
 		teapotTotal = teapotTrans;
@@ -505,7 +491,6 @@ void display(void)
 		glBindVertexArray(vertexArrayObjID);	// Select VAO
 		glDrawArrays(GL_TRIANGLES, 0, 3);	// draw object
 		}
-
 		count += 1;
 		if (count > 80){
 			InitAfterCrash();
@@ -638,8 +623,6 @@ const float camSpeed = 0.01; // Do not change.
 const float camReturnSpeed = 0.01; // Do not change.
 const float pitchCamLimit = 0.2; // Do not change.
 const float yawCamLimit = 0.2; // Do not change.
-const float minSpeed = 0.1;
-const float maxSpeed = 2.5;
 
 void CheckKeys()	// Checks if keys are being pressed.
 {
@@ -699,26 +682,12 @@ void CheckKeys()	// Checks if keys are being pressed.
 	// 'r' increases the speed.
 	if (keyIsDown('r'))
 	{
-		if (propSpeed < maxSpeed)
-		{
-			propSpeed += 0.01;
-			if (propSpeed >= minSpeed)
-			{
-				player.SetVelocity(propSpeed);
-			}
-		}
+		player.SetVelocity(player.GetVelocity() + 0.01);
 	}
 	// 'f' decreases the speed.
 	if (keyIsDown('f'))
 	{
-		if (propSpeed > 0.0)
-		{
-			propSpeed -= 0.01;
-			if (propSpeed >= minSpeed)
-			{
-				player.SetVelocity(propSpeed);
-			}
-		}
+		player.SetVelocity(player.GetVelocity() - 0.01);
 	}
 	// Slowly resets the roll.
 	vec3 yUp = vec3(0.0, 1.0, 0.0);
@@ -828,18 +797,11 @@ mat4 RotatePlaneModel()
 
 vec3 CameraPlacement(vec3 stiffPos, vec3 upVec, vec3 rightVec)
 {
-	if (!isExplosion)
-	{
 	vec3 planeToCam = stiffPos - player.GetPosition();
 	mat4 offsetPitch = ArbRotate(rightVec, pitchCamOffset);
 	mat4 offsetYaw = ArbRotate(upVec, yawCamOffset);
 	mat4 camResult = Mult(offsetYaw, offsetPitch);
 	return vec3(camResult*planeToCam);
-}
-	else
-	{
-		//return stiffPos; feature?
-	}
 }
 
 void InitAfterCrash(){
