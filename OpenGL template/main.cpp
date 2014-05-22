@@ -23,7 +23,7 @@
 
 // Frustum.
 #define near 1.0
-#define far 300.0	// Drawing distance.
+#define far 500.0	// Drawing distance.
 #define right 0.5
 #define left -0.5
 #define top 0.5
@@ -144,7 +144,7 @@ int terrainH;
 // -----------------------------------------------------
 // -------------
 
-Plane player(vec3(80.0, 30.0, 80.0), vec3(1.0, 0.0, 0.0), 0.5);
+Plane player(vec3(80.0, 70.0, 80.0), vec3(1.0, 0.0, 0.0), 0.5);
 
 tree* treeArray;
 cloud* cloudArray;
@@ -192,13 +192,10 @@ void init(void)
 	// Load terrain data
 	//LoadTGATextureData("terrain/arnoldterrang_mountain_edges.tga", &ttex);
 	LoadTGATextureData("terrain/arnoldterrang.tga", &ttex);
-	terrain = GenerateTerrain(&ttex, 1);
+	terrain = GenerateTerrain(&ttex, 10);
 	terrainW = getWidth(&ttex);
 	terrainH = getHeight(&ttex);
 	printError("init terrain");
-
-	//LoadTGATextureData("terrain/test_terrain.tga", &ttex2);
-	//mountains = GenerateTerrain(&ttex2, 2);
 	
 
 	// Loading models.
@@ -352,7 +349,7 @@ void display(void)
 	if (!isExplosion){
 		UploadAndDraw(planeTotal.m, planeRot, 0, 0);
 	}
-	printf("Height: %f", player.GetPosition().y);
+	//printf("Height: %f", player.GetPosition().y);
 	// *** END PLANE CODE ***
 
 	// Trees.
@@ -369,20 +366,11 @@ void display(void)
 
 		treeTotal = Mult(treeRot, treeScale);
 		treeTotal = Mult(treeTrans, treeTotal);
-		if (treeArray[i].GetType() == 1){
 			glBindTexture(GL_TEXTURE_2D, trunkTex);
 			UploadAndDraw(treeTotal.m, trunk, 0, 0);
 			glBindTexture(GL_TEXTURE_2D, leafTex);
 			UploadAndDraw(treeTotal.m, leaves, 0, 0);
-		}
-		else{
-		//	glBindTexture(GL_TEXTURE_2D, trunkTex);
-		//	UploadAndDraw(treeTotal.m, trunk, 0, 0);
-		//	glBindTexture(GL_TEXTURE_2D, leafTex);
-		//	UploadAndDraw(treeTotal.m, leaves, 0, 0);
-			glBindTexture(GL_TEXTURE_2D, leafTex);
-			UploadAndDraw(treeTotal.m, tree2, 0, 0);
-		}
+
 
 		if (treeArray[i].CheckHitBox(player.GetPosition())) // Check player collision with tree
 		{
@@ -491,7 +479,7 @@ void display(void)
 		for (int i = 0; i < nrOfParticles; i++)
 		{	
 		teapotTrans = T(particleArray[i].GetPosition().x, particleArray[i].GetPosition().y - 2, particleArray[i].GetPosition().z);
-		printf("%f \n", particleArray[i].GetPosition().x);
+	//	printf("%f \n", particleArray[i].GetPosition().x);
 		particleArray[i].UpdateParticle();
 		//teapotScale = S(0.2, 0.2, 0.2);
 		teapotTotal = teapotTrans;
@@ -503,7 +491,6 @@ void display(void)
 		glBindVertexArray(vertexArrayObjID);	// Select VAO
 		glDrawArrays(GL_TRIANGLES, 0, 3);	// draw object
 		}
-
 		count += 1;
 		if (count > 80){
 			InitAfterCrash();
