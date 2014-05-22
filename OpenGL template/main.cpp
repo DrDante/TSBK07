@@ -214,7 +214,7 @@ void init(void)
 	trunk = LoadModelPlus("models/stamm.obj");
 	leaves = LoadModelPlus("models/blad.obj");
 //	bush= LoadModelPlus("models/bush_SH20_1.obj");
-	tree2 = LoadModelPlus("models/tree_EU55_3.obj");
+//	tree2 = LoadModelPlus("models/tree_EU55_3.obj");
 //	leaveBush = LoadModelPlus("models/LeaveBushObj.obj");
 
 
