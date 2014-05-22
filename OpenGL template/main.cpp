@@ -191,7 +191,7 @@ void init(void)
 
 	// Load terrain data
 	//LoadTGATextureData("terrain/arnoldterrang_mountain_edges.tga", &ttex);
-	LoadTGATextureData("terrain/arnoldterrang512_mountain_edges.tga", &ttex);
+	LoadTGATextureData("terrain/arnoldterrang1024.tga", &ttex);
 	terrain = GenerateTerrain(&ttex, 1);
 	terrainW = getWidth(&ttex);
 	terrainH = getHeight(&ttex);
