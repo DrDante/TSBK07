@@ -13,7 +13,7 @@
 
 
 
-Model* GenerateTerrain(TextureData *tex);
+Model* GenerateTerrain(TextureData *tex, GLfloat terrainScale);
 
 vec3 giveNormal(int x, int y, int z, GLfloat *vertexArray, GLuint *indexArray, int width, int height);
 

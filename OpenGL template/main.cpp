@@ -22,7 +22,7 @@
 
 // Frustum.
 #define near 1.0
-#define far 400.0	// Drawing distance.
+#define far 300.0	// Drawing distance.
 #define right 0.5
 #define left -0.5
 #define top 0.5
@@ -99,9 +99,13 @@ Model *plane;
 Model *planeRot;
 Model *trunk;
 Model *leaves;
+
+// Try-outs to be the type2-tree
 Model *bush;
 Model *tree2;
 Model *leaveBush;
+
+Model *mountains;
 
 // Rotation, translation and result matrices for the models.
 mat4 bunnyTrans, teapotTrans, carTrans, teddyTrans;
@@ -128,6 +132,8 @@ GLuint trunkTex, leafTex;
 
 // terrain
 TextureData ttex;
+// Mountains
+TextureData ttex2;
 
 int terrainW;
 int terrainH;
@@ -179,11 +185,15 @@ void init(void)
 
 	// Load terrain data
 	//LoadTGATextureData("terrain/arnoldterrang_mountain_edges.tga", &ttex);
-	LoadTGATextureData("terrain/arnoldterrang.tga", &ttex);
-	terrain = GenerateTerrain(&ttex);
+	LoadTGATextureData("terrain/arnoldterrang512_mountain_edges.tga", &ttex);
+	terrain = GenerateTerrain(&ttex, 2);
 	terrainW = getWidth(&ttex);
 	terrainH = getHeight(&ttex);
 	printError("init terrain");
+
+	//LoadTGATextureData("terrain/test_terrain.tga", &ttex2);
+	//mountains = GenerateTerrain(&ttex2, 2);
+	
 
 	// Loading models.
 	windmillWalls = LoadModelPlus("models/windmill/windmill-walls.obj");
@@ -214,7 +224,7 @@ void init(void)
 	LoadTGATextureSimple("textures/bilskissred.tga", &carTex);
 	LoadTGATextureSimple("textures/maskros512.tga", &teddyTex);
 	LoadTGATextureSimple("textures/treetext2.tga", &trunkTex);
-	LoadTGATextureSimple("textures/leaftext2.tga", &leafTex);
+	LoadTGATextureSimple("textures/leaftext.tga", &leafTex);
 	// -----------------------------------------------------
 
 	// Multitexturing.
@@ -293,23 +303,9 @@ void display(void)
 	// Ny terräng
 	glBindTexture(GL_TEXTURE_2D, groundTex);
 	UploadAndDraw(statTotal.m, terrain, 0, 0);
-	/* Ta bort denna kommentar o kommentera ut koden nedan om du vill styra runt utan planet!
-	// Planet som det var förut
-	planeTrans = T(15.0, 15.0, 0.0);
-	mat4 temp0 = Ry(-PI*0.5);
-	mat4 temp = Ry(0.0001*t);
-	temp = Mult(temp, temp0);
-	//planeTotal = (planeTrans, temp);
-	planeTotal = Mult(temp, planeTrans);
-
-	// Plane
-	glBindTexture(GL_TEXTURE_2D, skyTex);
-	UploadAndDraw(planeTotal.m, plane, 0, 0);
-	mat4 temp2 = Rz(0.03*t);
-	planeTotal = Mult(planeTrans, temp2);
-	planeTotal = Mult(temp, planeTotal);
-	UploadAndDraw(planeTotal.m, planeRot, 0, 0);
-	*/
+	//Mountains
+	glBindTexture(GL_TEXTURE_2D, bunnyTex);
+	UploadAndDraw(statTotal.m, mountains, 0, 0);
 	
 	// *** NEW PLANE CODE ***
 	player.MovePlane();
@@ -377,7 +373,7 @@ void display(void)
 		//	UploadAndDraw(treeTotal.m, trunk, 0, 0);
 		//	glBindTexture(GL_TEXTURE_2D, leafTex);
 		//	UploadAndDraw(treeTotal.m, leaves, 0, 0);
-			glBindTexture(GL_TEXTURE_2D, groundTex);
+			glBindTexture(GL_TEXTURE_2D, leafTex);
 			UploadAndDraw(treeTotal.m, tree2, 0, 0);
 		}
 
