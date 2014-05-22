@@ -11,6 +11,7 @@
 #include "GenerateGridPositions.h"
 #include "tree.h"
 #include "cloud.h"
+#include "ball.h"
 
 #include "particle.h"
 
@@ -62,6 +63,8 @@ void InitAfterCrash();
 // Hitta rätt plats för!
 bool CheckCollisionWithGround(GLfloat x, GLfloat y, GLfloat z);
 bool isExplosion = FALSE;
+bool isCubeExplosion = FALSE;
+
 GLint count=0;
 
 // Glew initialization... thing.
@@ -145,21 +148,24 @@ Plane player(vec3(80.0, 30.0, 80.0), vec3(1.0, 0.0, 0.0), 0.5);
 
 tree* treeArray;
 cloud* cloudArray;
-
+ball* ballArray;
 
 // "Particles"
 particle* particleArray;
-int nrOfParticles = 250;
+int nrOfParticles = 150;
 bool collisionFirstLoop = TRUE;
+bool cubeCollisionFirstLoop = TRUE;
 
 // Triangle
-GLfloat triangleSize = 0.25;
+GLfloat triangleSize = 0.2;
 GLfloat triangle[] =
 {
 	-triangleSize, -triangleSize, 0.0f,
 	-triangleSize, triangleSize, 0.0f,
 	triangleSize, -triangleSize, 0.0f
 };
+
+//Cube 
 
 unsigned int vertexArrayObjID;
 GLuint particleProgram;
@@ -202,7 +208,7 @@ void init(void)
 	windmillBlade = LoadModelPlus("models/windmill/blade.obj");
 	ground = LoadModelPlus("models/ground.obj");
 	skybox = LoadModelPlus("models/skybox.obj");
-	bunny = LoadModelPlus("models/bunnyplus.obj");
+	bunny = LoadModelPlus("models/kub.obj");
 	teapot = LoadModelPlus("models/teapot.obj");
 	car = LoadModelPlus("models/bilskiss.obj");
 	teddy = LoadModelPlus("models/teddy.obj");
@@ -241,6 +247,7 @@ void init(void)
 	// Initialize forest.
 	treeArray = GetForest(terrain->vertexArray, terrainW, terrainH, 80);
 	cloudArray = GetClouds(terrain->vertexArray, terrainW, terrainH, 60);
+	ballArray = GetBalls(terrain->vertexArray, terrainW, terrainH, 80, treeArray, GetNrOfTrees());
 
 	//"Particles"
 	particleArray = GenerateParticles(nrOfParticles);
@@ -387,12 +394,68 @@ void display(void)
 				for (int i = 0; i < nrOfParticles; i++)
 				{
 					particleArray[i].SetParticleOrigin(player.GetPosition());
+
 				}
 			}
 			collisionFirstLoop = FALSE;
 		}
 	}
+	// Balls
 
+	mat4 ballTrans;
+
+	for (int i = 0; i < GetNrOfBalls(); i++)
+	{
+		bool hit = ballArray[i].AlreadyHit();
+		if (hit)
+		{		
+		ballTrans = T(ballArray[i].GetPosition().x, ballArray[i].GetPosition().y, ballArray[i].GetPosition().z);
+		glBindTexture(GL_TEXTURE_2D, trunkTex);
+		UploadAndDraw(ballTrans.m, bunny, 0, 0);
+
+		if (ballArray[i].CheckHitBox(player.GetPosition())) // Check player collision with ball
+		{
+			isCubeExplosion = TRUE;
+
+			if (cubeCollisionFirstLoop)
+			{
+				for (int i = 0; i < nrOfParticles; i++)
+				{
+					particleArray[i].SetParticleOrigin(player.GetPosition());
+
+				}
+			}
+			cubeCollisionFirstLoop = FALSE;
+		}
+		}
+	}
+
+	//Cube explosion
+	if (isCubeExplosion){
+
+		for (int i = 0; i < nrOfParticles; i++)
+		{
+			teapotTrans = T(particleArray[i].GetPosition().x, particleArray[i].GetPosition().y - 2, particleArray[i].GetPosition().z);
+			particleArray[i].UpdateParticle();
+			//teapotScale = S(0.2, 0.2, 0.2);
+			teapotTotal = teapotTrans;
+			//UploadAndDraw(teapotTrans.m, teapot, 0, 0);
+			//Draw vertices.
+			glUniformMatrix4fv(glGetUniformLocation(program, "MTWMatrix"), 1, GL_TRUE, teapotTotal.m);
+			glUniformMatrix4fv(glGetUniformLocation(program, "WTVMatrix"), 1, GL_TRUE, camMatrix.m);
+			glUniformMatrix4fv(glGetUniformLocation(program, "VTPMatrix"), 1, GL_TRUE, projMatrix);
+			glBindVertexArray(vertexArrayObjID);	// Select VAO
+			glDrawArrays(GL_TRIANGLES, 0, 3);	// draw object
+		}
+
+		count += 1;
+		if (count > 80){
+			isCubeExplosion = FALSE;
+			cubeCollisionFirstLoop = TRUE;
+			particleArray = GenerateParticles(nrOfParticles);
+			count = 0;
+		}
+	}
 
 	// Windmill.
 	glBindTexture(GL_TEXTURE_2D, millTex);

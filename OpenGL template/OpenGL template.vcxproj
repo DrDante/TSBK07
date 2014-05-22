@@ -127,6 +127,7 @@
     <ClCompile Include="VectorUtils3.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ball.h" />
     <ClInclude Include="cloud.h" />
     <ClInclude Include="GenerateGridPositions.h" />
     <ClInclude Include="GL_utilities.h" />
