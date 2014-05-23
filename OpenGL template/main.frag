@@ -35,13 +35,6 @@ vec3 totalLight;	// Total light.
 
 void main(void)
 {
-	// If drawing the skybox, lighting is skipped.
-	if(skybox)
-	{
-		out_Color = texture(texUnit, outTexCoord);
-	}
-	else
-	{
 		// Calculates the incident and reflected light rays for all light sources.
 		for (int i = 0; i < numberOfLightSources; i++)
 		{
@@ -84,11 +77,10 @@ void main(void)
 		totalLight += specLight;
 
 		vec4 tempTotalLight = vec4(totalLight, 1.0);
-		if(transparent)
+		/*if(transparent)
 			tempTotalLight[3] = 0.1;
-		if(!multitex)
+		if(!multitex)*/
 			out_Color = texture(texUnit, outTexCoord) * tempTotalLight;
-		else
-			out_Color = (texture(texUnit, outTexCoord) + texture(texUnit2, outTexCoord)) * tempTotalLight;
-	}
+		/*else
+			out_Color = (texture(texUnit, outTexCoord) + texture(texUnit2, outTexCoord)) * tempTotalLight;*/
 }
