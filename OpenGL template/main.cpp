@@ -149,8 +149,8 @@ int terrainH;
 // -----------------------------------------------------
 // -------------
 
-Plane player(vec3(80.0, 70.0, 80.0), vec3(1.0, 0.0, 0.0), 0.5);
-float propSpeed = 0.5;
+Plane player(vec3(40.0, 40.0, 40.0), vec3(1.0, 0.0, 0.0), 0.5);
+float propSpeed = 0.3;
 
 tree* treeArray;
 cloud* cloudArray;
@@ -391,11 +391,11 @@ void display(void)
 		}
 		collisionFirstLoop = FALSE;
 	}
-
+	GLfloat planeScale=0.4;
 	// Rotating model.
 	mat4 PlaneMatrix = RotatePlaneModel();
 	// Moving model.
-	PlaneMatrix = Mult(T(player.GetPosition().x, player.GetPosition().y, player.GetPosition().z), PlaneMatrix);
+	PlaneMatrix = Mult(Mult(T(player.GetPosition().x, player.GetPosition().y, player.GetPosition().z), PlaneMatrix), S(planeScale, planeScale, planeScale));
 
 	CheckIfOutsideBounderies(player.GetPosition());
 	if (isOutside){
@@ -409,7 +409,7 @@ void display(void)
 	// Camera stuff.
 	s = player.GetDirection(); // Forward vector.
 	l = player.GetPosition(); // What the camera is looking at.
-	p = l - s * 20.0; // Stiff camera placement, 20.0 behind the plane.
+	p = l - s * 5.0; // Stiff camera placement, 5.0 behind the plane.
 	vec3 sluggishCamPos = p;
 	if (!isExplosion)
 	{
@@ -430,7 +430,6 @@ void display(void)
 	if (!isExplosion){
 		UploadAndDraw(planeTotal.m, planeRot, 0, 0);
 	}
-	//printf("Height: %f", player.GetPosition().y);
 	// *** END PLANE CODE ***
 
 	// Trees.
@@ -901,7 +900,7 @@ vec3 CameraPlacement(vec3 stiffPos, vec3 upVec, vec3 rightVec)
 void InitAfterCrash(){
 	player.SetCollision(FALSE);
 	player.SetDirection(vec3(1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0));
-	player.SetPosition(vec3(100.0, 100.0, 100.0));
+	player.SetPosition(vec3(40.0, 40.0, 40.0));
 	player.SetVelocity(0.5);
 	isExplosion = FALSE;
 	collisionFirstLoop = TRUE;
