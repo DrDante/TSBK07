@@ -16,14 +16,12 @@
 #include "particle.h"
 
 
-
-
 // ---Globals---
 #define PI 3.14159265358979323846
 
 // Frustum.
 #define near 1.0
-#define far 500.0	// Drawing distance.
+#define far 400.0	// Drawing distance.
 #define right 0.5
 #define left -0.5
 #define top 0.5
@@ -159,8 +157,10 @@ cloud* cloudArray;
 ball* ballArray;
 
 // "Particles"
-particle* particleArray;
+particle* particleCubeArray;
+particle* particleExplosionArray;
 int nrOfParticles = 150;
+int nrOfExplosionParticles = 8000;
 bool collisionFirstLoop = TRUE;
 bool cubeCollisionFirstLoop = TRUE;
 
@@ -173,10 +173,33 @@ GLfloat triangle[] =
 	triangleSize, -triangleSize, 0.0f
 };
 
-//Cube 
+GLfloat triangleExplosionSize = 0.15;
+GLfloat triangleExplosion[] =
+{
+	-triangleExplosionSize, -triangleExplosionSize, 0.0f,
+	-triangleSize, triangleExplosionSize, 0.0f,
+	triangleExplosionSize, -triangleExplosionSize, 0.0f
+};
 
+GLfloat triangleCubeColor[] =
+{
+	0.0, 0.0, 0.0f, 1.0,
+	0.0, 0.0, 0.0f, 1.0,
+	0.0, 0.0, 0.0f, 1.0
+};
+
+GLfloat triangleExplosionColor[] =
+{
+	1.0, 0.0, 0.0f, 1.0,
+	1.0, 1.0, 0.0f, 1.0,
+	1.0, 0.5, 0.0f, 1.0
+};
+
+//Cube 
 unsigned int vertexArrayObjID;
+unsigned int vertexArrayObjID2;
 GLuint particleProgram;
+GLuint skyboxProgram;
 
 void init(void)
 {
@@ -191,6 +214,7 @@ void init(void)
 
 	// Loading and compiling shaders.
 	program = loadShaders("main.vert", "main.frag");
+	skyboxProgram = loadShaders("skybox.vert", "skybox.frag");
 
 
 	printError("init shader");
@@ -198,7 +222,7 @@ void init(void)
 	// ----------------------OBJECT(S)----------------------
 
 	// Load terrain data
-	LoadTGATextureData("terrain/arnoldterrang_mountain_edges.tga", &ttex);
+	LoadTGATextureData("terrain/arnoldterrang_mountain_edges256.tga", &ttex);
 	terrain = GenerateTerrain(&ttex, 2);
 	terrainW = getWidth(&ttex);
 	terrainH = getHeight(&ttex);
@@ -220,6 +244,9 @@ void init(void)
 	planeRot = LoadModelPlus("models/Blade.obj");
 	trunk = LoadModelPlus("models/stamm.obj");
 	leaves = LoadModelPlus("models/blad.obj");
+//	bush= LoadModelPlus("models/bush_SH20_1.obj");
+//	tree2 = LoadModelPlus("models/tree_EU55_3.obj");
+//	leaveBush = LoadModelPlus("models/LeaveBushObj.obj");
 
 
 	// Loading textures.
@@ -246,26 +273,55 @@ void init(void)
 	camMatrix = lookAtv(p, l, v);
 
 	// Initialize forest.
-	treeArray = GetForest(terrain->vertexArray, terrainW, terrainH, 80);
+	treeArray = GetForest(terrain->vertexArray, terrainW, terrainH, 50);
 	cloudArray = GetClouds(terrain->vertexArray, terrainW, terrainH, 60);
-	ballArray = GetBalls(terrain->vertexArray, terrainW, terrainH, 80, treeArray, GetNrOfTrees());
+	ballArray = GetBalls(terrain->vertexArray, terrainW, terrainH, 50, treeArray, GetNrOfTrees());
 
 	//"Particles"
-	particleArray = GenerateParticles(nrOfParticles);
-	//particleProgram = loadShaders("particle.vert", "particle.frag");
+	particleCubeArray = GenerateParticles(nrOfParticles, 0);
+	particleExplosionArray = GenerateParticles(nrOfExplosionParticles,1);
+
+	particleProgram = loadShaders("particle.vert", "particle.frag");
 	unsigned int vertexBufferObjID;
+	unsigned int vertexBufferObjID2;
+	unsigned int vertexBufferObjID3;
+	unsigned int vertexBufferObjID4;
+
 	// Taken from lab 1.
 	// Allocate and activate Vertex Array Object
 	glGenVertexArrays(1, &vertexArrayObjID);
 	glBindVertexArray(vertexArrayObjID);
 	// Allocate Vertex Buffer Objects
 	glGenBuffers(1, &vertexBufferObjID);
-
+	glGenBuffers(1, &vertexBufferObjID2);
 	// VBO for vertex data
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjID);
 	glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(GLfloat), triangle, GL_STATIC_DRAW);
-	glVertexAttribPointer(glGetAttribLocation(program, "inPosition"), 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(glGetAttribLocation(program, "inPosition"));
+	glVertexAttribPointer(glGetAttribLocation(particleProgram, "inPosition"), 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(glGetAttribLocation(particleProgram, "inPosition"));
+
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjID2);
+	glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), triangleCubeColor, GL_STATIC_DRAW);
+	glVertexAttribPointer(glGetAttribLocation(particleProgram, "inColor"), 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(glGetAttribLocation(particleProgram, "inColor"));
+
+	// Allocate and activate Vertex Array Object
+	glGenVertexArrays(1, &vertexArrayObjID2);
+	glBindVertexArray(vertexArrayObjID2);
+	// Allocate Vertex Buffer Objects
+	glGenBuffers(1, &vertexBufferObjID3);
+	glGenBuffers(1, &vertexBufferObjID4);
+
+	// VBO for vertex data
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjID3);
+	glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(GLfloat), triangleExplosion, GL_STATIC_DRAW);
+	glVertexAttribPointer(glGetAttribLocation(particleProgram, "inPosition"), 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(glGetAttribLocation(particleProgram, "inPosition"));
+
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjID4);
+	glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), triangleExplosionColor, GL_STATIC_DRAW);
+	glVertexAttribPointer(glGetAttribLocation(particleProgram, "inColor"), 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(glGetAttribLocation(particleProgram, "inColor"));
 
 	//glEnable(GL_CULL_FACE);
 	//glDisable(GL_CULL_FACE);
@@ -274,7 +330,7 @@ void init(void)
 void display(void)
 {
 	printError("pre display");
-
+	glUseProgram(program);
 	// Update t for the current elapsed time.
 	t = (GLfloat)glutGet(GLUT_ELAPSED_TIME);
 
@@ -287,8 +343,10 @@ void display(void)
 
 	// -----------------------SKYBOX------------------------
 	// Skybox.
+	glUseProgram(skyboxProgram);
 	glBindTexture(GL_TEXTURE_2D, skyTex);
 	UploadAndDraw(skyMatrix, skybox, 1, 0);
+	glUseProgram(program);
 	// -----------------------------------------------------
 
 	// Lighting stuff.
@@ -311,6 +369,9 @@ void display(void)
 	// Ny terräng
 	glBindTexture(GL_TEXTURE_2D, groundTex);
 	UploadAndDraw(statTotal.m, terrain, 0, 0);
+	//Mountains
+	glBindTexture(GL_TEXTURE_2D, bunnyTex);
+	UploadAndDraw(statTotal.m, mountains, 0, 0);
 	
 	// *** NEW PLANE CODE ***
 	player.MovePlane();
@@ -319,6 +380,16 @@ void display(void)
 	if (CheckCollisionWithGround(player.GetPosition().x, player.GetPosition().y, player.GetPosition().z)){
 		isExplosion = TRUE;
 		player.SetCollision(TRUE);
+
+		if (collisionFirstLoop)
+		{
+			for (int i = 0; i < nrOfExplosionParticles; i++)
+			{
+				particleExplosionArray[i].SetParticleOrigin(player.GetPosition());
+
+	}
+		}
+		collisionFirstLoop = FALSE;
 	}
 
 	// Rotating model.
@@ -359,7 +430,7 @@ void display(void)
 	if (!isExplosion){
 		UploadAndDraw(planeTotal.m, planeRot, 0, 0);
 	}
-
+	//printf("Height: %f", player.GetPosition().y);
 	// *** END PLANE CODE ***
 
 	// Trees.
@@ -389,9 +460,9 @@ void display(void)
 
 			if (collisionFirstLoop)
 			{
-				for (int i = 0; i < nrOfParticles; i++)
+				for (int i = 0; i < nrOfExplosionParticles; i++)
 				{
-					particleArray[i].SetParticleOrigin(player.GetPosition());
+					particleExplosionArray[i].SetParticleOrigin(player.GetPosition());
 
 				}
 			}
@@ -399,10 +470,8 @@ void display(void)
 		}
 	}
 	
-	// Balls
-
+	// Balls (cubes atm)
 	mat4 ballTrans;
-
 	for (int i = 0; i < GetNrOfBalls(); i++)
 	{
 		bool hit = ballArray[i].AlreadyHit();
@@ -416,11 +485,15 @@ void display(void)
 		{
 			isCubeExplosion = TRUE;
 
+			propSpeed += 0.15;
+			player.SetVelocity(propSpeed);
+
 			if (cubeCollisionFirstLoop)
 			{
 				for (int i = 0; i < nrOfParticles; i++)
 				{
-					particleArray[i].SetParticleOrigin(player.GetPosition());
+					particleCubeArray[i].SetParticleOrigin(player.GetPosition());
+
 
 				}
 			}
@@ -430,19 +503,20 @@ void display(void)
 	}
 
 	//Cube explosion
+	glUseProgram(particleProgram);
 	if (isCubeExplosion){
 
 		for (int i = 0; i < nrOfParticles; i++)
 		{
-			teapotTrans = T(particleArray[i].GetPosition().x, particleArray[i].GetPosition().y - 2, particleArray[i].GetPosition().z);
-			particleArray[i].UpdateParticle();
+			teapotTrans = T(particleCubeArray[i].GetPosition().x, particleCubeArray[i].GetPosition().y - 2, particleCubeArray[i].GetPosition().z);
+			particleCubeArray[i].UpdateParticle();
 			//teapotScale = S(0.2, 0.2, 0.2);
 			teapotTotal = teapotTrans;
 			//UploadAndDraw(teapotTrans.m, teapot, 0, 0);
 			//Draw vertices.
-			glUniformMatrix4fv(glGetUniformLocation(program, "MTWMatrix"), 1, GL_TRUE, teapotTotal.m);
-			glUniformMatrix4fv(glGetUniformLocation(program, "WTVMatrix"), 1, GL_TRUE, camMatrix.m);
-			glUniformMatrix4fv(glGetUniformLocation(program, "VTPMatrix"), 1, GL_TRUE, projMatrix);
+			glUniformMatrix4fv(glGetUniformLocation(particleProgram, "MTWMatrix"), 1, GL_TRUE, teapotTotal.m);
+			glUniformMatrix4fv(glGetUniformLocation(particleProgram, "WTVMatrix"), 1, GL_TRUE, camMatrix.m);
+			glUniformMatrix4fv(glGetUniformLocation(particleProgram, "VTPMatrix"), 1, GL_TRUE, projMatrix);
 			glBindVertexArray(vertexArrayObjID);	// Select VAO
 			glDrawArrays(GL_TRIANGLES, 0, 3);	// draw object
 		}
@@ -451,55 +525,27 @@ void display(void)
 		if (count > 80){
 			isCubeExplosion = FALSE;
 			cubeCollisionFirstLoop = TRUE;
-			particleArray = GenerateParticles(nrOfParticles);
+			particleCubeArray = GenerateParticles(nrOfParticles, 0);
 			count = 0;
 		}
 	}
 
-	// Windmill.
-	glBindTexture(GL_TEXTURE_2D, millTex);
-	// Walls, roof and balcony.
-	UploadAndDraw(statTotal.m, windmillWalls, 0, 0);
-	UploadAndDraw(statTotal.m, windmillRoof, 0, 0);
-	UploadAndDraw(statTotal.m, windmillBalcony, 0, 0);
-	// Blades.
-	bladeStartRot = Rx(0);
-	bladeTotal1 = Mult(bladeRot, bladeStartRot);
-	bladeTotal1 = Mult(bladeTrans, bladeTotal1);
-	bladeStartRot = Rx(3.14 / 2);
-	bladeTotal2 = Mult(bladeRot, bladeStartRot);
-	bladeTotal2 = Mult(bladeTrans, bladeTotal2);
-	bladeStartRot = Rx(3.14);
-	bladeTotal3 = Mult(bladeRot, bladeStartRot);
-	bladeTotal3 = Mult(bladeTrans, bladeTotal3);
-	bladeStartRot = Rx(3 * 3.14 / 2);
-	bladeTotal4 = Mult(bladeRot, bladeStartRot);
-	bladeTotal4 = Mult(bladeTrans, bladeTotal4);
-	// Upload matrices, blade 1.
-	UploadAndDraw(bladeTotal1.m, windmillBlade, 0, 0);
-	// Upload matrices, blade 2.
-	UploadAndDraw(bladeTotal2.m, windmillBlade, 0, 0);
-	// Upload matrices, blade 3.
-	UploadAndDraw(bladeTotal3.m, windmillBlade, 0, 0);
-	// Upload matrices, blade 4.
-	UploadAndDraw(bladeTotal4.m, windmillBlade, 0, 0);
 
 	// "explosion"
 	if (isExplosion){
 
-		for (int i = 0; i < nrOfParticles; i++)
+		for (int i = 0; i < nrOfExplosionParticles; i++)
 		{	
-		teapotTrans = T(particleArray[i].GetPosition().x, particleArray[i].GetPosition().y - 2, particleArray[i].GetPosition().z);
-	//	printf("%f \n", particleArray[i].GetPosition().x);
-		particleArray[i].UpdateParticle();
+			teapotTrans = T(particleExplosionArray[i].GetPosition().x, particleExplosionArray[i].GetPosition().y - 2, particleExplosionArray[i].GetPosition().z);
+			particleExplosionArray[i].UpdateParticle();
 		//teapotScale = S(0.2, 0.2, 0.2);
 		teapotTotal = teapotTrans;
 		//UploadAndDraw(teapotTrans.m, teapot, 0, 0);
 		//Draw vertices.
-		glUniformMatrix4fv(glGetUniformLocation(program, "MTWMatrix"), 1, GL_TRUE, teapotTotal.m);
-		glUniformMatrix4fv(glGetUniformLocation(program, "WTVMatrix"), 1, GL_TRUE, camMatrix.m);
-		glUniformMatrix4fv(glGetUniformLocation(program, "VTPMatrix"), 1, GL_TRUE, projMatrix);
-		glBindVertexArray(vertexArrayObjID);	// Select VAO
+		glUniformMatrix4fv(glGetUniformLocation(particleProgram, "MTWMatrix"), 1, GL_TRUE, teapotTotal.m);
+		glUniformMatrix4fv(glGetUniformLocation(particleProgram, "WTVMatrix"), 1, GL_TRUE, camMatrix.m);
+		glUniformMatrix4fv(glGetUniformLocation(particleProgram, "VTPMatrix"), 1, GL_TRUE, projMatrix);
+		glBindVertexArray(vertexArrayObjID2);	// Select VAO
 		glDrawArrays(GL_TRIANGLES, 0, 3);	// draw object
 		}
 		count += 1;
@@ -508,6 +554,8 @@ void display(void)
 			count = 0;
 		}
 	}
+
+	glUseProgram(program);
 
 	// Extra objects.
 	bunnyTrans = T(-20.0, 0.55, -20.0);
@@ -574,9 +622,14 @@ void UploadAndDraw(GLfloat totalMat[], Model *currentModel, bool isSkybox, bool 
 		// Preparations for drawing the skybox.
 		glDisable(GL_DEPTH_TEST);
 
-		glUniform1i(glGetUniformLocation(program, "skybox"), 1);
-		glUniformMatrix4fv(glGetUniformLocation(program, "MTWMatrix"), 1, GL_TRUE, IdentityMatrix().m);
-		glUniformMatrix4fv(glGetUniformLocation(program, "WTVMatrix"), 1, GL_TRUE, skyMatrix);
+		//glUniform1i(glGetUniformLocation(program, "skybox"), 1);
+
+		glUniform1i(glGetUniformLocation(skyboxProgram, "texUnit"), 0);
+		glUniformMatrix4fv(glGetUniformLocation(skyboxProgram, "VTPMatrix"), 1, GL_TRUE, projMatrix);
+		glUniformMatrix4fv(glGetUniformLocation(skyboxProgram, "MTWMatrix"), 1, GL_TRUE, IdentityMatrix().m);
+		glUniformMatrix4fv(glGetUniformLocation(skyboxProgram, "WTVMatrix"), 1, GL_TRUE, skyMatrix);
+
+		DrawModel(currentModel, skyboxProgram, "inPosition", "inNormal", "inTexCoord");
 	}
 	else
 	{
@@ -852,7 +905,7 @@ void InitAfterCrash(){
 	player.SetVelocity(0.5);
 	isExplosion = FALSE;
 	collisionFirstLoop = TRUE;
-	particleArray = GenerateParticles(nrOfParticles);
+	particleExplosionArray = GenerateParticles(nrOfExplosionParticles, 1);
 }
 
 void CheckIfOutsideBounderies(vec3 pos){

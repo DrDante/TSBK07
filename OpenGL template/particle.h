@@ -82,6 +82,6 @@ public:
 };
 
 
-particle* GenerateParticles(int nrOfParticles);
+particle* GenerateParticles(int nrOfParticles, int isExplosion);
 
 #endif

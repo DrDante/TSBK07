@@ -143,6 +143,10 @@
   <ItemGroup>
     <None Include="main.frag" />
     <None Include="main.vert" />
+    <None Include="particle.frag" />
+    <None Include="particle.vert" />
+    <None Include="skybox.frag" />
+    <None Include="skybox.vert" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="OpenGL template.rc" />
