@@ -69,6 +69,7 @@ bool isCubeExplosion = FALSE;
 bool isOutside = FALSE;
 bool isTurningInsideRight = FALSE;
 bool isTurningInsideLeft = FALSE;
+bool isTuningInsideDown = FALSE;
 int maxFlyingHeight = 200;
 
 GLint count=0;
@@ -198,7 +199,7 @@ void init(void)
 
 	// Load terrain data
 	LoadTGATextureData("terrain/arnoldterrang_mountain_edges.tga", &ttex);
-	terrain = GenerateTerrain(&ttex, 3);
+	terrain = GenerateTerrain(&ttex, 2);
 	terrainW = getWidth(&ttex);
 	terrainH = getHeight(&ttex);
 	printError("init terrain");
@@ -857,16 +858,16 @@ void InitAfterCrash(){
 void CheckIfOutsideBounderies(vec3 pos){
 	if (pos.x < 4 || pos.z < 4 || pos.x >terrainH-4 || pos.z>terrainW-4 || pos.y >maxFlyingHeight){
 		isOutside = TRUE;
-		printf("Outside");
 	}
 	else{
 		isOutside = FALSE;
 		isTurningInsideRight = FALSE;
 		isTurningInsideLeft = FALSE;
+		isTuningInsideDown = FALSE;
 	}
 }
 
-void TurnPlaneInside(vec3 pos){
+void TurnPlaneInside(vec3 pos){ //Turns plan inside bounderies if outside
 	GLfloat angle = 0;
 	vec3 tempRight = Normalize(CrossProduct(player.GetDirection(), player.GetUpVector()));
 
@@ -882,32 +883,33 @@ void TurnPlaneInside(vec3 pos){
 	if (pos.z>terrainW - 4 && !isTurningInsideRight && !isTurningInsideLeft){
 		angle = PI - acos(DotProduct(vec3{ 0, 0, 1 }, Normalize(player.GetDirection())));
 	}
-	if (angle < PI / 2 || isTurningInsideRight){ // Turning right
-		player.SetDirection(Normalize(player.GetDirection() + (yawSpeed + 0.04) * tempRight), player.GetUpVector());
+	if (angle < (PI / 2) || isTurningInsideRight){ // Turning right
+		player.SetDirection(Normalize(player.GetDirection() + (yawSpeed + 0.08) * tempRight), player.GetUpVector());
 		if (yawCamOffset < yawCamLimit)
 		{
 			yawCamOffset += camSpeed;
 		}
 		isTurningInsideRight = TRUE;
 	}
-	else{
-		player.SetDirection(Normalize(player.GetDirection() - (yawSpeed + 0.04) * tempRight), player.GetUpVector());
+	if(angle >= (PI / 2)  || isTurningInsideLeft){ // Turning left Funkar inte! :(    ???? Whyyyyyyy?
+		player.SetDirection(Normalize(player.GetDirection() - (yawSpeed + 0.08) * tempRight), player.GetUpVector());
 		if (yawCamOffset > -yawCamLimit)
 		{
 			yawCamOffset -= camSpeed;
 		}
-		isTurningInsideLeft = TRUE;
+		isTurningInsideRight = TRUE;
+		printf("left");
 	}
 
-	if (pos.y > maxFlyingHeight){ //Inte optimalt, gör att man börjag flyga neråt, skulle egentligen vilja att man bara rätades ut
-		vec3 tempForward = Normalize(player.GetDirection() - (pitchSpeed-0.017) * player.GetUpVector());
-		vec3 tempUp = Normalize(player.GetUpVector() + (pitchSpeed-0.017) * player.GetDirection());
+	if (pos.y > maxFlyingHeight && !isTuningInsideDown){ //Inte optimalt, gör att man börjag flyga neråt, skulle egentligen vilja att man bara rätades ut
+		vec3 tempForward = Normalize(player.GetDirection() - (pitchSpeed-0.018) * player.GetUpVector());
+		vec3 tempUp = Normalize(player.GetUpVector() + (pitchSpeed-0.018) * player.GetDirection());
 		player.SetDirection(tempForward, tempUp);
 		if (pitchCamOffset < pitchCamLimit)
 		{
 			pitchCamOffset += camSpeed;
 		}
-
+		isTuningInsideDown = TRUE;
 	}
 }
 
