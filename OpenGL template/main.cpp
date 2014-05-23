@@ -195,9 +195,41 @@ GLfloat triangleExplosionColor[] =
 	1.0, 0.5, 0.0f, 1.0
 };
 
+
+GLfloat numberSquare[] =
+{
+	0.0f, 0.0f, 0.0f,
+	0.0f, 5.0f, 0.0f,
+	5.0f, 0.0f, 0.0f
+};
+
+GLfloat numberSquareTexCoord[] =
+{
+	0.12f, 0.12f,
+	0.12f, 0.0f, 
+	0.0f, 0.12f
+};
+
+GLfloat numberSquare2[] =
+{
+	5.0f, 5.0f, 0.0f,
+	0.0f, 5.0f, 0.0f,
+	5.0f, 0.0f, 0.0f
+};
+
+GLfloat numberSquareTexCoord2[] =
+{
+	0.0f, 0.0f,
+	0.12f, 0.0f,
+	0.0f, 0.12f
+};
+
+
 //Cube 
 unsigned int vertexArrayObjID;
 unsigned int vertexArrayObjID2;
+unsigned int vertexArrayObjID3;
+unsigned int vertexArrayObjID4;
 GLuint particleProgram;
 GLuint skyboxProgram;
 
@@ -286,6 +318,10 @@ void init(void)
 	unsigned int vertexBufferObjID2;
 	unsigned int vertexBufferObjID3;
 	unsigned int vertexBufferObjID4;
+	unsigned int vertexBufferObjID5;
+	unsigned int vertexBufferObjID6;
+	unsigned int vertexBufferObjID7;
+	unsigned int vertexBufferObjID8;
 
 	// Taken from lab 1.
 	// Allocate and activate Vertex Array Object
@@ -322,6 +358,42 @@ void init(void)
 	glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), triangleExplosionColor, GL_STATIC_DRAW);
 	glVertexAttribPointer(glGetAttribLocation(particleProgram, "inColor"), 4, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(glGetAttribLocation(particleProgram, "inColor"));
+
+	// Allocate and activate Vertex Array Object
+	glGenVertexArrays(1, &vertexArrayObjID3);
+	glBindVertexArray(vertexArrayObjID3);
+	// Allocate Vertex Buffer Objects
+	glGenBuffers(1, &vertexBufferObjID5);
+	glGenBuffers(1, &vertexBufferObjID6);
+
+	// VBO for vertex data
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjID5);
+	glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(GLfloat), numberSquare, GL_STATIC_DRAW);
+	glVertexAttribPointer(glGetAttribLocation(program, "inPosition"), 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(glGetAttribLocation(program, "inPosition"));
+
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjID6);
+	glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(GLfloat), numberSquareTexCoord, GL_STATIC_DRAW);
+	glVertexAttribPointer(glGetAttribLocation(program, "inTexCoord"), 2, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(glGetAttribLocation(program, "inTexCoord"));
+
+	// Allocate and activate Vertex Array Object
+	glGenVertexArrays(1, &vertexArrayObjID4);
+	glBindVertexArray(vertexArrayObjID4);
+	// Allocate Vertex Buffer Objects
+	glGenBuffers(1, &vertexBufferObjID7);
+	glGenBuffers(1, &vertexBufferObjID8);
+
+	// VBO for vertex data
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjID7);
+	glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(GLfloat), numberSquare2, GL_STATIC_DRAW);
+	glVertexAttribPointer(glGetAttribLocation(program, "inPosition"), 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(glGetAttribLocation(program, "inPosition"));
+
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjID8);
+	glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(GLfloat), numberSquareTexCoord2, GL_STATIC_DRAW);
+	glVertexAttribPointer(glGetAttribLocation(program, "inTexCoord"), 2, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(glGetAttribLocation(program, "inTexCoord"));
 
 	//glEnable(GL_CULL_FACE);
 	//glDisable(GL_CULL_FACE);
@@ -484,7 +556,7 @@ void display(void)
 		{
 			isCubeExplosion = TRUE;
 
-			propSpeed += 0.15;
+			propSpeed += 0.1;
 			player.SetVelocity(propSpeed);
 
 			if (cubeCollisionFirstLoop)
@@ -555,7 +627,18 @@ void display(void)
 	}
 
 	glUseProgram(program);
+	//Counter p - norm(v) + Normalize(s)
+	vec3 tempVec = VectorAdd(VectorSub(p, Normalize(-1*v)), Normalize(s));
+	teapotTrans = T(tempVec.x, tempVec.y, tempVec.z);
+	glBindTexture(GL_TEXTURE_2D, teapotTex);
+	glUniformMatrix4fv(glGetUniformLocation(program, "MTWMatrix"), 1, GL_TRUE, teapotTrans.m);
+	glUniformMatrix4fv(glGetUniformLocation(program, "WTVMatrix"), 1, GL_TRUE, camMatrix.m);
+	glUniformMatrix4fv(glGetUniformLocation(program, "VTPMatrix"), 1, GL_TRUE, projMatrix);
+	glBindVertexArray(vertexArrayObjID3);	// Select VAO
+	glDrawArrays(GL_TRIANGLES, 0, 3);	// draw object
 
+	glBindVertexArray(vertexArrayObjID4);	// Select VAO
+	glDrawArrays(GL_TRIANGLES, 0, 3);	// draw object
 	// Extra objects.
 	bunnyTrans = T(-20.0, 0.55, -20.0);
 	// Testing height function.
