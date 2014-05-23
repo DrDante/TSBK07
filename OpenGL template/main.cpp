@@ -59,11 +59,17 @@ vec3 ConfinedUpVector(vec3 forward);
 mat4 RotatePlaneModel();
 vec3 CameraPlacement(vec3 stiffPos, vec3 upVec, vec3 rightVec);
 void InitAfterCrash();
+void CheckIfOutsideBounderies(vec3 pos);
+void TurnPlaneInside(vec3 pos);
 
 // Hitta rätt plats för!
 bool CheckCollisionWithGround(GLfloat x, GLfloat y, GLfloat z);
 bool isExplosion = FALSE;
 bool isCubeExplosion = FALSE;
+bool isOutside = FALSE;
+bool isTurningInsideRight = FALSE;
+bool isTurningInsideLeft = FALSE;
+int maxFlyingHeight = 200;
 
 GLint count=0;
 
@@ -191,9 +197,8 @@ void init(void)
 	// ----------------------OBJECT(S)----------------------
 
 	// Load terrain data
-	//LoadTGATextureData("terrain/arnoldterrang_mountain_edges.tga", &ttex);
-	LoadTGATextureData("terrain/arnoldterrang.tga", &ttex);
-	terrain = GenerateTerrain(&ttex, 10);
+	LoadTGATextureData("terrain/arnoldterrang_mountain_edges.tga", &ttex);
+	terrain = GenerateTerrain(&ttex, 3);
 	terrainW = getWidth(&ttex);
 	terrainH = getHeight(&ttex);
 	printError("init terrain");
@@ -214,9 +219,6 @@ void init(void)
 	planeRot = LoadModelPlus("models/Blade.obj");
 	trunk = LoadModelPlus("models/stamm.obj");
 	leaves = LoadModelPlus("models/blad.obj");
-//	bush= LoadModelPlus("models/bush_SH20_1.obj");
-//	tree2 = LoadModelPlus("models/tree_EU55_3.obj");
-//	leaveBush = LoadModelPlus("models/LeaveBushObj.obj");
 
 
 	// Loading textures.
@@ -308,9 +310,6 @@ void display(void)
 	// Ny terräng
 	glBindTexture(GL_TEXTURE_2D, groundTex);
 	UploadAndDraw(statTotal.m, terrain, 0, 0);
-	//Mountains
-	glBindTexture(GL_TEXTURE_2D, bunnyTex);
-	UploadAndDraw(statTotal.m, mountains, 0, 0);
 	
 	// *** NEW PLANE CODE ***
 	player.MovePlane();
@@ -325,6 +324,11 @@ void display(void)
 	mat4 PlaneMatrix = RotatePlaneModel();
 	// Moving model.
 	PlaneMatrix = Mult(T(player.GetPosition().x, player.GetPosition().y, player.GetPosition().z), PlaneMatrix);
+
+	CheckIfOutsideBounderies(player.GetPosition());
+	if (isOutside){
+		TurnPlaneInside(player.GetPosition());
+	}
 
 	if (!isExplosion){
 		glBindTexture(GL_TEXTURE_2D, skyTex);
@@ -354,7 +358,7 @@ void display(void)
 	if (!isExplosion){
 		UploadAndDraw(planeTotal.m, planeRot, 0, 0);
 	}
-	//printf("Height: %f", player.GetPosition().y);
+
 	// *** END PLANE CODE ***
 
 	// Trees.
@@ -393,6 +397,7 @@ void display(void)
 			collisionFirstLoop = FALSE;
 		}
 	}
+	
 	// Balls
 
 	mat4 ballTrans;
@@ -634,6 +639,11 @@ const float maxSpeed = 2.0;
 void CheckKeys()	// Checks if keys are being pressed.
 {
 	vec3 tempRight = Normalize(CrossProduct(player.GetDirection(), player.GetUpVector()));
+
+	if (keyIsDown('p')){ // Reset game
+		InitAfterCrash();
+	}
+	if (!isOutside){
 	// 'w' pitches the plane downwards.
 	if (keyIsDown('w'))
 	{
@@ -787,6 +797,7 @@ void CheckKeys()	// Checks if keys are being pressed.
 		}
 	}
 }
+}
 
 /* Check if collision with groud given object (x,y,z), 
 returns TRUE if collision */
@@ -843,6 +854,62 @@ void InitAfterCrash(){
 	particleArray = GenerateParticles(nrOfParticles);
 }
 
+void CheckIfOutsideBounderies(vec3 pos){
+	if (pos.x < 4 || pos.z < 4 || pos.x >terrainH-4 || pos.z>terrainW-4 || pos.y >maxFlyingHeight){
+		isOutside = TRUE;
+		printf("Outside");
+	}
+	else{
+		isOutside = FALSE;
+		isTurningInsideRight = FALSE;
+		isTurningInsideLeft = FALSE;
+	}
+}
+
+void TurnPlaneInside(vec3 pos){
+	GLfloat angle = 0;
+	vec3 tempRight = Normalize(CrossProduct(player.GetDirection(), player.GetUpVector()));
+
+	if (pos.x < 4 && !isTurningInsideRight && !isTurningInsideLeft){
+		angle = PI - acos(DotProduct(vec3{ 0, 0, 1 }, Normalize(player.GetDirection())));
+	}
+	if (pos.z < 4 && !isTurningInsideRight && !isTurningInsideLeft){
+		angle = acos(DotProduct(vec3{ 1, 0, 0 }, Normalize(player.GetDirection())));
+	}
+	if (pos.x>terrainH - 4 && !isTurningInsideRight && !isTurningInsideLeft){
+		angle = acos(DotProduct(vec3{ 0, 0, 1 }, Normalize(player.GetDirection())));
+	}
+	if (pos.z>terrainW - 4 && !isTurningInsideRight && !isTurningInsideLeft){
+		angle = PI - acos(DotProduct(vec3{ 0, 0, 1 }, Normalize(player.GetDirection())));
+	}
+	if (angle < PI / 2 || isTurningInsideRight){ // Turning right
+		player.SetDirection(Normalize(player.GetDirection() + (yawSpeed + 0.04) * tempRight), player.GetUpVector());
+		if (yawCamOffset < yawCamLimit)
+		{
+			yawCamOffset += camSpeed;
+		}
+		isTurningInsideRight = TRUE;
+	}
+	else{
+		player.SetDirection(Normalize(player.GetDirection() - (yawSpeed + 0.04) * tempRight), player.GetUpVector());
+		if (yawCamOffset > -yawCamLimit)
+		{
+			yawCamOffset -= camSpeed;
+		}
+		isTurningInsideLeft = TRUE;
+	}
+
+	if (pos.y > maxFlyingHeight){ //Inte optimalt, gör att man börjag flyga neråt, skulle egentligen vilja att man bara rätades ut
+		vec3 tempForward = Normalize(player.GetDirection() - (pitchSpeed-0.017) * player.GetUpVector());
+		vec3 tempUp = Normalize(player.GetUpVector() + (pitchSpeed-0.017) * player.GetDirection());
+		player.SetDirection(tempForward, tempUp);
+		if (pitchCamOffset < pitchCamLimit)
+		{
+			pitchCamOffset += camSpeed;
+		}
+
+	}
+}
 
 int main(int argc, const char *argv[])
 {
