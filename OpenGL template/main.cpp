@@ -630,9 +630,9 @@ void display(void)
 	glUseProgram(program);
 	//Counter p - norm(v) + Normalize(s)
 	vec3 tempVec = VectorAdd(VectorSub(p, Normalize(-1*v)), Normalize(s));
-	teapotTrans = T(tempVec.x, tempVec.y, tempVec.z);
+	teapotTrans = T(s.x*5, s.y*5, s.z*5);
 	glBindTexture(GL_TEXTURE_2D, teapotTex);
-	glUniformMatrix4fv(glGetUniformLocation(program, "MTWMatrix"), 1, GL_TRUE, teapotTrans.m);
+	glUniformMatrix4fv(glGetUniformLocation(program, "MTWMatrix"), 1, GL_TRUE, camMatrix.m);
 	glUniformMatrix4fv(glGetUniformLocation(program, "WTVMatrix"), 1, GL_TRUE, camMatrix.m);
 	glUniformMatrix4fv(glGetUniformLocation(program, "VTPMatrix"), 1, GL_TRUE, projMatrix);
 	glBindVertexArray(vertexArrayObjID3);	// Select VAO
