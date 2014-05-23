@@ -145,6 +145,7 @@ int terrainH;
 // -------------
 
 Plane player(vec3(80.0, 70.0, 80.0), vec3(1.0, 0.0, 0.0), 0.5);
+float propSpeed = 0.5;
 
 tree* treeArray;
 cloud* cloudArray;
@@ -333,7 +334,11 @@ void display(void)
 	s = player.GetDirection(); // Forward vector.
 	l = player.GetPosition(); // What the camera is looking at.
 	p = l - s * 20.0; // Stiff camera placement, 20.0 behind the plane.
-	vec3 sluggishCamPos = l + CameraPlacement(p, player.GetUpVector(), Normalize(CrossProduct(player.GetDirection(), player.GetUpVector())));
+	vec3 sluggishCamPos = p;
+	if (!isExplosion)
+	{
+		sluggishCamPos = l + CameraPlacement(p, player.GetUpVector(), Normalize(CrossProduct(player.GetDirection(), player.GetUpVector())));
+	}
 
 	// OBS! Subjektivt, bör diskuteras.
 	v = ConfinedUpVector(player.GetDirection());
@@ -344,7 +349,7 @@ void display(void)
 
 
 	// Blades
-	mat4 temp2 = Rz(0.03*t);
+	mat4 temp2 = Rz(propSpeed * 0.1 * t);
 	planeTotal = Mult(PlaneMatrix, temp2);
 	if (!isExplosion){
 		UploadAndDraw(planeTotal.m, planeRot, 0, 0);
@@ -623,6 +628,8 @@ const float camSpeed = 0.01; // Do not change.
 const float camReturnSpeed = 0.01; // Do not change.
 const float pitchCamLimit = 0.2; // Do not change.
 const float yawCamLimit = 0.2; // Do not change.
+const float minSpeed = 0.1;
+const float maxSpeed = 2.0;
 
 void CheckKeys()	// Checks if keys are being pressed.
 {
@@ -682,12 +689,34 @@ void CheckKeys()	// Checks if keys are being pressed.
 	// 'r' increases the speed.
 	if (keyIsDown('r'))
 	{
-		player.SetVelocity(player.GetVelocity() + 0.01);
+		if (propSpeed < maxSpeed)
+		{
+			propSpeed += 0.01;
+			if (propSpeed >= minSpeed)
+			{
+				player.SetVelocity(propSpeed);
+			}
+		}
+		else
+		{
+			propSpeed = maxSpeed;
+		}
 	}
 	// 'f' decreases the speed.
 	if (keyIsDown('f'))
 	{
-		player.SetVelocity(player.GetVelocity() - 0.01);
+		if (propSpeed > 0.0)
+		{
+			propSpeed -= 0.01;
+			if (propSpeed >= minSpeed)
+			{
+				player.SetVelocity(propSpeed);
+			}
+		}
+		else
+		{
+			propSpeed = 0.0;
+		}
 	}
 	// Slowly resets the roll.
 	vec3 yUp = vec3(0.0, 1.0, 0.0);

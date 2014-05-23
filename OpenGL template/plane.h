@@ -73,6 +73,10 @@ public:
 				// 0.015 above could use some fine tuning.
 			}
 		}
+		if (vel < 0.4)
+		{
+			pos -= vec3(0.0, (0.4 - vel), 0.0);
+		}
 	}
 };
 
