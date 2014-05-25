@@ -137,6 +137,7 @@ GLuint millTex;
 GLuint skyTex;
 GLuint bunnyTex, teapotTex, carTex, teddyTex;
 GLuint trunkTex, leafTex;
+GLuint mtnTex1, mtnTex2, mtnTex3;
 
 // terrain
 TextureData ttex;
@@ -291,11 +292,17 @@ void init(void)
 	LoadTGATextureSimple("textures/maskros512.tga", &teddyTex);
 	LoadTGATextureSimple("textures/treetext2.tga", &trunkTex);
 	LoadTGATextureSimple("textures/leaftext.tga", &leafTex);
+
+	LoadTGATextureSimple("textures/dirt.tga", &mtnTex1);
+	LoadTGATextureSimple("textures/grass.tga", &mtnTex2);
+	LoadTGATextureSimple("textures/conc.tga", &mtnTex3);
+
 	// -----------------------------------------------------
 
 	// Multitexturing.
-	glUniform1i(glGetUniformLocation(program, "texUnit"), 0);
-	glUniform1i(glGetUniformLocation(program, "texUnit2"), 1);
+	//glUniform1i(glGetUniformLocation(program, "texUnit"), 0);
+	//glUniform1i(glGetUniformLocation(program, "texUnit2"), 1);
+	//glUniform1i(glGetUniformLocation(program, "texUnit3"), 2);
 
 	// Initializing "keyboard".
 	initKeymapManager();
@@ -395,6 +402,7 @@ void init(void)
 	glVertexAttribPointer(glGetAttribLocation(program, "inTexCoord"), 2, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(glGetAttribLocation(program, "inTexCoord"));
 
+	glUniform1i(glGetUniformLocation(program, "multitex"), 0);
 	//glEnable(GL_CULL_FACE);
 	//glDisable(GL_CULL_FACE);
 }
@@ -439,11 +447,23 @@ void display(void)
 	statTotal = statTrans;				// In this case, no rotation is used.
 
 	// Ny terräng
-	glBindTexture(GL_TEXTURE_2D, groundTex);
+	glUniform1i(glGetUniformLocation(program, "texUnit"), 0);
+	glUniform1i(glGetUniformLocation(program, "texUnit2"), 1);
+	glUniform1i(glGetUniformLocation(program, "texUnit3"), 2);
+	//glBindTexture(GL_TEXTURE_2D, groundTex);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, mtnTex1);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, mtnTex2);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, mtnTex3);
+	glUniform1i(glGetUniformLocation(program, "multitex"), 1);
 	UploadAndDraw(statTotal.m, terrain, 0, 0);
+	glUniform1i(glGetUniformLocation(program, "multitex"), 0);
+	glActiveTexture(GL_TEXTURE0);
 	//Mountains
-	glBindTexture(GL_TEXTURE_2D, bunnyTex);
-	UploadAndDraw(statTotal.m, mountains, 0, 0);
+	//glBindTexture(GL_TEXTURE_2D, bunnyTex);
+	//UploadAndDraw(statTotal.m, mountains, 0, 0);
 	
 	// *** NEW PLANE CODE ***
 	player.MovePlane();

@@ -9,6 +9,8 @@ out vec3 outNormal;
 out vec3 outCamPos;
 out vec3 outObjPos;
 
+out float pos;
+
 uniform mat4 MTWMatrix;	// Model-to-world matrix.
 uniform mat4 WTVMatrix;	// World-to-view matrix (camera).
 uniform mat4 VTPMatrix;	// View-to-projection matrix (lens).
@@ -21,6 +23,9 @@ void main(void)
 	gl_Position = VTPMatrix * WTVMatrix * MTWMatrix * vec4(inPosition, 1.0);
 	outTexCoord = inTexCoord;
 	outNormal = normalTransformMatrix * inNormal;
+	
+	vec3 tempPos = vec3(MTWMatrix * vec4(inPosition, 1.0));
+	pos = tempPos.y;
 
 	vec3 temp = vec3(camPos[0], camPos[1], camPos[2]);
 	//outCamPos = vec3(VTPMatrix * WTVMatrix * vec4(temp, 1.0));
