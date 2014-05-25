@@ -20,7 +20,7 @@
 #define PI 3.14159265358979323846
 
 // Frustum.
-#define near 1.0
+#define near 0.9
 #define far 400.0	// Drawing distance.
 #define right 0.5
 #define left -0.5
@@ -59,16 +59,20 @@ vec3 CameraPlacement(vec3 stiffPos, vec3 upVec, vec3 rightVec);
 void InitAfterCrash();
 void CheckIfOutsideBounderies(vec3 pos);
 void TurnPlaneInside(vec3 pos);
-
-// Hitta rätt plats för!
 bool CheckCollisionWithGround(GLfloat x, GLfloat y, GLfloat z);
+
+// Plane-crash flags
 bool isExplosion = FALSE;
 bool isCubeExplosion = FALSE;
+
+// Border control flags
 bool isOutside = FALSE;
 bool isTurningInsideRight = FALSE;
 bool isTurningInsideLeft = FALSE;
 bool isTuningInsideDown = FALSE;
-int maxFlyingHeight = 200;
+
+// Maximum allowed flying height
+int maxFlyingHeight = 250;
 
 GLint count=0;
 
@@ -277,10 +281,6 @@ void init(void)
 	planeRot = LoadModelPlus("models/Blade.obj");
 	trunk = LoadModelPlus("models/stamm.obj");
 	leaves = LoadModelPlus("models/blad.obj");
-//	bush= LoadModelPlus("models/bush_SH20_1.obj");
-//	tree2 = LoadModelPlus("models/tree_EU55_3.obj");
-//	leaveBush = LoadModelPlus("models/LeaveBushObj.obj");
-
 
 	// Loading textures.
 	LoadTGATextureSimple("textures/grass.tga", &groundTex);
@@ -461,9 +461,6 @@ void display(void)
 	UploadAndDraw(statTotal.m, terrain, 0, 0);
 	glUniform1i(glGetUniformLocation(program, "multitex"), 0);
 	glActiveTexture(GL_TEXTURE0);
-	//Mountains
-	//glBindTexture(GL_TEXTURE_2D, bunnyTex);
-	//UploadAndDraw(statTotal.m, mountains, 0, 0);
 	
 	// *** NEW PLANE CODE ***
 	player.MovePlane();
@@ -513,7 +510,6 @@ void display(void)
 	//camMatrix = lookAtv(p, l, player.GetUpVector());
 	//camMatrix = lookAtv(p, l, v);
 	camMatrix = lookAtv(sluggishCamPos, l, v);
-
 
 
 	// Blades
@@ -622,16 +618,14 @@ void display(void)
 	}
 
 
-	// "explosion"
+	// Explosion
 	if (isExplosion){
 
 		for (int i = 0; i < nrOfExplosionParticles; i++)
 		{	
 			teapotTrans = T(particleExplosionArray[i].GetPosition().x, particleExplosionArray[i].GetPosition().y - 2, particleExplosionArray[i].GetPosition().z);
 			particleExplosionArray[i].UpdateParticle();
-		//teapotScale = S(0.2, 0.2, 0.2);
 		teapotTotal = teapotTrans;
-		//UploadAndDraw(teapotTrans.m, teapot, 0, 0);
 		//Draw vertices.
 		glUniformMatrix4fv(glGetUniformLocation(particleProgram, "MTWMatrix"), 1, GL_TRUE, teapotTotal.m);
 		glUniformMatrix4fv(glGetUniformLocation(particleProgram, "WTVMatrix"), 1, GL_TRUE, camMatrix.m);
@@ -645,30 +639,39 @@ void display(void)
 			count = 0;
 		}
 	}
-
-	glUseProgram(program);
+	// Score-counter
+	glUseProgram(skyboxProgram);
 	//Counter p - norm(v) + Normalize(s)
 	mat4 signTrans;
 	mat4 signScale;
 	mat4 signRot;
 	mat4 signTot;
-	vec3 tempVec = VectorAdd(VectorSub(p, Normalize(1*v)),3* Normalize(s));
-	//signTrans = T(tempVec.x, tempVec.y, tempVec.z);
+	//vec3 tempTrans = VectorAdd(VectorSub(p, Normalize(v)), Normalize(l - sluggishCamPos));
+	signTrans = T(Normalize(l - sluggishCamPos).x, Normalize(l - sluggishCamPos).y, Normalize(l - sluggishCamPos).z);
+	signTrans = Mult(signTrans, T(-0.5 * v.x, -0.5 * v.y, -0.5 * v.z));
 	//signTrans = T(5, 0,5);
-	signTrans = T(5 * Normalize(s).x, 5 * Normalize(s).y, 5 * Normalize(s).z);
-	signScale = S(0.2, 0.2, 0.2);
-	signTot = Mult(signTrans, signScale);
-	signTot = Mult(signTrans,camMatrix);
+	//signTrans = T( tempTrans.x,tempTrans.y,tempTrans.z);
+	signScale = S(0.01, 0.01, 0.01);
+	signRot = Ry(PI);
+	signTot = InvertMat4(camMatrix);
+	signTot = Mult(signTot, signScale);
+	signTot = Mult(signTrans,signTot);
+	signTot = Mult(signTot, signRot);
 	glBindTexture(GL_TEXTURE_2D, teapotTex);
 	glUniformMatrix4fv(glGetUniformLocation(program, "MTWMatrix"), 1, GL_TRUE, signTot.m);
 	glUniformMatrix4fv(glGetUniformLocation(program, "WTVMatrix"), 1, GL_TRUE, camMatrix.m);
 	glUniformMatrix4fv(glGetUniformLocation(program, "VTPMatrix"), 1, GL_TRUE, projMatrix);
 	glBindVertexArray(vertexArrayObjID3);	// Select VAO
-	glDrawArrays(GL_TRIANGLES, 0, 3);	// draw object
+
+	//Utkommenterade, men arbeter på!
+//	glDrawArrays(GL_TRIANGLES, 0, 3);	// draw object
 
 	glBindVertexArray(vertexArrayObjID4);	// Select VAO
-	glDrawArrays(GL_TRIANGLES, 0, 3);	// draw object
+//	glDrawArrays(GL_TRIANGLES, 0, 3);	// draw object
 	// Extra objects.
+
+	glUseProgram(program);
+
 	bunnyTrans = T(-20.0, 0.55, -20.0);
 	// Testing height function.
 	float tempx = 100 + 50 * cosf(0.0005 * t);
@@ -969,7 +972,7 @@ returns TRUE if collision */
 bool CheckCollisionWithGround(GLfloat x, GLfloat y, GLfloat z){
 	bool isCollision = FALSE;
 	GLfloat groundHeight = findHeight(x, z, terrain->vertexArray, terrainW, terrainH);
-	if (isnan(groundHeight) == 1){ // is outside terrain? (Should not happen in finished game!)
+	if (isnan(groundHeight) == 1){ // is outside terrain? 
 		groundHeight = 0;
 	}
 	if (groundHeight > y){
@@ -1033,6 +1036,7 @@ void CheckIfOutsideBounderies(vec3 pos){
 
 void TurnPlaneInside(vec3 pos){ //Turns plan inside bounderies if outside
 	GLfloat angle = 0;
+
 	vec3 tempRight = Normalize(CrossProduct(player.GetDirection(), player.GetUpVector()));
 
 	if (pos.x < 4 && !isTurningInsideRight && !isTurningInsideLeft){
@@ -1047,7 +1051,7 @@ void TurnPlaneInside(vec3 pos){ //Turns plan inside bounderies if outside
 	if (pos.z>terrainW - 4 && !isTurningInsideRight && !isTurningInsideLeft){
 		angle = PI - acos(DotProduct(vec3{ 0, 0, 1 }, Normalize(player.GetDirection())));
 	}
-	if (angle < (PI / 2) || isTurningInsideRight){ // Turning right
+	if ((angle < (PI / 2) || isTurningInsideRight) && !isTuningInsideDown){ // Turning right
 		player.SetDirection(Normalize(player.GetDirection() + (yawSpeed + 0.08) * tempRight), player.GetUpVector());
 		if (yawCamOffset < yawCamLimit)
 		{
@@ -1055,25 +1059,23 @@ void TurnPlaneInside(vec3 pos){ //Turns plan inside bounderies if outside
 		}
 		isTurningInsideRight = TRUE;
 	}
-	if(angle >= (PI / 2)  || isTurningInsideLeft){ // Turning left Funkar inte! :(    ???? Whyyyyyyy?
-		player.SetDirection(Normalize(player.GetDirection() - (yawSpeed + 0.08) * tempRight), player.GetUpVector());
+	if((angle >= (PI / 2)  || isTurningInsideLeft) && !isTuningInsideDown){ 
+		player.SetDirection(Normalize(player.GetDirection() - (yawSpeed + 0.1) * tempRight), player.GetUpVector());
 		if (yawCamOffset > -yawCamLimit)
 		{
 			yawCamOffset -= camSpeed;
 		}
-		isTurningInsideRight = TRUE;
-		printf("left");
+		isTurningInsideLeft = TRUE;
 	}
 
-	if (pos.y > maxFlyingHeight && !isTuningInsideDown){ //Inte optimalt, gör att man börjag flyga neråt, skulle egentligen vilja att man bara rätades ut
-		vec3 tempForward = Normalize(player.GetDirection() - (pitchSpeed-0.018) * player.GetUpVector());
-		vec3 tempUp = Normalize(player.GetUpVector() + (pitchSpeed-0.018) * player.GetDirection());
-		player.SetDirection(tempForward, tempUp);
-		if (pitchCamOffset < pitchCamLimit)
-		{
-			pitchCamOffset += camSpeed;
-		}
+	if (pos.y > maxFlyingHeight && !isTuningInsideDown){ 
+		vec3 dir = player.GetDirection();
+		dir.y = player.GetDirection() .y- 0.01;
+		player.SetDirection(dir, CrossProduct(tempRight,dir));
 		isTuningInsideDown = TRUE;
+	}
+	else{
+		isTuningInsideDown = FALSE;
 	}
 }
 
