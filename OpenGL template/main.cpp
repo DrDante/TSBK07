@@ -238,7 +238,7 @@ void init(void)
 	dumpInfo();
 
 	// GL inits.
-	glClearColor(0.0, 0.3, 0.3, 0);
+	glClearColor(0.43921, 0.57647, 0.858824, 0);
 	glEnable(GL_DEPTH_TEST);
 	printError("GL inits");
 
@@ -642,10 +642,19 @@ void display(void)
 
 	glUseProgram(program);
 	//Counter p - norm(v) + Normalize(s)
-	vec3 tempVec = VectorAdd(VectorSub(p, Normalize(-1*v)), Normalize(s));
-	teapotTrans = T(s.x*5, s.y*5, s.z*5);
+	mat4 signTrans;
+	mat4 signScale;
+	mat4 signRot;
+	mat4 signTot;
+	vec3 tempVec = VectorAdd(VectorSub(p, Normalize(1*v)),3* Normalize(s));
+	//signTrans = T(tempVec.x, tempVec.y, tempVec.z);
+	//signTrans = T(5, 0,5);
+	signTrans = T(5 * Normalize(s).x, 5 * Normalize(s).y, 5 * Normalize(s).z);
+	signScale = S(0.2, 0.2, 0.2);
+	signTot = Mult(signTrans, signScale);
+	signTot = Mult(signTrans,camMatrix);
 	glBindTexture(GL_TEXTURE_2D, teapotTex);
-	glUniformMatrix4fv(glGetUniformLocation(program, "MTWMatrix"), 1, GL_TRUE, camMatrix.m);
+	glUniformMatrix4fv(glGetUniformLocation(program, "MTWMatrix"), 1, GL_TRUE, signTot.m);
 	glUniformMatrix4fv(glGetUniformLocation(program, "WTVMatrix"), 1, GL_TRUE, camMatrix.m);
 	glUniformMatrix4fv(glGetUniformLocation(program, "VTPMatrix"), 1, GL_TRUE, projMatrix);
 	glBindVertexArray(vertexArrayObjID3);	// Select VAO
