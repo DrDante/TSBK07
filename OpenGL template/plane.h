@@ -76,7 +76,7 @@ public:
 		const float lowestVel = 0.2; // The lowest velocity where the plane won't fall.
 		if (vel < lowestVel)
 		{
-			pos -= vec3(0.0, (lowestVel - vel), 0.0);
+			pos -= vec3(0.0, (lowestVel - vel), 0.0)*1.5;
 		}
 	}
 };

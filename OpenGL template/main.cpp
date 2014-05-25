@@ -40,8 +40,14 @@ GLfloat projMatrix[] = { 2.0f*near / (right - left), 0.0f, (right + left) / (rig
 // Sound stuff
 ALCdevice *device;
 ALCcontext *context;
-ALuint source;
-ALuint buffer;
+ALuint source1;
+ALuint source2;
+ALuint source3;
+ALuint source4;
+ALuint buffer1;
+ALuint buffer2;
+ALuint buffer3;
+ALuint buffer4;
 ALuint frequency;
 ALenum format = 0;
 
@@ -60,7 +66,8 @@ short formatType, channels;
 DWORD sampleRate, avgBytesPerSec;
 short bytesPerSample, bitsPerSample;
 DWORD dataSize;
-bool wasPlayingSound = false;
+bool wasPlayingSound1 = false;
+bool wasPlayingSound2 = false;
 
 unsigned char* buf;
 
@@ -92,8 +99,8 @@ vec3 CameraPlacement(vec3 stiffPos, vec3 upVec, vec3 rightVec);
 void InitAfterCrash();
 void CheckIfOutsideBounderies(vec3 pos);
 void TurnPlaneInside(vec3 pos);
-void LoadSoundStuff();
-void CleanUpSoundStuff();
+void LoadSoundStuff(int fnum);
+void CleanUpSoundStuff(int fnum);
 
 // Hitta rätt plats för!
 bool CheckCollisionWithGround(GLfloat x, GLfloat y, GLfloat z);
@@ -271,7 +278,15 @@ void init(void)
 	err = glewInit();
 
 	// Sound stuff
-	LoadSoundStuff();
+	LoadSoundStuff(3);
+	alSourcePlay(source3);
+	if (alGetError() != AL_NO_ERROR)
+		printf("Error playing sound");
+	CleanUpSoundStuff(3);
+	//LoadSoundStuff(1);
+	//LoadSoundStuff(2);
+	//LoadSoundStuff(3);
+	//LoadSoundStuff(4);
 
 	dumpInfo();
 
@@ -444,11 +459,22 @@ void init(void)
 
 void display(void)
 {
+	
 	printError("pre display");
 	glUseProgram(program);
 	// Update t for the current elapsed time.
 	t = (GLfloat)glutGet(GLUT_ELAPSED_TIME);
-
+	for (int i = 0; i < 50; i++)
+	{
+		if (int(t) % 7500 == i)
+		{
+			LoadSoundStuff(3);
+			alSourcePlay(source3);
+			if (alGetError() != AL_NO_ERROR)
+				printf("Error playing sound");
+			CleanUpSoundStuff(3);
+		}
+	}
 	CheckKeys();
 
 	// Clear the screen.
@@ -501,7 +527,10 @@ void display(void)
 	//UploadAndDraw(statTotal.m, mountains, 0, 0);
 	
 	// *** NEW PLANE CODE ***
-	player.MovePlane();
+	if (!isExplosion)
+	{
+		player.MovePlane();
+	}
 
 	// Check if collided with ground
 	if (CheckCollisionWithGround(player.GetPosition().x, player.GetPosition().y, player.GetPosition().z)){
@@ -629,6 +658,16 @@ void display(void)
 	glUseProgram(particleProgram);
 	if (isCubeExplosion){
 
+		// Sound stuff
+		if (!wasPlayingSound2)
+		{
+			LoadSoundStuff(2);
+			wasPlayingSound2 = true;
+			alSourcePlay(source2);
+			if (alGetError() != AL_NO_ERROR)
+				printf("Error playing sound");
+		}
+
 		for (int i = 0; i < nrOfParticles; i++)
 		{
 			teapotTrans = T(particleCubeArray[i].GetPosition().x, particleCubeArray[i].GetPosition().y - 2, particleCubeArray[i].GetPosition().z);
@@ -646,6 +685,7 @@ void display(void)
 
 		count += 1;
 		if (count > 80){
+			CleanUpSoundStuff(2);
 			isCubeExplosion = FALSE;
 			cubeCollisionFirstLoop = TRUE;
 			particleCubeArray = GenerateParticles(nrOfParticles, 0);
@@ -658,10 +698,11 @@ void display(void)
 	if (isExplosion){
 
 		// Sound stuff
-		if (!wasPlayingSound)
+		if (!wasPlayingSound1)
 		{
-			wasPlayingSound = true;
-			alSourcePlay(source);
+			LoadSoundStuff(1);
+			wasPlayingSound1 = true;
+			alSourcePlay(source1);
 			if (alGetError() != AL_NO_ERROR)
 				printf("Error playing sound");
 		}
@@ -1052,8 +1093,8 @@ vec3 CameraPlacement(vec3 stiffPos, vec3 upVec, vec3 rightVec)
 
 void InitAfterCrash(){
 	// Sound stuff
-	CleanUpSoundStuff();
-	LoadSoundStuff();
+	CleanUpSoundStuff(1);
+	//LoadSoundStuff(1);
 	
 	player.SetCollision(FALSE);
 	player.SetDirection(vec3(1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0));
@@ -1123,7 +1164,7 @@ void TurnPlaneInside(vec3 pos){ //Turns plan inside bounderies if outside
 	}
 }
 
-void LoadSoundStuff()
+void LoadSoundStuff(int fnum)
 {
 	device = alcOpenDevice(NULL);
 	if (!device)
@@ -1132,12 +1173,48 @@ void LoadSoundStuff()
 	alcMakeContextCurrent(context);
 	if (!context)
 		printf("no sound context");
-	alGenSources((ALuint)1, &source);
-	alGenBuffers((ALuint)1, &buffer);
+	switch (fnum)
+	{
+	case 1:
+		alGenSources((ALuint)1, &source1);
+		alGenBuffers((ALuint)1, &buffer1);
+		break;
+	case 2:
+		alGenSources((ALuint)1, &source2);
+		alGenBuffers((ALuint)1, &buffer2);
+		break;
+	case 3:
+		alGenSources((ALuint)1, &source3);
+		alGenBuffers((ALuint)1, &buffer3);
+		break;
+	case 4:
+		alGenSources((ALuint)1, &source4);
+		alGenBuffers((ALuint)1, &buffer4);
+		break;
+	default:
+		break;
+	}
 	if (alGetError() != AL_NO_ERROR)
 		printf("Error GenSource");
 
-	fp = fopen("audio/Alarm01.wav", "rb");
+	switch (fnum)
+	{
+	case 1:
+		fp = fopen("audio/Explosion 2-SoundBible.com-1641389556.wav", "rb");
+		break;
+	case 2:
+		fp = fopen("audio/Metroid_Door-Brandino480-995195341.wav", "rb");
+		break;
+	case 3:
+		fp = fopen("audio/Propeller-SoundBible.com-615398190.wav", "rb");
+		break;
+	case 4:
+
+		break;
+	default:
+		break;
+	}
+	
 	if (!fp)
 		printf("Failed to open file");                        //Could not open file
 	//Check that the WAVE file is OK
@@ -1201,7 +1278,23 @@ void LoadSoundStuff()
 	if (!format)
 		printf("Wrong BitPerSample");
 
-	alBufferData(buffer, format, buf, dataSize, frequency);
+	switch (fnum)
+	{
+	case 1:
+		alBufferData(buffer1, format, buf, dataSize, frequency);
+		break;
+	case 2:
+		alBufferData(buffer2, format, buf, dataSize, frequency);
+		break;
+	case 3:
+		alBufferData(buffer3, format, buf, dataSize, frequency);
+		break;
+	case 4:
+		alBufferData(buffer4, format, buf, dataSize, frequency);
+		break;
+	default:
+		break;
+	}
 	if (alGetError() != AL_NO_ERROR)
 		printf("Error loading ALBuffer");
 
@@ -1211,26 +1304,64 @@ void LoadSoundStuff()
 	alListenerfv(AL_ORIENTATION, ListenerOri);                                  //Set orientation of the listener
 
 	//Source
-	alSourcei(source, AL_BUFFER, buffer);                                 //Link the buffer to the source
-	alSourcef(source, AL_PITCH, 1.0f);                                 //Set the pitch of the source
-	alSourcef(source, AL_GAIN, 1.0f);                                 //Set the gain of the source
-	alSourcefv(source, AL_POSITION, SourcePos);                                 //Set the position of the source
-	alSourcefv(source, AL_VELOCITY, SourceVel);                                 //Set the velocity of the source
-	alSourcei(source, AL_LOOPING, AL_FALSE);                                 //Set if source is looping sound
+	switch (fnum)
+	{
+	case 1:
+		alSourcei(source1, AL_BUFFER, buffer1);                                 //Link the buffer to the source
+		alSourcef(source1, AL_PITCH, 1.0f);                                 //Set the pitch of the source
+		alSourcef(source1, AL_GAIN, 1.0f);                                 //Set the gain of the source
+		alSourcefv(source1, AL_POSITION, SourcePos);                                 //Set the position of the source
+		alSourcefv(source1, AL_VELOCITY, SourceVel);                                 //Set the velocity of the source
+		alSourcei(source1, AL_LOOPING, AL_FALSE);                                 //Set if source is looping sound
+		break;
+	case 2:
+		alSourcei(source2, AL_BUFFER, buffer2);                                 //Link the buffer to the source
+		alSourcef(source2, AL_PITCH, 1.0f);                                 //Set the pitch of the source
+		alSourcef(source2, AL_GAIN, 1.0f);                                 //Set the gain of the source
+		alSourcefv(source2, AL_POSITION, SourcePos);                                 //Set the position of the source
+		alSourcefv(source2, AL_VELOCITY, SourceVel);                                 //Set the velocity of the source
+		alSourcei(source2, AL_LOOPING, AL_FALSE);                                 //Set if source is looping sound
+		break;
+	case 3:
+		alSourcei(source3, AL_BUFFER, buffer3);                                 //Link the buffer to the source
+		alSourcef(source3, AL_PITCH, 1.0f);                                 //Set the pitch of the source
+		alSourcef(source3, AL_GAIN, 1.0f);                                 //Set the gain of the source
+		alSourcefv(source3, AL_POSITION, SourcePos);                                 //Set the position of the source
+		alSourcefv(source3, AL_VELOCITY, SourceVel);                                 //Set the velocity of the source
+		alSourcei(source3, AL_LOOPING, AL_FALSE);                                 //Set if source is looping sound
+		break;
+	case 4:
+		alSourcei(source4, AL_BUFFER, buffer4);                                 //Link the buffer to the source
+		alSourcef(source4, AL_PITCH, 1.0f);                                 //Set the pitch of the source
+		alSourcef(source4, AL_GAIN, 1.0f);                                 //Set the gain of the source
+		alSourcefv(source4, AL_POSITION, SourcePos);                                 //Set the position of the source
+		alSourcefv(source4, AL_VELOCITY, SourceVel);                                 //Set the velocity of the source
+		alSourcei(source4, AL_LOOPING, AL_TRUE);                                 //Set if source is looping sound
+		break;
+	default:
+		break;
+	}
 }
 
-void CleanUpSoundStuff()
+void CleanUpSoundStuff(int fnum)
 {
 	//Clean-up
 	fclose(fp);                                                                 //Close the WAVE file
-	delete[] buf;                                                               //Delete the sound data buffer
-	alDeleteSources(1, &source);                                                //Delete the OpenAL Source
-	alDeleteBuffers(1, &buffer);                                                 //Delete the OpenAL Buffer
-	alcMakeContextCurrent(NULL);                                                //Make no context current
-	alcDestroyContext(context);                                                 //Destroy the OpenAL Context
-	alcCloseDevice(device);                                                     //Close the OpenAL Device
+	//delete[] buf;                                                               //Delete the sound data buffer
+	//alDeleteSources(1, &source);                                                //Delete the OpenAL Source
+	//alDeleteBuffers(1, &buffer);                                                 //Delete the OpenAL Buffer
+	//alcMakeContextCurrent(NULL);                                                //Make no context current
+	//alcDestroyContext(context);                                                 //Destroy the OpenAL Context
+	//alcCloseDevice(device);                                                     //Close the OpenAL Device
 
-	wasPlayingSound = false;
+	if (fnum == 1)
+	{
+		wasPlayingSound1 = false;
+	}
+	else if (fnum == 2)
+	{
+		wasPlayingSound2 = false;
+	}
 }
 
 int main(int argc, const char *argv[])
