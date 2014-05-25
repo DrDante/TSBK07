@@ -89,8 +89,7 @@ Point3D lightSourcesDirectionsPositions[] = { { -0.58f, 0.58f, -0.58f }, // Whit
 { 0.0f, 0.0f, 0.0f }, // No light
 { 0.0f, 0.0f, 0.0f }, // No light
 { 0.0f, 0.0f, 0.0f } }; // No light
-// -----------------------------------------------------
-// ----------------------OBJECT(S)----------------------
+
 // Models.
 Model *windmillWalls;
 Model *windmillRoof;
@@ -126,10 +125,10 @@ mat4 bladeRot, bladeStartRot, bladeTrans;
 mat4 bladeTotal1, bladeTotal2, bladeTotal3, bladeTotal4;
 
 mat4 planeTrans;
-mat4 planeTotal;
+mat4 propTotal;
 
-// Plane speed
-GLfloat planeSpeed= 1.0;
+// Plane scale
+GLfloat planeScale = 0.2;
 
 // References to textures.
 GLuint groundTex;
@@ -147,11 +146,9 @@ TextureData ttex2;
 int terrainW;
 int terrainH;
 
-// -----------------------------------------------------
-// -------------
-
-Plane player(vec3(40.0, 40.0, 40.0), vec3(1.0, 0.0, 0.0), 0.5);
-float propSpeed = 0.3;
+const float startPropSpeed = 0.3;
+float propSpeed = startPropSpeed;
+Plane player(vec3(40.0, 40.0, 40.0), vec3(1.0, 0.0, 0.0), propSpeed);
 
 tree* treeArray;
 cloud* cloudArray;
@@ -442,8 +439,8 @@ void display(void)
 	// ----------------------OBJECT(S)----------------------
 	// Translation matrices.
 	statTrans = T(0.0, 0.0, 0.0);		// Placement of the static pieces.
-	bladeTrans = T(4.5, 9.2, 0.0);		// Placement of the blades.
-	bladeRot = Rx(0.001 * t);			// Blade rotation speed.
+	//bladeTrans = T(4.5, 9.2, 0.0);		// Placement of the blades.
+	//bladeRot = Rx(0.001 * t);			// Blade rotation speed.
 	statTotal = statTrans;				// In this case, no rotation is used.
 
 	// Ny terräng
@@ -483,7 +480,6 @@ void display(void)
 		}
 		collisionFirstLoop = FALSE;
 	}
-	GLfloat planeScale=0.4;
 	// Rotating model.
 	mat4 PlaneMatrix = RotatePlaneModel();
 	// Moving model.
@@ -493,10 +489,13 @@ void display(void)
 	if (isOutside){
 		TurnPlaneInside(player.GetPosition());
 	}
-
+	// Blades
+	mat4 propRot = Rz(propSpeed * 0.1 * t);
+	propTotal = Mult(PlaneMatrix, propRot);
 	if (!isExplosion){
 		glBindTexture(GL_TEXTURE_2D, skyTex);
 		UploadAndDraw(PlaneMatrix.m, plane, 0, 0);
+		UploadAndDraw(propTotal.m, planeRot, 0, 0);
 	}
 	// Camera stuff.
 	s = player.GetDirection(); // Forward vector.
@@ -516,12 +515,7 @@ void display(void)
 
 
 
-	// Blades
-	mat4 temp2 = Rz(propSpeed * 0.1 * t);
-	planeTotal = Mult(PlaneMatrix, temp2);
-	if (!isExplosion){
-		UploadAndDraw(planeTotal.m, planeRot, 0, 0);
-	}
+	
 	// *** END PLANE CODE ***
 
 	// Trees.
@@ -790,7 +784,7 @@ const float camReturnSpeed = 0.01; // Do not change.
 const float pitchCamLimit = 0.2; // Do not change.
 const float yawCamLimit = 0.2; // Do not change.
 const float minSpeed = 0.1;
-const float maxSpeed = 2.0;
+const float maxSpeed = 1.0;
 
 void CheckKeys()	// Checks if keys are being pressed.
 {
@@ -1004,7 +998,8 @@ void InitAfterCrash(){
 	player.SetCollision(FALSE);
 	player.SetDirection(vec3(1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0));
 	player.SetPosition(vec3(40.0, 40.0, 40.0));
-	player.SetVelocity(0.5);
+	propSpeed = startPropSpeed;
+	player.SetVelocity(propSpeed);
 	isExplosion = FALSE;
 	collisionFirstLoop = TRUE;
 	particleExplosionArray = GenerateParticles(nrOfExplosionParticles, 1);

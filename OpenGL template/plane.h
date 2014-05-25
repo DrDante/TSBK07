@@ -73,9 +73,10 @@ public:
 				// 0.015 above could use some fine tuning.
 			}
 		}
-		if (vel < 0.4)
+		const float lowestVel = 0.2; // The lowest velocity where the plane won't fall.
+		if (vel < lowestVel)
 		{
-			pos -= vec3(0.0, (0.4 - vel), 0.0);
+			pos -= vec3(0.0, (lowestVel - vel), 0.0);
 		}
 	}
 };
