@@ -1,4 +1,10 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 // Includes.
+#include <AL\al.h>
+#include <AL\alc.h>
+#include <iostream>
+//#include <stdio.h>
 #include <gl\glew.h>
 #include <gl\freeglut.h>
 #include <math.h>
@@ -31,6 +37,33 @@ GLfloat projMatrix[] = { 2.0f*near / (right - left), 0.0f, (right + left) / (rig
 0.0f, 0.0f, -(far + near) / (far - near), -2 * far*near / (far - near),
 0.0f, 0.0f, -1.0f, 0.0f }; // Projection matrix.
 
+// Sound stuff
+ALCdevice *device;
+ALCcontext *context;
+ALuint source;
+ALuint buffer;
+ALuint frequency;
+ALenum format = 0;
+
+ALfloat SourcePos[] = { 0.0, 0.0, 0.0 };									//Position of the source sound
+ALfloat SourceVel[] = { 0.0, 0.0, 0.0 };									//Velocity of the source sound
+ALfloat ListenerPos[] = { 0.0, 0.0, 0.0 };									//Position of the listener
+ALfloat ListenerVel[] = { 0.0, 0.0, 0.0 };									//Velocity of the listener
+ALfloat ListenerOri[] = { 0.0, 0.0, -1.0, 0.0, 1.0, 0.0 };					//Orientation of the listener
+																			//First direction vector, then vector pointing up) 
+
+FILE *fp = NULL;
+
+char type[4];
+DWORD size, chunkSize;
+short formatType, channels;
+DWORD sampleRate, avgBytesPerSec;
+short bytesPerSample, bitsPerSample;
+DWORD dataSize;
+bool wasPlayingSound = false;
+
+unsigned char* buf;
+
 // Time variable.
 GLfloat t;
 
@@ -59,6 +92,8 @@ vec3 CameraPlacement(vec3 stiffPos, vec3 upVec, vec3 rightVec);
 void InitAfterCrash();
 void CheckIfOutsideBounderies(vec3 pos);
 void TurnPlaneInside(vec3 pos);
+void LoadSoundStuff();
+void CleanUpSoundStuff();
 
 // Hitta rätt plats för!
 bool CheckCollisionWithGround(GLfloat x, GLfloat y, GLfloat z);
@@ -234,6 +269,9 @@ GLuint skyboxProgram;
 void init(void)
 {
 	err = glewInit();
+
+	// Sound stuff
+	LoadSoundStuff();
 
 	dumpInfo();
 
@@ -618,6 +656,15 @@ void display(void)
 
 	// "explosion"
 	if (isExplosion){
+
+		// Sound stuff
+		if (!wasPlayingSound)
+		{
+			wasPlayingSound = true;
+			alSourcePlay(source);
+			if (alGetError() != AL_NO_ERROR)
+				printf("Error playing sound");
+		}
 
 		for (int i = 0; i < nrOfExplosionParticles; i++)
 		{	
@@ -1004,6 +1051,10 @@ vec3 CameraPlacement(vec3 stiffPos, vec3 upVec, vec3 rightVec)
 }
 
 void InitAfterCrash(){
+	// Sound stuff
+	CleanUpSoundStuff();
+	LoadSoundStuff();
+	
 	player.SetCollision(FALSE);
 	player.SetDirection(vec3(1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0));
 	player.SetPosition(vec3(40.0, 40.0, 40.0));
@@ -1070,6 +1121,116 @@ void TurnPlaneInside(vec3 pos){ //Turns plan inside bounderies if outside
 		}
 		isTuningInsideDown = TRUE;
 	}
+}
+
+void LoadSoundStuff()
+{
+	device = alcOpenDevice(NULL);
+	if (!device)
+		printf("no sound device");
+	context = alcCreateContext(device, NULL);
+	alcMakeContextCurrent(context);
+	if (!context)
+		printf("no sound context");
+	alGenSources((ALuint)1, &source);
+	alGenBuffers((ALuint)1, &buffer);
+	if (alGetError() != AL_NO_ERROR)
+		printf("Error GenSource");
+
+	fp = fopen("audio/Alarm01.wav", "rb");
+	if (!fp)
+		printf("Failed to open file");                        //Could not open file
+	//Check that the WAVE file is OK
+	fread(type, sizeof(char), 4, fp);                                              //Reads the first bytes in the file
+	if (type[0] != 'R' || type[1] != 'I' || type[2] != 'F' || type[3] != 'F')            //Should be "RIFF"
+		printf("No RIFF");                                            //Not RIFF
+
+	fread(&size, sizeof(DWORD), 1, fp);                                           //Continue to read the file
+	fread(type, sizeof(char), 4, fp);                                             //Continue to read the file
+	if (type[0] != 'W' || type[1] != 'A' || type[2] != 'V' || type[3] != 'E')           //This part should be "WAVE"
+		printf("not WAVE");                                            //Not WAVE
+
+	fread(type, sizeof(char), 4, fp);                                              //Continue to read the file
+	if (type[0] != 'f' || type[1] != 'm' || type[2] != 't' || type[3] != ' ')           //This part should be "fmt "
+		printf("not fmt ");                                            //Not fmt
+
+	fread(&chunkSize, sizeof(DWORD), 1, fp);
+	fread(&formatType, sizeof(short), 1, fp);
+	fread(&channels, sizeof(short), 1, fp);
+	fread(&sampleRate, sizeof(DWORD), 1, fp);
+	fread(&avgBytesPerSec, sizeof(DWORD), 1, fp);
+	fread(&bytesPerSample, sizeof(short), 1, fp);
+	fread(&bitsPerSample, sizeof(short), 1, fp);
+
+	fread(type, sizeof(char), 4, fp);
+	if (type[0] != 'd' || type[1] != 'a' || type[2] != 't' || type[3] != 'a')           //This part should be "data"
+		printf("Missing DATA");
+
+	fread(&dataSize, sizeof(DWORD), 1, fp);
+
+	//Display the info about the WAVE file
+	std::cout << "Chunk Size: " << chunkSize << "\n";
+	std::cout << "Format Type: " << formatType << "\n";
+	std::cout << "Channels: " << channels << "\n";
+	std::cout << "Sample Rate: " << sampleRate << "\n";
+	std::cout << "Average Bytes Per Second: " << avgBytesPerSec << "\n";
+	std::cout << "Bytes Per Sample: " << bytesPerSample << "\n";
+	std::cout << "Bits Per Sample: " << bitsPerSample << "\n";
+	std::cout << "Data Size: " << dataSize << "\n";
+
+	buf = new unsigned char[dataSize];
+	std::cout << fread(buf, sizeof(BYTE), dataSize, fp) << " bytes loaded\n";
+	fread(buf, sizeof(BYTE), dataSize, fp);
+
+	frequency = sampleRate;
+
+	if (bitsPerSample == 8)
+	{
+		if (channels == 1)
+			format = AL_FORMAT_MONO8;
+		else if (channels == 2)
+			format = AL_FORMAT_STEREO8;
+	}
+	else if (bitsPerSample == 16)
+	{
+		if (channels == 1)
+			format = AL_FORMAT_MONO16;
+		else if (channels == 2)
+			format = AL_FORMAT_STEREO16;
+	}
+	if (!format)
+		printf("Wrong BitPerSample");
+
+	alBufferData(buffer, format, buf, dataSize, frequency);
+	if (alGetError() != AL_NO_ERROR)
+		printf("Error loading ALBuffer");
+
+	//Listener                                                                               
+	alListenerfv(AL_POSITION, ListenerPos);                                  //Set position of the listener
+	alListenerfv(AL_VELOCITY, ListenerVel);                                  //Set velocity of the listener
+	alListenerfv(AL_ORIENTATION, ListenerOri);                                  //Set orientation of the listener
+
+	//Source
+	alSourcei(source, AL_BUFFER, buffer);                                 //Link the buffer to the source
+	alSourcef(source, AL_PITCH, 1.0f);                                 //Set the pitch of the source
+	alSourcef(source, AL_GAIN, 1.0f);                                 //Set the gain of the source
+	alSourcefv(source, AL_POSITION, SourcePos);                                 //Set the position of the source
+	alSourcefv(source, AL_VELOCITY, SourceVel);                                 //Set the velocity of the source
+	alSourcei(source, AL_LOOPING, AL_FALSE);                                 //Set if source is looping sound
+}
+
+void CleanUpSoundStuff()
+{
+	//Clean-up
+	fclose(fp);                                                                 //Close the WAVE file
+	delete[] buf;                                                               //Delete the sound data buffer
+	alDeleteSources(1, &source);                                                //Delete the OpenAL Source
+	alDeleteBuffers(1, &buffer);                                                 //Delete the OpenAL Buffer
+	alcMakeContextCurrent(NULL);                                                //Make no context current
+	alcDestroyContext(context);                                                 //Destroy the OpenAL Context
+	alcCloseDevice(device);                                                     //Close the OpenAL Device
+
+	wasPlayingSound = false;
 }
 
 int main(int argc, const char *argv[])
