@@ -1,4 +1,10 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 // Includes.
+#include <AL\al.h>
+#include <AL\alc.h>
+#include <iostream>
+//#include <stdio.h>
 #include <gl\glew.h>
 #include <gl\freeglut.h>
 #include <math.h>
@@ -31,6 +37,33 @@ GLfloat projMatrix[] = { 2.0f*near / (right - left), 0.0f, (right + left) / (rig
 0.0f, 0.0f, -(far + near) / (far - near), -2 * far*near / (far - near),
 0.0f, 0.0f, -1.0f, 0.0f }; // Projection matrix.
 
+// Sound stuff
+ALCdevice *device;
+ALCcontext *context;
+ALuint source;
+ALuint buffer;
+ALuint frequency;
+ALenum format = 0;
+
+ALfloat SourcePos[] = { 0.0, 0.0, 0.0 };									//Position of the source sound
+ALfloat SourceVel[] = { 0.0, 0.0, 0.0 };									//Velocity of the source sound
+ALfloat ListenerPos[] = { 0.0, 0.0, 0.0 };									//Position of the listener
+ALfloat ListenerVel[] = { 0.0, 0.0, 0.0 };									//Velocity of the listener
+ALfloat ListenerOri[] = { 0.0, 0.0, -1.0, 0.0, 1.0, 0.0 };					//Orientation of the listener
+																			//First direction vector, then vector pointing up) 
+
+FILE *fp = NULL;
+
+char type[4];
+DWORD size, chunkSize;
+short formatType, channels;
+DWORD sampleRate, avgBytesPerSec;
+short bytesPerSample, bitsPerSample;
+DWORD dataSize;
+bool wasPlayingSound = false;
+
+unsigned char* buf;
+
 // Time variable.
 GLfloat t;
 
@@ -59,6 +92,9 @@ vec3 CameraPlacement(vec3 stiffPos, vec3 upVec, vec3 rightVec);
 void InitAfterCrash();
 void CheckIfOutsideBounderies(vec3 pos);
 void TurnPlaneInside(vec3 pos);
+void LoadSoundStuff();
+void CleanUpSoundStuff();
+
 bool CheckCollisionWithGround(GLfloat x, GLfloat y, GLfloat z);
 
 // Plane-crash flags
@@ -93,8 +129,7 @@ Point3D lightSourcesDirectionsPositions[] = { { -0.58f, 0.58f, -0.58f }, // Whit
 { 0.0f, 0.0f, 0.0f }, // No light
 { 0.0f, 0.0f, 0.0f }, // No light
 { 0.0f, 0.0f, 0.0f } }; // No light
-// -----------------------------------------------------
-// ----------------------OBJECT(S)----------------------
+
 // Models.
 Model *windmillWalls;
 Model *windmillRoof;
@@ -130,10 +165,10 @@ mat4 bladeRot, bladeStartRot, bladeTrans;
 mat4 bladeTotal1, bladeTotal2, bladeTotal3, bladeTotal4;
 
 mat4 planeTrans;
-mat4 planeTotal;
+mat4 propTotal;
 
-// Plane speed
-GLfloat planeSpeed= 1.0;
+// Plane scale
+GLfloat planeScale = 0.2;
 
 // References to textures.
 GLuint groundTex;
@@ -151,11 +186,9 @@ TextureData ttex2;
 int terrainW;
 int terrainH;
 
-// -----------------------------------------------------
-// -------------
-
-Plane player(vec3(40.0, 40.0, 40.0), vec3(1.0, 0.0, 0.0), 0.5);
-float propSpeed = 0.3;
+const float startPropSpeed = 0.3;
+float propSpeed = startPropSpeed;
+Plane player(vec3(40.0, 40.0, 40.0), vec3(1.0, 0.0, 0.0), propSpeed);
 
 tree* treeArray;
 cloud* cloudArray;
@@ -238,9 +271,30 @@ unsigned int vertexArrayObjID4;
 GLuint particleProgram;
 GLuint skyboxProgram;
 
+bool wasRollingRight = false;
+bool wasRollingLeft = false;
+
+
+float yawCamOffset = 0.0;
+float pitchCamOffset = 0.0;
+const float pitchSpeed = 0.02;
+const float yawSpeed = 0.01;
+const float rollSpeed = 0.04;
+const float returnSpeed = 0.02;
+const float camSpeed = 0.01; // Do not change.
+const float camReturnSpeed = 0.01; // Do not change.
+const float pitchCamLimit = 0.2; // Do not change.
+const float yawCamLimit = 0.2; // Do not change.
+const float minSpeed = 0.1;
+const float maxSpeed = 1.0;
+
+
 void init(void)
 {
 	err = glewInit();
+
+	// Sound stuff
+	LoadSoundStuff();
 
 	dumpInfo();
 
@@ -442,8 +496,8 @@ void display(void)
 	// ----------------------OBJECT(S)----------------------
 	// Translation matrices.
 	statTrans = T(0.0, 0.0, 0.0);		// Placement of the static pieces.
-	bladeTrans = T(4.5, 9.2, 0.0);		// Placement of the blades.
-	bladeRot = Rx(0.001 * t);			// Blade rotation speed.
+	//bladeTrans = T(4.5, 9.2, 0.0);		// Placement of the blades.
+	//bladeRot = Rx(0.001 * t);			// Blade rotation speed.
 	statTotal = statTrans;				// In this case, no rotation is used.
 
 	// Ny terräng
@@ -480,7 +534,6 @@ void display(void)
 		}
 		collisionFirstLoop = FALSE;
 	}
-	GLfloat planeScale=0.4;
 	// Rotating model.
 	mat4 PlaneMatrix = RotatePlaneModel();
 	// Moving model.
@@ -490,10 +543,13 @@ void display(void)
 	if (isOutside){
 		TurnPlaneInside(player.GetPosition());
 	}
-
+	// Blades
+	mat4 propRot = Rz(propSpeed * 0.1 * t);
+	propTotal = Mult(PlaneMatrix, propRot);
 	if (!isExplosion){
 		glBindTexture(GL_TEXTURE_2D, skyTex);
 		UploadAndDraw(PlaneMatrix.m, plane, 0, 0);
+		UploadAndDraw(propTotal.m, planeRot, 0, 0);
 	}
 	// Camera stuff.
 	s = player.GetDirection(); // Forward vector.
@@ -512,12 +568,8 @@ void display(void)
 	camMatrix = lookAtv(sluggishCamPos, l, v);
 
 
-	// Blades
-	mat4 temp2 = Rz(propSpeed * 0.1 * t);
-	planeTotal = Mult(PlaneMatrix, temp2);
-	if (!isExplosion){
-		UploadAndDraw(planeTotal.m, planeRot, 0, 0);
-	}
+
+	
 	// *** END PLANE CODE ***
 
 	// Trees.
@@ -621,6 +673,15 @@ void display(void)
 	// Explosion
 	if (isExplosion){
 
+		// Sound stuff
+		if (!wasPlayingSound)
+		{
+			wasPlayingSound = true;
+			alSourcePlay(source);
+			if (alGetError() != AL_NO_ERROR)
+				printf("Error playing sound");
+		}
+
 		for (int i = 0; i < nrOfExplosionParticles; i++)
 		{	
 			teapotTrans = T(particleExplosionArray[i].GetPosition().x, particleExplosionArray[i].GetPosition().y - 2, particleExplosionArray[i].GetPosition().z);
@@ -646,17 +707,22 @@ void display(void)
 	mat4 signScale;
 	mat4 signRot;
 	mat4 signTot;
-	//vec3 tempTrans = VectorAdd(VectorSub(p, Normalize(v)), Normalize(l - sluggishCamPos));
-	signTrans = T(Normalize(l - sluggishCamPos).x, Normalize(l - sluggishCamPos).y, Normalize(l - sluggishCamPos).z);
-	signTrans = Mult(signTrans, T(-0.5 * v.x, -0.5 * v.y, -0.5 * v.z));
-	//signTrans = T(5, 0,5);
-	//signTrans = T( tempTrans.x,tempTrans.y,tempTrans.z);
-	signScale = S(0.01, 0.01, 0.01);
+	// Forward vec for cam
+	vec3 tempTrans = Normalize(l - sluggishCamPos);
+	// Compensate för pitch-and yaw-offset
+	vec3 tempV=MultVec3(ArbRotate(Normalize(CrossProduct(player.GetDirection(), player.GetUpVector())), pitchCamOffset),v);
+	tempV = MultVec3(ArbRotate(Normalize(player.GetUpVector()), yawCamOffset), tempV);
+
+	signTrans = T(tempTrans.x, tempTrans.y,tempTrans.z);
+	signTrans = Mult(signTrans, T(-0.5 * Normalize(tempV).x, -0.5 * Normalize(tempV).y, -0.5 * Normalize(tempV).z));
+	signScale = S(0.015, 0.015, 0.015);
 	signRot = Ry(PI);
 	signTot = InvertMat4(camMatrix);
-	signTot = Mult(signTot, signScale);
+
 	signTot = Mult(signTrans,signTot);
 	signTot = Mult(signTot, signRot);
+	signTot = Mult(signTot,signScale);
+
 	glBindTexture(GL_TEXTURE_2D, teapotTex);
 	glUniformMatrix4fv(glGetUniformLocation(program, "MTWMatrix"), 1, GL_TRUE, signTot.m);
 	glUniformMatrix4fv(glGetUniformLocation(program, "WTVMatrix"), 1, GL_TRUE, camMatrix.m);
@@ -664,10 +730,10 @@ void display(void)
 	glBindVertexArray(vertexArrayObjID3);	// Select VAO
 
 	//Utkommenterade, men arbeter på!
-//	glDrawArrays(GL_TRIANGLES, 0, 3);	// draw object
+	glDrawArrays(GL_TRIANGLES, 0, 3);	// draw object
 
 	glBindVertexArray(vertexArrayObjID4);	// Select VAO
-//	glDrawArrays(GL_TRIANGLES, 0, 3);	// draw object
+	glDrawArrays(GL_TRIANGLES, 0, 3);	// draw object
 	// Extra objects.
 
 	glUseProgram(program);
@@ -786,23 +852,6 @@ void SetCameraVector(float fi, float theta)	// Sets the camera matrix.
 	l = p + s;
 	camMatrix = lookAtv(p, l, v);
 }
-
-bool wasRollingRight = false;
-bool wasRollingLeft = false;
-
-
-float yawCamOffset = 0.0;
-float pitchCamOffset = 0.0;
-const float pitchSpeed = 0.02;
-const float yawSpeed = 0.01;
-const float rollSpeed = 0.04;
-const float returnSpeed = 0.02;
-const float camSpeed = 0.01; // Do not change.
-const float camReturnSpeed = 0.01; // Do not change.
-const float pitchCamLimit = 0.2; // Do not change.
-const float yawCamLimit = 0.2; // Do not change.
-const float minSpeed = 0.1;
-const float maxSpeed = 2.0;
 
 void CheckKeys()	// Checks if keys are being pressed.
 {
@@ -1013,10 +1062,15 @@ vec3 CameraPlacement(vec3 stiffPos, vec3 upVec, vec3 rightVec)
 }
 
 void InitAfterCrash(){
+	// Sound stuff
+	CleanUpSoundStuff();
+	LoadSoundStuff();
+	
 	player.SetCollision(FALSE);
 	player.SetDirection(vec3(1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0));
 	player.SetPosition(vec3(40.0, 40.0, 40.0));
-	player.SetVelocity(0.5);
+	propSpeed = startPropSpeed;
+	player.SetVelocity(propSpeed);
 	isExplosion = FALSE;
 	collisionFirstLoop = TRUE;
 	particleExplosionArray = GenerateParticles(nrOfExplosionParticles, 1);
@@ -1073,10 +1127,120 @@ void TurnPlaneInside(vec3 pos){ //Turns plan inside bounderies if outside
 		dir.y = player.GetDirection() .y- 0.01;
 		player.SetDirection(dir, CrossProduct(tempRight,dir));
 		isTuningInsideDown = TRUE;
-	}
+		}
 	else{
 		isTuningInsideDown = FALSE;
 	}
+}
+
+void LoadSoundStuff()
+{
+	device = alcOpenDevice(NULL);
+	if (!device)
+		printf("no sound device");
+	context = alcCreateContext(device, NULL);
+	alcMakeContextCurrent(context);
+	if (!context)
+		printf("no sound context");
+	alGenSources((ALuint)1, &source);
+	alGenBuffers((ALuint)1, &buffer);
+	if (alGetError() != AL_NO_ERROR)
+		printf("Error GenSource");
+
+	fp = fopen("audio/Alarm01.wav", "rb");
+	if (!fp)
+		printf("Failed to open file");                        //Could not open file
+	//Check that the WAVE file is OK
+	fread(type, sizeof(char), 4, fp);                                              //Reads the first bytes in the file
+	if (type[0] != 'R' || type[1] != 'I' || type[2] != 'F' || type[3] != 'F')            //Should be "RIFF"
+		printf("No RIFF");                                            //Not RIFF
+
+	fread(&size, sizeof(DWORD), 1, fp);                                           //Continue to read the file
+	fread(type, sizeof(char), 4, fp);                                             //Continue to read the file
+	if (type[0] != 'W' || type[1] != 'A' || type[2] != 'V' || type[3] != 'E')           //This part should be "WAVE"
+		printf("not WAVE");                                            //Not WAVE
+
+	fread(type, sizeof(char), 4, fp);                                              //Continue to read the file
+	if (type[0] != 'f' || type[1] != 'm' || type[2] != 't' || type[3] != ' ')           //This part should be "fmt "
+		printf("not fmt ");                                            //Not fmt
+
+	fread(&chunkSize, sizeof(DWORD), 1, fp);
+	fread(&formatType, sizeof(short), 1, fp);
+	fread(&channels, sizeof(short), 1, fp);
+	fread(&sampleRate, sizeof(DWORD), 1, fp);
+	fread(&avgBytesPerSec, sizeof(DWORD), 1, fp);
+	fread(&bytesPerSample, sizeof(short), 1, fp);
+	fread(&bitsPerSample, sizeof(short), 1, fp);
+
+	fread(type, sizeof(char), 4, fp);
+	if (type[0] != 'd' || type[1] != 'a' || type[2] != 't' || type[3] != 'a')           //This part should be "data"
+		printf("Missing DATA");
+
+	fread(&dataSize, sizeof(DWORD), 1, fp);
+
+	//Display the info about the WAVE file
+	std::cout << "Chunk Size: " << chunkSize << "\n";
+	std::cout << "Format Type: " << formatType << "\n";
+	std::cout << "Channels: " << channels << "\n";
+	std::cout << "Sample Rate: " << sampleRate << "\n";
+	std::cout << "Average Bytes Per Second: " << avgBytesPerSec << "\n";
+	std::cout << "Bytes Per Sample: " << bytesPerSample << "\n";
+	std::cout << "Bits Per Sample: " << bitsPerSample << "\n";
+	std::cout << "Data Size: " << dataSize << "\n";
+
+	buf = new unsigned char[dataSize];
+	std::cout << fread(buf, sizeof(BYTE), dataSize, fp) << " bytes loaded\n";
+	fread(buf, sizeof(BYTE), dataSize, fp);
+
+	frequency = sampleRate;
+
+	if (bitsPerSample == 8)
+	{
+		if (channels == 1)
+			format = AL_FORMAT_MONO8;
+		else if (channels == 2)
+			format = AL_FORMAT_STEREO8;
+	}
+	else if (bitsPerSample == 16)
+	{
+		if (channels == 1)
+			format = AL_FORMAT_MONO16;
+		else if (channels == 2)
+			format = AL_FORMAT_STEREO16;
+	}
+	if (!format)
+		printf("Wrong BitPerSample");
+
+	alBufferData(buffer, format, buf, dataSize, frequency);
+	if (alGetError() != AL_NO_ERROR)
+		printf("Error loading ALBuffer");
+
+	//Listener                                                                               
+	alListenerfv(AL_POSITION, ListenerPos);                                  //Set position of the listener
+	alListenerfv(AL_VELOCITY, ListenerVel);                                  //Set velocity of the listener
+	alListenerfv(AL_ORIENTATION, ListenerOri);                                  //Set orientation of the listener
+
+	//Source
+	alSourcei(source, AL_BUFFER, buffer);                                 //Link the buffer to the source
+	alSourcef(source, AL_PITCH, 1.0f);                                 //Set the pitch of the source
+	alSourcef(source, AL_GAIN, 1.0f);                                 //Set the gain of the source
+	alSourcefv(source, AL_POSITION, SourcePos);                                 //Set the position of the source
+	alSourcefv(source, AL_VELOCITY, SourceVel);                                 //Set the velocity of the source
+	alSourcei(source, AL_LOOPING, AL_FALSE);                                 //Set if source is looping sound
+}
+
+void CleanUpSoundStuff()
+{
+	//Clean-up
+	fclose(fp);                                                                 //Close the WAVE file
+	delete[] buf;                                                               //Delete the sound data buffer
+	alDeleteSources(1, &source);                                                //Delete the OpenAL Source
+	alDeleteBuffers(1, &buffer);                                                 //Delete the OpenAL Buffer
+	alcMakeContextCurrent(NULL);                                                //Make no context current
+	alcDestroyContext(context);                                                 //Destroy the OpenAL Context
+	alcCloseDevice(device);                                                     //Close the OpenAL Device
+
+	wasPlayingSound = false;
 }
 
 int main(int argc, const char *argv[])
