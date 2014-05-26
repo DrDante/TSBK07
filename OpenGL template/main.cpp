@@ -1525,7 +1525,7 @@ int main(int argc, const char *argv[])
 {
 	glutInit(&argc, (char**)argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-	glutInitWindowSize(800, 600);	// Window size.
+	glutInitWindowSize(1280, 720);	// Window size.
 	glutCreateWindow("OpenGL template");	// Window title.
 	glutDisplayFunc(display);
 	glutPassiveMotionFunc(CheckMouse);
