@@ -114,6 +114,9 @@ bool isTurningInsideRight = FALSE;
 bool isTurningInsideLeft = FALSE;
 bool isTuningInsideDown = FALSE;
 
+// Score count
+int scoreCount=0;
+
 // Maximum allowed flying height
 int maxFlyingHeight = 250;
 
@@ -311,6 +314,8 @@ const float yawCamLimit = 0.2; // Do not change.
 const float minSpeed = 0.1;
 const float maxSpeed = 1.0;
 
+unsigned int vertexBufferObjID6;
+unsigned int vertexBufferObjID8;
 
 void init(void)
 {
@@ -418,9 +423,9 @@ void init(void)
 	unsigned int vertexBufferObjID3;
 	unsigned int vertexBufferObjID4;
 	unsigned int vertexBufferObjID5;
-	unsigned int vertexBufferObjID6;
+	//unsigned int vertexBufferObjID6;
 	unsigned int vertexBufferObjID7;
-	unsigned int vertexBufferObjID8;
+	//unsigned int vertexBufferObjID8;
 
 	// Taken from lab 1.
 	// Allocate and activate Vertex Array Object
@@ -561,7 +566,7 @@ void display(void)
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, mtnTex3);
 	glUniform1i(glGetUniformLocation(program, "multitex"), 1);
-	UploadAndDraw(statTotal.m, terrain, 0, 0);
+	UploadAndDraw(statTotal.m, terrain, 0, 1);
 	glUniform1i(glGetUniformLocation(program, "multitex"), 0);
 	glActiveTexture(GL_TEXTURE0);
 	
@@ -701,13 +706,39 @@ void display(void)
 		glBindTexture(GL_TEXTURE_2D, trunkTex);
 		UploadAndDraw(ballTrans.m, bunny, 0, 0);
 
-		if (ballArray[i].CheckHitBox(player.GetPosition())) // Check player collision with ball
+		if (ballArray[i].CheckHitBox(player.GetPosition())) // Check player collision with box
 		{
 			isCubeExplosion = TRUE;
-
+			scoreCount += 1;
 			propSpeed += 0.1;
 			player.SetVelocity(propSpeed);
+			int textureLine = 0;
+			if (scoreCount > 8){
+				textureLine = 1;
+			}
+			if (scoreCount > 1){
+				GLfloat numberSquareTexCoord[] =
+				{
+					0.125*scoreCount, 0.125,
+					0.125*scoreCount, 0.0,
+					0.125*(scoreCount - 1), 0.125
+				};
+				glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjID6);
+				glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(GLfloat), numberSquareTexCoord, GL_STATIC_DRAW);
+				glVertexAttribPointer(glGetAttribLocation(program, "inTexCoord"), 2, GL_FLOAT, GL_FALSE, 0, 0);
+				glEnableVertexAttribArray(glGetAttribLocation(program, "inTexCoord"));
+				GLfloat numberSquareTexCoord2[] =
+				{
+					0.125*(scoreCount - 1), 0.0,
+					0.125*scoreCount, 0.0,
+					0.125*(scoreCount - 1), 0.125
+				};
 
+				glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjID8);
+				glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(GLfloat), numberSquareTexCoord2, GL_STATIC_DRAW);
+				glVertexAttribPointer(glGetAttribLocation(program, "inTexCoord"), 2, GL_FLOAT, GL_FALSE, 0, 0);
+				glEnableVertexAttribArray(glGetAttribLocation(program, "inTexCoord"));
+			}
 			if (cubeCollisionFirstLoop)
 			{
 				for (int i = 0; i < nrOfParticles; i++)
@@ -740,9 +771,7 @@ void display(void)
 		{
 			teapotTrans = T(particleCubeArray[i].GetPosition().x, particleCubeArray[i].GetPosition().y - 2, particleCubeArray[i].GetPosition().z);
 			particleCubeArray[i].UpdateParticle();
-			//teapotScale = S(0.2, 0.2, 0.2);
 			teapotTotal = teapotTrans;
-			//UploadAndDraw(teapotTrans.m, teapot, 0, 0);
 			//Draw vertices.
 			glUniformMatrix4fv(glGetUniformLocation(particleProgram, "MTWMatrix"), 1, GL_TRUE, teapotTotal.m);
 			glUniformMatrix4fv(glGetUniformLocation(particleProgram, "WTVMatrix"), 1, GL_TRUE, camMatrix.m);
@@ -760,7 +789,6 @@ void display(void)
 			count = 0;
 		}
 	}
-
 
 	// Explosion
 	if (isExplosion){
@@ -788,26 +816,27 @@ void display(void)
 		glDrawArrays(GL_TRIANGLES, 0, 3);	// draw object
 		}
 		count += 1;
-		if (count > 80){
+		if (count > 85){
 			InitAfterCrash();
 			count = 0;
 		}
 	}
 	// Score-counter
 	glUseProgram(skyboxProgram);
-	//Counter p - norm(v) + Normalize(s)
+
 	mat4 signTrans;
 	mat4 signScale;
 	mat4 signRot;
 	mat4 signTot;
-	// Forward vec for cam
-	vec3 tempTrans = Normalize(l - sluggishCamPos);
-	// Compensate för pitch-and yaw-offset
+	
+	vec3 camForward = Normalize(l - sluggishCamPos);// Forward vec for cam
 	vec3 tempV=MultVec3(ArbRotate(Normalize(CrossProduct(player.GetDirection(), player.GetUpVector())), pitchCamOffset),v);
-	tempV = MultVec3(ArbRotate(Normalize(player.GetUpVector()), yawCamOffset), tempV);
+	tempV = MultVec3(ArbRotate(Normalize(player.GetUpVector()), yawCamOffset), tempV);// Cam up vec. Compensated for pitch-and yaw-offset
+	vec3 camLeft = Normalize(CrossProduct(tempV, camForward)); // Cam left vec
 
-	signTrans = T(tempTrans.x, tempTrans.y,tempTrans.z);
-	signTrans = Mult(signTrans, T(-0.5 * Normalize(tempV).x, -0.5 * Normalize(tempV).y, -0.5 * Normalize(tempV).z));
+	signTrans = T(camForward.x, camForward.y, camForward.z); // Placing scoreboard one length unit infront of the camera
+	signTrans = Mult(signTrans, T(-0.5 * Normalize(tempV).x, -0.5 * Normalize(tempV).y, -0.5 * Normalize(tempV).z)); // Placing the board a bit down
+	signTrans = Mult(signTrans, T(0.4*camLeft.x, 0.4*camLeft.y, 0.4*camLeft.z)); // Placing the board to the side (comment this line to place it in the middle, bottom!)
 	signScale = S(0.015, 0.015, 0.015);
 	signRot = Ry(PI);
 	signTot = InvertMat4(camMatrix);
@@ -825,6 +854,9 @@ void display(void)
 
 	glBindVertexArray(vertexArrayObjID4);	// Select VAO
 	glDrawArrays(GL_TRIANGLES, 0, 3);	// draw object
+
+	// End score-counter code
+
 	// Extra objects.
 
 	glUseProgram(program);
@@ -837,7 +869,7 @@ void display(void)
 	carTrans = T(20.0, 0.0, -20.0);
 	teddyTrans = T(20.0, 1.1, 20.0);
 	glBindTexture(GL_TEXTURE_2D, bunnyTex);
-	UploadAndDraw(bunnyTrans.m, bunny, 0, 0);
+	//UploadAndDraw(bunnyTrans.m, bunny, 0, 0);
 	// ---Multi textured teapot---
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, teapotTex);
@@ -850,12 +882,12 @@ void display(void)
 	glActiveTexture(GL_TEXTURE0);
 	// ---------------------------
 	// ---Transparent objects---
-	glUniform1i(glGetUniformLocation(program, "transparent"), 1);
+	/*glUniform1i(glGetUniformLocation(program, "transparent"), 1);
 	glBindTexture(GL_TEXTURE_2D, carTex);
-	UploadAndDraw(carTrans.m, car, 0, 0);
+	//UploadAndDraw(carTrans.m, car, 0, 0);
 	glBindTexture(GL_TEXTURE_2D, teddyTex);
-	UploadAndDraw(teddyTrans.m, teddy, 0, 0);
-	glUniform1i(glGetUniformLocation(program, "transparent"), 0);
+	//UploadAndDraw(teddyTrans.m, teddy, 0, 0);
+	glUniform1i(glGetUniformLocation(program, "transparent"), 0);*/
 	// -------------------------
 	// -----------------------------------------------------
 
@@ -1168,7 +1200,7 @@ void CheckKeys()	// Checks if keys are being pressed.
 }
 }
 
-/* Check if collision with groud given object (x,y,z), 
+/* Check if collision with ground given object (x,y,z), 
 returns TRUE if collision */
 bool CheckCollisionWithGround(GLfloat x, GLfloat y, GLfloat z){
 	bool isCollision = FALSE;
@@ -1226,6 +1258,7 @@ void InitAfterCrash(){
 	isExplosion = FALSE;
 	collisionFirstLoop = TRUE;
 	particleExplosionArray = GenerateParticles(nrOfExplosionParticles, 1);
+	scoreCount = 0;
 }
 
 void CheckIfOutsideBounderies(vec3 pos){
@@ -1265,7 +1298,7 @@ void TurnPlaneInside(vec3 pos){ //Turns plan inside bounderies if outside
 		}
 		isTurningInsideRight = TRUE;
 	}
-	if((angle >= (PI / 2)  || isTurningInsideLeft) && !isTuningInsideDown){ 
+	if((angle >= (PI / 2)  || isTurningInsideLeft) && !isTuningInsideDown){ // Turning left
 		player.SetDirection(Normalize(player.GetDirection() - (yawSpeed + 0.1) * tempRight), player.GetUpVector());
 		if (yawCamOffset > -yawCamLimit)
 		{
@@ -1274,7 +1307,7 @@ void TurnPlaneInside(vec3 pos){ //Turns plan inside bounderies if outside
 		isTurningInsideLeft = TRUE;
 	}
 
-	if (pos.y > maxFlyingHeight && !isTuningInsideDown){ 
+	if (pos.y > maxFlyingHeight && !isTuningInsideDown){ // Turning down
 		vec3 dir = player.GetDirection();
 		dir.y = player.GetDirection() .y- 0.01;
 		player.SetDirection(dir, CrossProduct(tempRight,dir));
