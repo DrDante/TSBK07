@@ -561,7 +561,7 @@ void display(void)
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, mtnTex3);
 	glUniform1i(glGetUniformLocation(program, "multitex"), 1);
-	UploadAndDraw(statTotal.m, terrain, 0, 0);
+	UploadAndDraw(statTotal.m, terrain, 0, 1);
 	glUniform1i(glGetUniformLocation(program, "multitex"), 0);
 	glActiveTexture(GL_TEXTURE0);
 	
