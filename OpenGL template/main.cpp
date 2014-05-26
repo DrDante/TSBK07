@@ -40,8 +40,14 @@ GLfloat projMatrix[] = { 2.0f*near / (right - left), 0.0f, (right + left) / (rig
 // Sound stuff
 ALCdevice *device;
 ALCcontext *context;
-ALuint source;
-ALuint buffer;
+ALuint source1;
+ALuint source2;
+ALuint source3;
+ALuint source4;
+ALuint buffer1;
+ALuint buffer2;
+ALuint buffer3;
+ALuint buffer4;
 ALuint frequency;
 ALenum format = 0;
 
@@ -60,7 +66,8 @@ short formatType, channels;
 DWORD sampleRate, avgBytesPerSec;
 short bytesPerSample, bitsPerSample;
 DWORD dataSize;
-bool wasPlayingSound = false;
+bool wasPlayingSound1 = false;
+bool wasPlayingSound2 = false;
 
 unsigned char* buf;
 
@@ -92,8 +99,8 @@ vec3 CameraPlacement(vec3 stiffPos, vec3 upVec, vec3 rightVec);
 void InitAfterCrash();
 void CheckIfOutsideBounderies(vec3 pos);
 void TurnPlaneInside(vec3 pos);
-void LoadSoundStuff();
-void CleanUpSoundStuff();
+void LoadSoundStuff(int fnum);
+void CleanUpSoundStuff(int fnum);
 
 bool CheckCollisionWithGround(GLfloat x, GLfloat y, GLfloat z);
 
@@ -163,6 +170,22 @@ mat4 roofRot, roofTrans;
 mat4 balconyRot, balconyTrans;
 mat4 bladeRot, bladeStartRot, bladeTrans;
 mat4 bladeTotal1, bladeTotal2, bladeTotal3, bladeTotal4;
+
+// Rudders
+mat4 botLAilMat, topLAilMat, botRAilMat, topRAilMat, elevatorMat, rudderMat;
+Model *botLAil;
+Model *topLAil;
+Model *botRAil;
+Model *topRAil;
+Model *elevator;
+Model *rudder;
+float rudderOffset = 0.0;
+float elevatorOffset = 0.0;
+float ailOffset = 0.0;
+
+const float maxRudder = 0.5;
+const float maxElevator = 0.8;
+const float maxAil = 0.8;
 
 mat4 planeTrans;
 mat4 propTotal;
@@ -294,7 +317,15 @@ void init(void)
 	err = glewInit();
 
 	// Sound stuff
-	LoadSoundStuff();
+	LoadSoundStuff(3);
+	alSourcePlay(source3);
+	if (alGetError() != AL_NO_ERROR)
+		printf("Error playing sound");
+	CleanUpSoundStuff(3);
+	//LoadSoundStuff(1);
+	//LoadSoundStuff(2);
+	//LoadSoundStuff(3);
+	//LoadSoundStuff(4);
 
 	dumpInfo();
 
@@ -331,10 +362,17 @@ void init(void)
 	teapot = LoadModelPlus("models/teapot.obj");
 	car = LoadModelPlus("models/bilskiss.obj");
 	teddy = LoadModelPlus("models/teddy.obj");
-	plane = LoadModelPlus("models/LPNoBladeobj.obj");
+	plane = LoadModelPlus("models/PlaneWithoutRudders.obj");
 	planeRot = LoadModelPlus("models/Blade.obj");
 	trunk = LoadModelPlus("models/stamm.obj");
 	leaves = LoadModelPlus("models/blad.obj");
+
+	botLAil = LoadModelPlus("models/Roder/L_BotAileron.obj");
+	topLAil = LoadModelPlus("models/Roder/R_TopAileron.obj");
+	botRAil = LoadModelPlus("models/Roder/R_BotAileron.obj");
+	topRAil = LoadModelPlus("models/Roder/L_TopAileron.obj");
+	elevator = LoadModelPlus("models/Roder/Elevator.obj");
+	rudder = LoadModelPlus("models/Roder/Rudder.obj");
 
 	// Loading textures.
 	LoadTGATextureSimple("textures/grass.tga", &groundTex);
@@ -463,11 +501,22 @@ void init(void)
 
 void display(void)
 {
+	
 	printError("pre display");
 	glUseProgram(program);
 	// Update t for the current elapsed time.
 	t = (GLfloat)glutGet(GLUT_ELAPSED_TIME);
-
+	for (int i = 0; i < 50; i++)
+	{
+		if (int(t) % 7500 == i)
+		{
+			LoadSoundStuff(3);
+			alSourcePlay(source3);
+			if (alGetError() != AL_NO_ERROR)
+				printf("Error playing sound");
+			CleanUpSoundStuff(3);
+		}
+	}
 	CheckKeys();
 
 	// Clear the screen.
@@ -517,7 +566,10 @@ void display(void)
 	glActiveTexture(GL_TEXTURE0);
 	
 	// *** NEW PLANE CODE ***
+	if (!isExplosion)
+	{
 	player.MovePlane();
+	}
 
 	// Check if collided with ground
 	if (CheckCollisionWithGround(player.GetPosition().x, player.GetPosition().y, player.GetPosition().z)){
@@ -538,6 +590,29 @@ void display(void)
 	mat4 PlaneMatrix = RotatePlaneModel();
 	// Moving model.
 	PlaneMatrix = Mult(Mult(T(player.GetPosition().x, player.GetPosition().y, player.GetPosition().z), PlaneMatrix), S(planeScale, planeScale, planeScale));
+	// Aileron.
+	mat4 lAilRot = Rx(ailOffset);
+	lAilRot = Mult(Rz(-0.072), lAilRot);
+	botLAilMat = Mult(T(-2.16824, -0.371189, -0.2), lAilRot);
+	botLAilMat = Mult(PlaneMatrix, botLAilMat);
+	lAilRot = ArbRotate(Normalize(vec3(5.0, -0.2, 0.8)), ailOffset);
+	topLAilMat = Mult(T(-2.65974, 1.01, 0.0), lAilRot);
+	topLAilMat = Mult(PlaneMatrix, topLAilMat);
+	mat4 rAilRot = Rx(-ailOffset);
+	rAilRot = Mult(Rz(0.072), rAilRot);
+	botRAilMat = Mult(T(2.16824, -0.371189, -0.2), rAilRot);
+	botRAilMat = Mult(PlaneMatrix, botRAilMat);
+	rAilRot = ArbRotate(Normalize(vec3(5.0, 0.2, -0.8)), -ailOffset);
+	topRAilMat = Mult(T(2.65974, 1.01, 0.0), rAilRot);
+	topRAilMat = Mult(PlaneMatrix, topRAilMat);
+	// Elevator.
+	mat4 elevatorRot = Rx(elevatorOffset);
+	elevatorMat = Mult(T(0.0, 0.1818, -2.83), elevatorRot);
+	elevatorMat = Mult(PlaneMatrix, elevatorMat);
+	// Rudder.
+	mat4 rudderRot = Ry(rudderOffset);
+	rudderMat = Mult(T(0.0, 0.3518, -2.83), rudderRot);
+	rudderMat = Mult(PlaneMatrix, rudderMat);
 
 	CheckIfOutsideBounderies(player.GetPosition());
 	if (isOutside){
@@ -550,11 +625,17 @@ void display(void)
 		glBindTexture(GL_TEXTURE_2D, skyTex);
 		UploadAndDraw(PlaneMatrix.m, plane, 0, 0);
 		UploadAndDraw(propTotal.m, planeRot, 0, 0);
+		UploadAndDraw(botLAilMat.m, botLAil, 0, 0);
+		UploadAndDraw(topLAilMat.m, topLAil, 0, 0);
+		UploadAndDraw(botRAilMat.m, botRAil, 0, 0);
+		UploadAndDraw(topRAilMat.m, topRAil, 0, 0);
+		UploadAndDraw(elevatorMat.m, elevator, 0, 0);
+		UploadAndDraw(rudderMat.m, rudder, 0, 0);
 	}
 	// Camera stuff.
 	s = player.GetDirection(); // Forward vector.
 	l = player.GetPosition(); // What the camera is looking at.
-	p = l - s * 5.0; // Stiff camera placement, 5.0 behind the plane.
+	p = l - s * 3.0; // Stiff camera placement, 5.0 behind the plane.
 	vec3 sluggishCamPos = p;
 	if (!isExplosion)
 	{
@@ -645,6 +726,16 @@ void display(void)
 	glUseProgram(particleProgram);
 	if (isCubeExplosion){
 
+		// Sound stuff
+		if (!wasPlayingSound2)
+		{
+			LoadSoundStuff(2);
+			wasPlayingSound2 = true;
+			alSourcePlay(source2);
+			if (alGetError() != AL_NO_ERROR)
+				printf("Error playing sound");
+		}
+
 		for (int i = 0; i < nrOfParticles; i++)
 		{
 			teapotTrans = T(particleCubeArray[i].GetPosition().x, particleCubeArray[i].GetPosition().y - 2, particleCubeArray[i].GetPosition().z);
@@ -662,6 +753,7 @@ void display(void)
 
 		count += 1;
 		if (count > 80){
+			CleanUpSoundStuff(2);
 			isCubeExplosion = FALSE;
 			cubeCollisionFirstLoop = TRUE;
 			particleCubeArray = GenerateParticles(nrOfParticles, 0);
@@ -674,10 +766,11 @@ void display(void)
 	if (isExplosion){
 
 		// Sound stuff
-		if (!wasPlayingSound)
+		if (!wasPlayingSound1)
 		{
-			wasPlayingSound = true;
-			alSourcePlay(source);
+			LoadSoundStuff(1);
+			wasPlayingSound1 = true;
+			alSourcePlay(source1);
 			if (alGetError() != AL_NO_ERROR)
 				printf("Error playing sound");
 		}
@@ -728,8 +821,6 @@ void display(void)
 	glUniformMatrix4fv(glGetUniformLocation(program, "WTVMatrix"), 1, GL_TRUE, camMatrix.m);
 	glUniformMatrix4fv(glGetUniformLocation(program, "VTPMatrix"), 1, GL_TRUE, projMatrix);
 	glBindVertexArray(vertexArrayObjID3);	// Select VAO
-
-	//Utkommenterade, men arbeter på!
 	glDrawArrays(GL_TRIANGLES, 0, 3);	// draw object
 
 	glBindVertexArray(vertexArrayObjID4);	// Select VAO
@@ -871,6 +962,10 @@ void CheckKeys()	// Checks if keys are being pressed.
 		{
 			pitchCamOffset += camSpeed;
 		}
+		if (elevatorOffset < maxElevator)
+		{
+			elevatorOffset += 0.1;
+		}
 	}
 	// 's' pitches the plane upwards.
 	if (keyIsDown('s'))
@@ -882,6 +977,10 @@ void CheckKeys()	// Checks if keys are being pressed.
 		{
 			pitchCamOffset -= camSpeed;
 		}
+		if (elevatorOffset > -maxElevator)
+		{
+			elevatorOffset -= 0.1;
+		}
 	}
 	// 'a' yaws the plane to the left.
 	if (keyIsDown('a'))
@@ -890,6 +989,10 @@ void CheckKeys()	// Checks if keys are being pressed.
 		if (yawCamOffset > -yawCamLimit)
 		{
 			yawCamOffset -= camSpeed;
+		}
+		if (rudderOffset > -maxRudder)
+		{
+			rudderOffset -= 0.1;
 		}
 	}
 	// 'd' yaws the plane to the right.
@@ -900,18 +1003,30 @@ void CheckKeys()	// Checks if keys are being pressed.
 		{
 			yawCamOffset += camSpeed;
 		}
+		if (rudderOffset < maxRudder)
+		{
+			rudderOffset += 0.1;
+		}
 	}
 	// 'q' rolls the plane counterclockwise.
 	if (keyIsDown('q'))
 	{
 		player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() - rollSpeed * tempRight));
 		wasRollingRight = false;
+		if (ailOffset < maxAil)
+		{
+			ailOffset += 0.1;
+		}
 	}
 	// 'e' rolls the plane clockwise.
 	if (keyIsDown('e'))
 	{
 		player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() + rollSpeed * tempRight));
 		wasRollingLeft = false;
+		if (ailOffset > -maxAil)
+		{
+			ailOffset -= 0.1;
+		}
 	}
 	// 'r' increases the speed.
 	if (keyIsDown('r'))
@@ -988,6 +1103,18 @@ void CheckKeys()	// Checks if keys are being pressed.
 			wasRollingRight = false;
 			wasRollingLeft = false;
 		}
+		if (ailOffset < -0.1)
+		{
+			ailOffset += 0.05;
+		}
+		else if (ailOffset > 0.1)
+		{
+			ailOffset -= 0.05;
+		}
+		else
+		{
+			ailOffset = 0.0;
+		}
 	}
 	// Slowly resets the pitch camera offset.
 	if (!keyIsDown('w') && !keyIsDown('s'))
@@ -999,6 +1126,18 @@ void CheckKeys()	// Checks if keys are being pressed.
 		else if (pitchCamOffset < 0)
 		{
 			pitchCamOffset += camReturnSpeed;
+		}
+		if (elevatorOffset > 0.1)
+		{
+			elevatorOffset -= 0.05;
+		}
+		else if (elevatorOffset < -0.1)
+		{
+			elevatorOffset += 0.05;
+	}
+		else
+		{
+			elevatorOffset = 0.0;
 		}
 	}
 	// Slowly resets the yaw camera offset.
@@ -1012,6 +1151,19 @@ void CheckKeys()	// Checks if keys are being pressed.
 		{
 			yawCamOffset += camReturnSpeed;
 		}
+		if (rudderOffset > 0.1)
+		{
+			rudderOffset -= 0.05;
+	}
+		else if (rudderOffset < -0.1)
+		{
+			rudderOffset += 0.05;
+}
+		else
+		{
+			rudderOffset = 0.0;
+}
+
 	}
 }
 }
@@ -1063,8 +1215,8 @@ vec3 CameraPlacement(vec3 stiffPos, vec3 upVec, vec3 rightVec)
 
 void InitAfterCrash(){
 	// Sound stuff
-	CleanUpSoundStuff();
-	LoadSoundStuff();
+	CleanUpSoundStuff(1);
+	//LoadSoundStuff(1);
 	
 	player.SetCollision(FALSE);
 	player.SetDirection(vec3(1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0));
@@ -1133,7 +1285,7 @@ void TurnPlaneInside(vec3 pos){ //Turns plan inside bounderies if outside
 	}
 }
 
-void LoadSoundStuff()
+void LoadSoundStuff(int fnum)
 {
 	device = alcOpenDevice(NULL);
 	if (!device)
@@ -1142,12 +1294,48 @@ void LoadSoundStuff()
 	alcMakeContextCurrent(context);
 	if (!context)
 		printf("no sound context");
-	alGenSources((ALuint)1, &source);
-	alGenBuffers((ALuint)1, &buffer);
+	switch (fnum)
+	{
+	case 1:
+		alGenSources((ALuint)1, &source1);
+		alGenBuffers((ALuint)1, &buffer1);
+		break;
+	case 2:
+		alGenSources((ALuint)1, &source2);
+		alGenBuffers((ALuint)1, &buffer2);
+		break;
+	case 3:
+		alGenSources((ALuint)1, &source3);
+		alGenBuffers((ALuint)1, &buffer3);
+		break;
+	case 4:
+		alGenSources((ALuint)1, &source4);
+		alGenBuffers((ALuint)1, &buffer4);
+		break;
+	default:
+		break;
+	}
 	if (alGetError() != AL_NO_ERROR)
 		printf("Error GenSource");
 
-	fp = fopen("audio/Alarm01.wav", "rb");
+	switch (fnum)
+	{
+	case 1:
+		fp = fopen("audio/Explosion 2-SoundBible.com-1641389556.wav", "rb");
+		break;
+	case 2:
+		fp = fopen("audio/Metroid_Door-Brandino480-995195341.wav", "rb");
+		break;
+	case 3:
+		fp = fopen("audio/Propeller-SoundBible.com-615398190.wav", "rb");
+		break;
+	case 4:
+
+		break;
+	default:
+		break;
+	}
+	
 	if (!fp)
 		printf("Failed to open file");                        //Could not open file
 	//Check that the WAVE file is OK
@@ -1211,7 +1399,23 @@ void LoadSoundStuff()
 	if (!format)
 		printf("Wrong BitPerSample");
 
-	alBufferData(buffer, format, buf, dataSize, frequency);
+	switch (fnum)
+	{
+	case 1:
+		alBufferData(buffer1, format, buf, dataSize, frequency);
+		break;
+	case 2:
+		alBufferData(buffer2, format, buf, dataSize, frequency);
+		break;
+	case 3:
+		alBufferData(buffer3, format, buf, dataSize, frequency);
+		break;
+	case 4:
+		alBufferData(buffer4, format, buf, dataSize, frequency);
+		break;
+	default:
+		break;
+	}
 	if (alGetError() != AL_NO_ERROR)
 		printf("Error loading ALBuffer");
 
@@ -1221,26 +1425,64 @@ void LoadSoundStuff()
 	alListenerfv(AL_ORIENTATION, ListenerOri);                                  //Set orientation of the listener
 
 	//Source
-	alSourcei(source, AL_BUFFER, buffer);                                 //Link the buffer to the source
-	alSourcef(source, AL_PITCH, 1.0f);                                 //Set the pitch of the source
-	alSourcef(source, AL_GAIN, 1.0f);                                 //Set the gain of the source
-	alSourcefv(source, AL_POSITION, SourcePos);                                 //Set the position of the source
-	alSourcefv(source, AL_VELOCITY, SourceVel);                                 //Set the velocity of the source
-	alSourcei(source, AL_LOOPING, AL_FALSE);                                 //Set if source is looping sound
+	switch (fnum)
+	{
+	case 1:
+		alSourcei(source1, AL_BUFFER, buffer1);                                 //Link the buffer to the source
+		alSourcef(source1, AL_PITCH, 1.0f);                                 //Set the pitch of the source
+		alSourcef(source1, AL_GAIN, 1.0f);                                 //Set the gain of the source
+		alSourcefv(source1, AL_POSITION, SourcePos);                                 //Set the position of the source
+		alSourcefv(source1, AL_VELOCITY, SourceVel);                                 //Set the velocity of the source
+		alSourcei(source1, AL_LOOPING, AL_FALSE);                                 //Set if source is looping sound
+		break;
+	case 2:
+		alSourcei(source2, AL_BUFFER, buffer2);                                 //Link the buffer to the source
+		alSourcef(source2, AL_PITCH, 1.0f);                                 //Set the pitch of the source
+		alSourcef(source2, AL_GAIN, 1.0f);                                 //Set the gain of the source
+		alSourcefv(source2, AL_POSITION, SourcePos);                                 //Set the position of the source
+		alSourcefv(source2, AL_VELOCITY, SourceVel);                                 //Set the velocity of the source
+		alSourcei(source2, AL_LOOPING, AL_FALSE);                                 //Set if source is looping sound
+		break;
+	case 3:
+		alSourcei(source3, AL_BUFFER, buffer3);                                 //Link the buffer to the source
+		alSourcef(source3, AL_PITCH, 1.0f);                                 //Set the pitch of the source
+		alSourcef(source3, AL_GAIN, 1.0f);                                 //Set the gain of the source
+		alSourcefv(source3, AL_POSITION, SourcePos);                                 //Set the position of the source
+		alSourcefv(source3, AL_VELOCITY, SourceVel);                                 //Set the velocity of the source
+		alSourcei(source3, AL_LOOPING, AL_FALSE);                                 //Set if source is looping sound
+		break;
+	case 4:
+		alSourcei(source4, AL_BUFFER, buffer4);                                 //Link the buffer to the source
+		alSourcef(source4, AL_PITCH, 1.0f);                                 //Set the pitch of the source
+		alSourcef(source4, AL_GAIN, 1.0f);                                 //Set the gain of the source
+		alSourcefv(source4, AL_POSITION, SourcePos);                                 //Set the position of the source
+		alSourcefv(source4, AL_VELOCITY, SourceVel);                                 //Set the velocity of the source
+		alSourcei(source4, AL_LOOPING, AL_TRUE);                                 //Set if source is looping sound
+		break;
+	default:
+		break;
+	}
 }
 
-void CleanUpSoundStuff()
+void CleanUpSoundStuff(int fnum)
 {
 	//Clean-up
 	fclose(fp);                                                                 //Close the WAVE file
-	delete[] buf;                                                               //Delete the sound data buffer
-	alDeleteSources(1, &source);                                                //Delete the OpenAL Source
-	alDeleteBuffers(1, &buffer);                                                 //Delete the OpenAL Buffer
-	alcMakeContextCurrent(NULL);                                                //Make no context current
-	alcDestroyContext(context);                                                 //Destroy the OpenAL Context
-	alcCloseDevice(device);                                                     //Close the OpenAL Device
+	//delete[] buf;                                                               //Delete the sound data buffer
+	//alDeleteSources(1, &source);                                                //Delete the OpenAL Source
+	//alDeleteBuffers(1, &buffer);                                                 //Delete the OpenAL Buffer
+	//alcMakeContextCurrent(NULL);                                                //Make no context current
+	//alcDestroyContext(context);                                                 //Destroy the OpenAL Context
+	//alcCloseDevice(device);                                                     //Close the OpenAL Device
 
-	wasPlayingSound = false;
+	if (fnum == 1)
+	{
+		wasPlayingSound1 = false;
+	}
+	else if (fnum == 2)
+	{
+		wasPlayingSound2 = false;
+	}
 }
 
 int main(int argc, const char *argv[])
