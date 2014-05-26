@@ -24,7 +24,7 @@ public:
 		return pos;
 	}
 	bool CheckHitBox(vec3 objectPos){
-		GLfloat R = 3;
+		GLfloat R = 2;
 		GLfloat dist;
 		bool isHit = false;
 		dist = sqrt(pow((pos.x - objectPos.x), 2) + pow((pos.y - objectPos.y), 2) +  pow((pos.z - objectPos.z), 2));

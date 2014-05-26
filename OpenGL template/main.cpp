@@ -203,6 +203,7 @@ GLuint skyTex;
 GLuint bunnyTex, teapotTex, carTex, teddyTex;
 GLuint trunkTex, leafTex;
 GLuint mtnTex1, mtnTex2, mtnTex3;
+GLuint boxTex;
 
 // terrain
 TextureData ttex;
@@ -236,6 +237,13 @@ GLfloat triangle[] =
 	-triangleSize, triangleSize, 0.0f,
 	triangleSize, -triangleSize, 0.0f
 };
+GLfloat triangleCubeExplosionColor[] =
+{
+	1.0, 0.0, 0.0f, 1.0,
+	0.0, 1.0, 0.0f, 1.0,
+	0.0, 0.0, 1.0f, 1.0
+};
+
 
 GLfloat triangleExplosionSize = 0.15;
 GLfloat triangleExplosion[] =
@@ -247,9 +255,9 @@ GLfloat triangleExplosion[] =
 
 GLfloat triangleCubeColor[] =
 {
-	0.0, 0.0, 0.0f, 1.0,
-	0.0, 0.0, 0.0f, 1.0,
-	0.0, 0.0, 0.0f, 1.0
+	1.0, 0.0, 0.0f, 1.0,
+	0.0, 1.0, 0.0f, 1.0,
+	0.0, 0.0, 1.0f, 1.0
 };
 
 GLfloat triangleExplosionColor[] =
@@ -389,6 +397,7 @@ void init(void)
 	LoadTGATextureSimple("textures/maskros512.tga", &teddyTex);
 	LoadTGATextureSimple("textures/treetext2.tga", &trunkTex);
 	LoadTGATextureSimple("textures/leaftext.tga", &leafTex);
+	LoadTGATextureSimple("textures/boxtex.tga", &boxTex);
 
 	LoadTGATextureSimple("textures/dirt.tga", &mtnTex1);
 	LoadTGATextureSimple("textures/grass.tga", &mtnTex2);
@@ -640,7 +649,7 @@ void display(void)
 	// Camera stuff.
 	s = player.GetDirection(); // Forward vector.
 	l = player.GetPosition(); // What the camera is looking at.
-	p = l - s * 3.0; // Stiff camera placement, 5.0 behind the plane.
+	p = l - s * 5.0; // Stiff camera placement, 5.0 behind the plane.
 	vec3 sluggishCamPos = p;
 	if (!isExplosion)
 	{
@@ -702,13 +711,14 @@ void display(void)
 	
 	// Balls (cubes atm)
 	mat4 ballTrans;
+	glUseProgram(program);
 	for (int i = 0; i < GetNrOfBalls(); i++)
 	{
 		bool hit = ballArray[i].AlreadyHit();
 		if (hit)
 		{		
 		ballTrans = T(ballArray[i].GetPosition().x, ballArray[i].GetPosition().y, ballArray[i].GetPosition().z);
-		glBindTexture(GL_TEXTURE_2D, trunkTex);
+		glBindTexture(GL_TEXTURE_2D, boxTex);
 		UploadAndDraw(ballTrans.m, bunny, 0, 0);
 
 		if (ballArray[i].CheckHitBox(player.GetPosition())) // Check player collision with box
@@ -1530,7 +1540,7 @@ int main(int argc, const char *argv[])
 {
 	glutInit(&argc, (char**)argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-	glutInitWindowSize(1280, 720);	// Window size.
+	glutInitWindowSize(720, 720);	// Window size.
 	glutCreateWindow("OpenGL template");	// Window title.
 	glutDisplayFunc(display);
 	glutPassiveMotionFunc(CheckMouse);
