@@ -719,9 +719,9 @@ void display(void)
 			if (scoreCount >= 1){
 				GLfloat numberSquareTexCoord[] =
 				{
-					0.125*scoreCount, 0.125,
-					0.125*scoreCount, 0.0,
-					0.125*(scoreCount - 1), 0.125
+					0.125*scoreCount, 0.125*(textureLine+1),
+					0.125*scoreCount, 0.125*textureLine,
+					0.125*(scoreCount - 1), 0.125*(textureLine + 1)
 				};
 				glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjID6);
 				glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(GLfloat), numberSquareTexCoord, GL_STATIC_DRAW);
@@ -729,9 +729,9 @@ void display(void)
 				glEnableVertexAttribArray(glGetAttribLocation(program, "inTexCoord"));
 				GLfloat numberSquareTexCoord2[] =
 				{
-					0.125*(scoreCount - 1), 0.0,
-					0.125*scoreCount, 0.0,
-					0.125*(scoreCount - 1), 0.125
+					0.125*(scoreCount - 1), 0.125*(textureLine ),
+					0.125*scoreCount, 0.125*(textureLine ),
+					0.125*(scoreCount - 1), 0.125*(textureLine + 1)
 				};
 
 				glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjID8);
