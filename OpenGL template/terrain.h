@@ -10,7 +10,7 @@
 #include "tree.h"
 #include "GenerateGridPositions.h"
 #include "cloud.h"
-#include "ball.h"
+#include "cube.h"
 
 
 
@@ -24,10 +24,10 @@ int getHeight(TextureData *tex);
 
 tree* GetForest(GLfloat *vertexArray, int xMax, int zMax, int square_size);
 cloud* GetClouds(GLfloat *vertexArray, int xMax, int zMax, int square_size);
-ball* GetBalls(GLfloat *vertexArray, int xMax, int zMax, int square_size, tree* treeArray, int nrOfTrees);
+cube* GetCubes(GLfloat *vertexArray, int xMax, int zMax, int square_size, tree* treeArray, int nrOfTrees);
 int GetNrOfTrees();
 int GetNrOfClouds();
-int GetNrOfBalls();
+int GetNrOfCubes();
 
 
 // Find the height of the terrain, given a x- and z-coordinate

@@ -1,12 +1,12 @@
-#ifndef ball_h
-#define ball_h
+#ifndef cube_h
+#define cube_h
 
 #include "VectorUtils3.h"
 #include "GL_utilities.h"
 #include "math.h"
 
 
-class ball{
+class cube{
 
 	vec3 pos = { 0.0f, 0.0f, 0.0f };
 	GLfloat color = 0;
@@ -15,7 +15,7 @@ class ball{
 	//GLfloat hitBoxRad = 0;
 	int type = 1;
 public:
-	ball(vec3 pos, GLfloat size)
+	cube(vec3 pos, GLfloat size)
 	{
 		pos = pos;
 	}

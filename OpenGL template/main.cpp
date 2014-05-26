@@ -17,7 +17,7 @@
 #include "GenerateGridPositions.h"
 #include "tree.h"
 #include "cloud.h"
-#include "ball.h"
+#include "cube.h"
 
 #include "particle.h"
 
@@ -219,7 +219,7 @@ Plane player(vec3(40.0, 40.0, 40.0), vec3(1.0, 0.0, 0.0), propSpeed);
 
 tree* treeArray;
 cloud* cloudArray;
-ball* ballArray;
+cube* cubeArray;
 
 // "Particles"
 particle* particleCubeArray;
@@ -237,13 +237,6 @@ GLfloat triangle[] =
 	-triangleSize, triangleSize, 0.0f,
 	triangleSize, -triangleSize, 0.0f
 };
-GLfloat triangleCubeExplosionColor[] =
-{
-	1.0, 0.0, 0.0f, 1.0,
-	0.0, 1.0, 0.0f, 1.0,
-	0.0, 0.0, 1.0f, 1.0
-};
-
 
 GLfloat triangleExplosionSize = 0.15;
 GLfloat triangleExplosion[] =
@@ -268,33 +261,33 @@ GLfloat triangleExplosionColor[] =
 };
 
 
-GLfloat numberSquare[] =
+GLfloat numberSign[] =
 {
 	0.0f, 0.0f, 0.0f,
 	0.0f, 5.0f, 0.0f,
 	5.0f, 0.0f, 0.0f
 };
 
-GLfloat numberSquareTexCoord[] =
+GLfloat numberSignTexCoord[] =
 {
 	0.12f, 0.12f,
 	0.12f, 0.0f, 
 	0.0f, 0.12f
 };
 
-GLfloat numberSquare2[] =
+GLfloat numberSign2[] =
 {
 	5.0f, 5.0f, 0.0f,
 	0.0f, 5.0f, 0.0f,
 	5.0f, 0.0f, 0.0f
 };
 
-GLfloat numberSquareTexCoord2[] =
+GLfloat numberSignTexCoord2[] =
 {
 	0.0f, 0.0f,
 	0.12f, 0.0f,
 	0.0f, 0.12f
-};
+}; 
 
 
 //Cube 
@@ -420,7 +413,7 @@ void init(void)
 	// Initialize forest.
 	treeArray = GetForest(terrain->vertexArray, terrainW, terrainH, 50);
 	cloudArray = GetClouds(terrain->vertexArray, terrainW, terrainH, 60);
-	ballArray = GetBalls(terrain->vertexArray, terrainW, terrainH, 50, treeArray, GetNrOfTrees());
+	cubeArray = GetCubes(terrain->vertexArray, terrainW, terrainH, 50, treeArray, GetNrOfTrees());
 
 	//"Particles"
 	particleCubeArray = GenerateParticles(nrOfParticles, 0);
@@ -481,12 +474,12 @@ void init(void)
 
 	// VBO for vertex data
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjID5);
-	glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(GLfloat), numberSquare, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(GLfloat), numberSign, GL_STATIC_DRAW);
 	glVertexAttribPointer(glGetAttribLocation(program, "inPosition"), 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(glGetAttribLocation(program, "inPosition"));
-
+	
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjID6);
-	glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(GLfloat), numberSquareTexCoord, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(GLfloat), numberSignTexCoord, GL_STATIC_DRAW);
 	glVertexAttribPointer(glGetAttribLocation(program, "inTexCoord"), 2, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(glGetAttribLocation(program, "inTexCoord"));
 
@@ -499,12 +492,12 @@ void init(void)
 
 	// VBO for vertex data
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjID7);
-	glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(GLfloat), numberSquare2, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(GLfloat), numberSign2, GL_STATIC_DRAW);
 	glVertexAttribPointer(glGetAttribLocation(program, "inPosition"), 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(glGetAttribLocation(program, "inPosition"));
-
+	
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjID8);
-	glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(GLfloat), numberSquareTexCoord2, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(GLfloat), numberSignTexCoord2, GL_STATIC_DRAW);
 	glVertexAttribPointer(glGetAttribLocation(program, "inTexCoord"), 2, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(glGetAttribLocation(program, "inTexCoord"));
 
@@ -708,20 +701,19 @@ void display(void)
 			collisionFirstLoop = FALSE;
 		}
 	}
-	
-	// Balls (cubes atm)
-	mat4 ballTrans;
+	//Cubes
+	mat4 cubeTrans;
 	glUseProgram(program);
-	for (int i = 0; i < GetNrOfBalls(); i++)
+	for (int i = 0; i < GetNrOfCubes(); i++)
 	{
-		bool hit = ballArray[i].AlreadyHit();
+		bool hit = cubeArray[i].AlreadyHit();
 		if (hit)
 		{		
-		ballTrans = T(ballArray[i].GetPosition().x, ballArray[i].GetPosition().y, ballArray[i].GetPosition().z);
+		cubeTrans = T(cubeArray[i].GetPosition().x, cubeArray[i].GetPosition().y, cubeArray[i].GetPosition().z);
 		glBindTexture(GL_TEXTURE_2D, boxTex);
-		UploadAndDraw(ballTrans.m, bunny, 0, 0);
+		UploadAndDraw(cubeTrans.m, bunny, 0, 0);
 
-		if (ballArray[i].CheckHitBox(player.GetPosition())) // Check player collision with box
+		if (cubeArray[i].CheckHitBox(player.GetPosition())) // Check player collision with box
 		{
 			isCubeExplosion = TRUE;
 			scoreCount += 1;
@@ -732,17 +724,17 @@ void display(void)
 				textureLine = 1;
 			}
 			if (scoreCount >= 1){
-				GLfloat numberSquareTexCoord[] =
+				GLfloat numberSignTexCoord[] =
 				{
 					0.125*scoreCount, 0.125*(textureLine+1),
 					0.125*scoreCount, 0.125*textureLine,
 					0.125*(scoreCount - 1), 0.125*(textureLine + 1)
 				};
 				glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjID6);
-				glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(GLfloat), numberSquareTexCoord, GL_STATIC_DRAW);
+				glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(GLfloat), numberSignTexCoord, GL_STATIC_DRAW);
 				glVertexAttribPointer(glGetAttribLocation(program, "inTexCoord"), 2, GL_FLOAT, GL_FALSE, 0, 0);
 				glEnableVertexAttribArray(glGetAttribLocation(program, "inTexCoord"));
-				GLfloat numberSquareTexCoord2[] =
+				GLfloat numberSignTexCoord2[] =
 				{
 					0.125*(scoreCount - 1), 0.125*(textureLine ),
 					0.125*scoreCount, 0.125*(textureLine ),
@@ -750,7 +742,7 @@ void display(void)
 				};
 
 				glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjID8);
-				glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(GLfloat), numberSquareTexCoord2, GL_STATIC_DRAW);
+				glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(GLfloat), numberSignTexCoord2, GL_STATIC_DRAW);
 				glVertexAttribPointer(glGetAttribLocation(program, "inTexCoord"), 2, GL_FLOAT, GL_FALSE, 0, 0);
 				glEnableVertexAttribArray(glGetAttribLocation(program, "inTexCoord"));
 			}
@@ -759,8 +751,6 @@ void display(void)
 				for (int i = 0; i < nrOfParticles; i++)
 				{
 					particleCubeArray[i].SetParticleOrigin(player.GetPosition());
-
-
 				}
 			}
 			cubeCollisionFirstLoop = FALSE;
@@ -770,6 +760,7 @@ void display(void)
 
 	//Cube explosion
 	glUseProgram(particleProgram);
+	mat4 particleTrans;
 	if (isCubeExplosion){
 
 		// Sound stuff
@@ -784,11 +775,10 @@ void display(void)
 
 		for (int i = 0; i < nrOfParticles; i++)
 		{
-			teapotTrans = T(particleCubeArray[i].GetPosition().x, particleCubeArray[i].GetPosition().y - 2, particleCubeArray[i].GetPosition().z);
+			particleTrans = T(particleCubeArray[i].GetPosition().x, particleCubeArray[i].GetPosition().y - 2, particleCubeArray[i].GetPosition().z);
 			particleCubeArray[i].UpdateParticle();
-			teapotTotal = teapotTrans;
 			//Draw vertices.
-			glUniformMatrix4fv(glGetUniformLocation(particleProgram, "MTWMatrix"), 1, GL_TRUE, teapotTotal.m);
+			glUniformMatrix4fv(glGetUniformLocation(particleProgram, "MTWMatrix"), 1, GL_TRUE, particleTrans.m);
 			glUniformMatrix4fv(glGetUniformLocation(particleProgram, "WTVMatrix"), 1, GL_TRUE, camMatrix.m);
 			glUniformMatrix4fv(glGetUniformLocation(particleProgram, "VTPMatrix"), 1, GL_TRUE, projMatrix);
 			glBindVertexArray(vertexArrayObjID);	// Select VAO
@@ -820,11 +810,10 @@ void display(void)
 
 		for (int i = 0; i < nrOfExplosionParticles; i++)
 		{	
-			teapotTrans = T(particleExplosionArray[i].GetPosition().x, particleExplosionArray[i].GetPosition().y - 2, particleExplosionArray[i].GetPosition().z);
+			particleTrans = T(particleExplosionArray[i].GetPosition().x, particleExplosionArray[i].GetPosition().y - 2, particleExplosionArray[i].GetPosition().z);
 			particleExplosionArray[i].UpdateParticle();
-		teapotTotal = teapotTrans;
 		//Draw vertices.
-		glUniformMatrix4fv(glGetUniformLocation(particleProgram, "MTWMatrix"), 1, GL_TRUE, teapotTotal.m);
+		glUniformMatrix4fv(glGetUniformLocation(particleProgram, "MTWMatrix"), 1, GL_TRUE, particleTrans.m);
 		glUniformMatrix4fv(glGetUniformLocation(particleProgram, "WTVMatrix"), 1, GL_TRUE, camMatrix.m);
 		glUniformMatrix4fv(glGetUniformLocation(particleProgram, "VTPMatrix"), 1, GL_TRUE, projMatrix);
 		glBindVertexArray(vertexArrayObjID2);	// Select VAO
@@ -1276,7 +1265,7 @@ void InitAfterCrash(){
 	collisionFirstLoop = TRUE;
 	particleExplosionArray = GenerateParticles(nrOfExplosionParticles, 1);
 	scoreCount = 0;
-	ballArray = GetBalls(terrain->vertexArray, terrainW, terrainH, 50, treeArray, GetNrOfTrees());
+	cubeArray = GetCubes(terrain->vertexArray, terrainW, terrainH, 50, treeArray, GetNrOfTrees());
 }
 
 void CheckIfOutsideBounderies(vec3 pos){
@@ -1540,7 +1529,7 @@ int main(int argc, const char *argv[])
 {
 	glutInit(&argc, (char**)argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-	glutInitWindowSize(720, 720);	// Window size.
+	glutInitWindowSize(1280, 720);	// Window size.
 	glutCreateWindow("OpenGL template");	// Window title.
 	glutDisplayFunc(display);
 	glutPassiveMotionFunc(CheckMouse);

@@ -5,7 +5,7 @@
 //int terrainH; //height
 int nrOfTrees;
 int nrOfClouds;
-int nrOfBalls;
+int nrOfCubes;
 
 // Model
 //Model *terrain;
@@ -282,9 +282,9 @@ int GetNrOfClouds()
 	return nrOfClouds;
 }
 
-ball* GetBalls(GLfloat *vertexArray, int xMax, int zMax, int square_size, tree* treeArray, int nrOfTrees)
+cube* GetCubes(GLfloat *vertexArray, int xMax, int zMax, int square_size, tree* treeArray, int nrOfTrees)
 {
-	ball* ballArray = (ball *)malloc(sizeof(ball)*xMax*zMax * 3);
+	cube* cubeArray = (cube *)malloc(sizeof(cube)*xMax*zMax * 3);
 	int* positionsArray = (int *)malloc(sizeof(int)*xMax*zMax * 3);
 
 	vec3 deltaPos = { 3.0f, 3.0f, 3.0f };
@@ -296,24 +296,24 @@ ball* GetBalls(GLfloat *vertexArray, int xMax, int zMax, int square_size, tree* 
 
 		for (int j = 0; j < getNrXPoints(); j++)
 		{
-			ballArray[(i + j * getNrXPoints())].SetXPos(positionsArray[(i + j * getNrXPoints()) * 3 + 0]);
-			ballArray[(i + j * getNrXPoints())].SetYPos(positionsArray[(i + j * getNrXPoints()) * 3 + 1] + 10);
-			ballArray[(i + j * getNrXPoints())].SetZPos(positionsArray[(i + j * getNrXPoints()) * 3 + 2]);
+			cubeArray[(i + j * getNrXPoints())].SetXPos(positionsArray[(i + j * getNrXPoints()) * 3 + 0]);
+			cubeArray[(i + j * getNrXPoints())].SetYPos(positionsArray[(i + j * getNrXPoints()) * 3 + 1] + 10);
+			cubeArray[(i + j * getNrXPoints())].SetZPos(positionsArray[(i + j * getNrXPoints()) * 3 + 2]);
 
 			for (int k = 0; k < nrOfTrees; k++)
 			{
-				if (ballArray[(i + j * getNrXPoints())].CheckOtherObject(treeArray[k].GetPosition()))
+				if (cubeArray[(i + j * getNrXPoints())].CheckOtherObject(treeArray[k].GetPosition()))
 				{
-					ballArray[(i + j * getNrXPoints())].ChangePosition(deltaPos);
+					cubeArray[(i + j * getNrXPoints())].ChangePosition(deltaPos);
 				}
 			}
 		}
 	}
-	nrOfBalls = getNrZPoints() * getNrXPoints();
-	return ballArray;
+	nrOfCubes = getNrZPoints() * getNrXPoints();
+	return cubeArray;
 }
 
-int GetNrOfBalls()
+int GetNrOfCubes()
 {
-	return nrOfBalls;
+	return nrOfCubes;
 }
