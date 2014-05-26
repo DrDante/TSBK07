@@ -646,12 +646,17 @@ void display(void)
 	{
 		sluggishCamPos = l + CameraPlacement(p, player.GetUpVector(), Normalize(CrossProduct(player.GetDirection(), player.GetUpVector())));
 	}
+	else
+	{
+		pitchCamOffset = 0.0;
+	}
 
 	// OBS! Subjektivt, bör diskuteras.
 	v = ConfinedUpVector(player.GetDirection());
 	//camMatrix = lookAtv(p, l, player.GetUpVector());
 	//camMatrix = lookAtv(p, l, v);
 	camMatrix = lookAtv(sluggishCamPos, l, v);
+	
 
 
 
@@ -992,7 +997,7 @@ void CheckKeys()	// Checks if keys are being pressed.
 		vec3 tempForward = Normalize(player.GetDirection() - pitchSpeed * player.GetUpVector());
 		vec3 tempUp = Normalize(player.GetUpVector() + pitchSpeed * player.GetDirection());
 		player.SetDirection(tempForward, tempUp);
-		if (pitchCamOffset < pitchCamLimit)
+		if (pitchCamOffset < pitchCamLimit && !isExplosion)
 		{
 			pitchCamOffset += camSpeed;
 		}
@@ -1007,7 +1012,7 @@ void CheckKeys()	// Checks if keys are being pressed.
 		vec3 tempForward = Normalize(player.GetDirection() + pitchSpeed * player.GetUpVector());
 		vec3 tempUp = Normalize(player.GetUpVector() - pitchSpeed * player.GetDirection());
 		player.SetDirection(tempForward, tempUp);
-		if (pitchCamOffset > -pitchCamLimit)
+		if (pitchCamOffset > -pitchCamLimit && !isExplosion)
 		{
 			pitchCamOffset -= camSpeed;
 		}
