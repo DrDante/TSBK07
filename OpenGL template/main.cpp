@@ -166,6 +166,22 @@ mat4 balconyRot, balconyTrans;
 mat4 bladeRot, bladeStartRot, bladeTrans;
 mat4 bladeTotal1, bladeTotal2, bladeTotal3, bladeTotal4;
 
+// Rudders
+mat4 botLAilMat, topLAilMat, botRAilMat, topRAilMat, elevatorMat, rudderMat;
+Model *botLAil;
+Model *topLAil;
+Model *botRAil;
+Model *topRAil;
+Model *elevator;
+Model *rudder;
+float rudderOffset = 0.0;
+float elevatorOffset = 0.0;
+float ailOffset = 0.0;
+
+const float maxRudder = 0.5;
+const float maxElevator = 0.8;
+const float maxAil = 0.8;
+
 mat4 planeTrans;
 mat4 propTotal;
 
@@ -323,7 +339,7 @@ void init(void)
 	teapot = LoadModelPlus("models/teapot.obj");
 	car = LoadModelPlus("models/bilskiss.obj");
 	teddy = LoadModelPlus("models/teddy.obj");
-	plane = LoadModelPlus("models/LPNoBladeobj.obj");
+	plane = LoadModelPlus("models/PlaneWithoutRudders.obj");
 	planeRot = LoadModelPlus("models/Blade.obj");
 	trunk = LoadModelPlus("models/stamm.obj");
 	leaves = LoadModelPlus("models/blad.obj");
@@ -331,6 +347,12 @@ void init(void)
 //	tree2 = LoadModelPlus("models/tree_EU55_3.obj");
 //	leaveBush = LoadModelPlus("models/LeaveBushObj.obj");
 
+	botLAil = LoadModelPlus("models/Roder/L_BotAileron.obj");
+	topLAil = LoadModelPlus("models/Roder/R_TopAileron.obj");
+	botRAil = LoadModelPlus("models/Roder/R_BotAileron.obj");
+	topRAil = LoadModelPlus("models/Roder/L_TopAileron.obj");
+	elevator = LoadModelPlus("models/Roder/Elevator.obj");
+	rudder = LoadModelPlus("models/Roder/Rudder.obj");
 
 	// Loading textures.
 	LoadTGATextureSimple("textures/grass.tga", &groundTex);
@@ -551,6 +573,29 @@ void display(void)
 	mat4 PlaneMatrix = RotatePlaneModel();
 	// Moving model.
 	PlaneMatrix = Mult(Mult(T(player.GetPosition().x, player.GetPosition().y, player.GetPosition().z), PlaneMatrix), S(planeScale, planeScale, planeScale));
+	// Aileron.
+	mat4 lAilRot = Rx(ailOffset);
+	lAilRot = Mult(Rz(-0.072), lAilRot);
+	botLAilMat = Mult(T(-2.16824, -0.371189, -0.2), lAilRot);
+	botLAilMat = Mult(PlaneMatrix, botLAilMat);
+	lAilRot = ArbRotate(Normalize(vec3(5.0, -0.2, 0.8)), ailOffset);
+	topLAilMat = Mult(T(-2.65974, 1.01, 0.0), lAilRot);
+	topLAilMat = Mult(PlaneMatrix, topLAilMat);
+	mat4 rAilRot = Rx(-ailOffset);
+	rAilRot = Mult(Rz(0.072), rAilRot);
+	botRAilMat = Mult(T(2.16824, -0.371189, -0.2), rAilRot);
+	botRAilMat = Mult(PlaneMatrix, botRAilMat);
+	rAilRot = ArbRotate(Normalize(vec3(5.0, 0.2, -0.8)), -ailOffset);
+	topRAilMat = Mult(T(2.65974, 1.01, 0.0), rAilRot);
+	topRAilMat = Mult(PlaneMatrix, topRAilMat);
+	// Elevator.
+	mat4 elevatorRot = Rx(elevatorOffset);
+	elevatorMat = Mult(T(0.0, 0.1818, -2.83), elevatorRot);
+	elevatorMat = Mult(PlaneMatrix, elevatorMat);
+	// Rudder.
+	mat4 rudderRot = Ry(rudderOffset);
+	rudderMat = Mult(T(0.0, 0.3518, -2.83), rudderRot);
+	rudderMat = Mult(PlaneMatrix, rudderMat);
 
 	CheckIfOutsideBounderies(player.GetPosition());
 	if (isOutside){
@@ -563,11 +608,17 @@ void display(void)
 		glBindTexture(GL_TEXTURE_2D, skyTex);
 		UploadAndDraw(PlaneMatrix.m, plane, 0, 0);
 		UploadAndDraw(propTotal.m, planeRot, 0, 0);
+		UploadAndDraw(botLAilMat.m, botLAil, 0, 0);
+		UploadAndDraw(topLAilMat.m, topLAil, 0, 0);
+		UploadAndDraw(botRAilMat.m, botRAil, 0, 0);
+		UploadAndDraw(topRAilMat.m, topRAil, 0, 0);
+		UploadAndDraw(elevatorMat.m, elevator, 0, 0);
+		UploadAndDraw(rudderMat.m, rudder, 0, 0);
 	}
 	// Camera stuff.
 	s = player.GetDirection(); // Forward vector.
 	l = player.GetPosition(); // What the camera is looking at.
-	p = l - s * 5.0; // Stiff camera placement, 5.0 behind the plane.
+	p = l - s * 3.0; // Stiff camera placement, 5.0 behind the plane.
 	vec3 sluggishCamPos = p;
 	if (!isExplosion)
 	{
@@ -869,7 +920,6 @@ void SetCameraVector(float fi, float theta)	// Sets the camera matrix.
 bool wasRollingRight = false;
 bool wasRollingLeft = false;
 
-
 float yawCamOffset = 0.0;
 float pitchCamOffset = 0.0;
 const float pitchSpeed = 0.02;
@@ -901,6 +951,10 @@ void CheckKeys()	// Checks if keys are being pressed.
 		{
 			pitchCamOffset += camSpeed;
 		}
+		if (elevatorOffset < maxElevator)
+		{
+			elevatorOffset += 0.1;
+		}
 	}
 	// 's' pitches the plane upwards.
 	if (keyIsDown('s'))
@@ -912,6 +966,10 @@ void CheckKeys()	// Checks if keys are being pressed.
 		{
 			pitchCamOffset -= camSpeed;
 		}
+		if (elevatorOffset > -maxElevator)
+		{
+			elevatorOffset -= 0.1;
+		}
 	}
 	// 'a' yaws the plane to the left.
 	if (keyIsDown('a'))
@@ -920,6 +978,10 @@ void CheckKeys()	// Checks if keys are being pressed.
 		if (yawCamOffset > -yawCamLimit)
 		{
 			yawCamOffset -= camSpeed;
+		}
+		if (rudderOffset > -maxRudder)
+		{
+			rudderOffset -= 0.1;
 		}
 	}
 	// 'd' yaws the plane to the right.
@@ -930,18 +992,30 @@ void CheckKeys()	// Checks if keys are being pressed.
 		{
 			yawCamOffset += camSpeed;
 		}
+		if (rudderOffset < maxRudder)
+		{
+			rudderOffset += 0.1;
+		}
 	}
 	// 'q' rolls the plane counterclockwise.
 	if (keyIsDown('q'))
 	{
 		player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() - rollSpeed * tempRight));
 		wasRollingRight = false;
+		if (ailOffset < maxAil)
+		{
+			ailOffset += 0.1;
+		}
 	}
 	// 'e' rolls the plane clockwise.
 	if (keyIsDown('e'))
 	{
 		player.SetDirection(player.GetDirection(), Normalize(player.GetUpVector() + rollSpeed * tempRight));
 		wasRollingLeft = false;
+		if (ailOffset > -maxAil)
+		{
+			ailOffset -= 0.1;
+		}
 	}
 	// 'r' increases the speed.
 	if (keyIsDown('r'))
@@ -1018,6 +1092,18 @@ void CheckKeys()	// Checks if keys are being pressed.
 			wasRollingRight = false;
 			wasRollingLeft = false;
 		}
+		if (ailOffset < -0.1)
+		{
+			ailOffset += 0.05;
+		}
+		else if (ailOffset > 0.1)
+		{
+			ailOffset -= 0.05;
+		}
+		else
+		{
+			ailOffset = 0.0;
+		}
 	}
 	// Slowly resets the pitch camera offset.
 	if (!keyIsDown('w') && !keyIsDown('s'))
@@ -1029,6 +1115,18 @@ void CheckKeys()	// Checks if keys are being pressed.
 		else if (pitchCamOffset < 0)
 		{
 			pitchCamOffset += camReturnSpeed;
+		}
+		if (elevatorOffset > 0.1)
+		{
+			elevatorOffset -= 0.05;
+		}
+		else if (elevatorOffset < -0.1)
+		{
+			elevatorOffset += 0.05;
+		}
+		else
+		{
+			elevatorOffset = 0.0;
 		}
 	}
 	// Slowly resets the yaw camera offset.
@@ -1042,6 +1140,19 @@ void CheckKeys()	// Checks if keys are being pressed.
 		{
 			yawCamOffset += camReturnSpeed;
 		}
+		if (rudderOffset > 0.1)
+		{
+			rudderOffset -= 0.05;
+		}
+		else if (rudderOffset < -0.1)
+		{
+			rudderOffset += 0.05;
+		}
+		else
+		{
+			rudderOffset = 0.0;
+		}
+
 	}
 }
 }
