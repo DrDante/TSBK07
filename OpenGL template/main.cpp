@@ -716,7 +716,7 @@ void display(void)
 			if (scoreCount > 8){
 				textureLine = 1;
 			}
-			if (scoreCount > 1){
+			if (scoreCount >= 1){
 				GLfloat numberSquareTexCoord[] =
 				{
 					0.125*scoreCount, 0.125,
@@ -850,11 +850,13 @@ void display(void)
 	glUniformMatrix4fv(glGetUniformLocation(program, "WTVMatrix"), 1, GL_TRUE, camMatrix.m);
 	glUniformMatrix4fv(glGetUniformLocation(program, "VTPMatrix"), 1, GL_TRUE, projMatrix);
 	glBindVertexArray(vertexArrayObjID3);	// Select VAO
-	glDrawArrays(GL_TRIANGLES, 0, 3);	// draw object
 
-	glBindVertexArray(vertexArrayObjID4);	// Select VAO
-	glDrawArrays(GL_TRIANGLES, 0, 3);	// draw object
+	if (scoreCount > 0){
+		glDrawArrays(GL_TRIANGLES, 0, 3);	// draw object
 
+		glBindVertexArray(vertexArrayObjID4);	// Select VAO
+		glDrawArrays(GL_TRIANGLES, 0, 3);	// draw object
+	}
 	// End score-counter code
 
 	// Extra objects.
@@ -1259,6 +1261,7 @@ void InitAfterCrash(){
 	collisionFirstLoop = TRUE;
 	particleExplosionArray = GenerateParticles(nrOfExplosionParticles, 1);
 	scoreCount = 0;
+	ballArray = GetBalls(terrain->vertexArray, terrainW, terrainH, 50, treeArray, GetNrOfTrees());
 }
 
 void CheckIfOutsideBounderies(vec3 pos){
