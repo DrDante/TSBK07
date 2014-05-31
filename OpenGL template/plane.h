@@ -10,10 +10,11 @@
 
 class Plane{
 	vec3 pos = { 0.0, 0.0, 0.0 };
-	vec3 dir = { 1.0, 0.0, 0.0 }; // Should always be normalized.
-	vec3 up = { 0.0, 1.0, 0.0 }; // Should always be normalized.
+	vec3 dir = { 1.0, 0.0, 0.0 };	// Should always be normalized.
+	vec3 up = { 0.0, 1.0, 0.0 };	// Should always be normalized.
+	const float lowestVel = 0.2;	// The lowest velocity where the plane won't fall.
 	float vel = 0.0;
-	bool isCollided=FALSE; // TRUE if collision, FALSE if not
+	bool isCollided = FALSE;
 public:
 	Plane(vec3 position, vec3 direction, float velocity)
 	{
@@ -48,35 +49,30 @@ public:
 	{
 		vel = velocity;
 	}
-	void SetCollision(bool isCol){ // A func that can be used to change isCollided to TRUE/ FALSE. 
+	void SetCollision(bool isCol)
+	{
 		isCollided = isCol;
 	}
-	void SetPosition(vec3 position){
+	void SetPosition(vec3 position)
+	{
 		pos = position;
 	}
 	void MovePlane()
 	{
-		if (!isCollided){
+		if (!isCollided)
+		{
 			pos += dir * vel;
-			//pos.y -= 0.1; // Gravity.
-			//pos.y += 0.1 * DotProduct(up, vec3(0.0, 1.0, 0.0)); // Lift force.
-
-			// OBS! Subjektivt, bör diskuteras.
-			//vec3 yUp = { 0.0, 1.0, 0.0 };
 
 			vec3 tempRight = Normalize(CrossProduct(dir, up));
-			//vec3 tempRight1 = Normalize(CrossProduct(dir, Normalize(yUp - DotProduct(yUp, dir) * dir)));
 			if (tempRight.y != 0.0)
 			{
 				dir = Normalize(dir - 0.015 * DotProduct(tempRight, vec3(0.0, 1.0, 0.0)) * tempRight); // Turning.
-				//dir = Normalize(dir - 0.015 * DotProduct(tempRight, vec3(0.0, 1.0, 0.0)) * tempRight1); // Turning.
 				// 0.015 above could use some fine tuning.
 			}
 		}
-		const float lowestVel = 0.2; // The lowest velocity where the plane won't fall.
 		if (vel < lowestVel)
 		{
-			pos -= vec3(0.0, (lowestVel - vel), 0.0)*1.5;
+			pos -= vec3(0.0, (lowestVel - vel), 0.0) * 1.5;
 		}
 	}
 };

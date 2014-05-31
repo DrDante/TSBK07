@@ -36,9 +36,6 @@
     <ClCompile Include="GenerateGridPositions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="tree.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="particle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

@@ -1,0 +1,55 @@
+----------SETUP----------
+1. Tanka och installera MSVC 2013 Ultimate via DreamSpark (Portalen).
+
+2. Packa upp freeglut-2.8.1.tar.gz och kör freeglut-2.8.1\VisualStudio\2012\freeglut.sln (med MSVC).
+   Välj OK om du får förfrågan att konvertera filerna till nyare version.
+   Välj "Release" under Win32 respektive x64 (Configuration manager) och kör Build på varje.
+
+3. Kopiera freeglut-2.8.1\lib\x86\freeglut.lib till C:\Program (x86)\Windows Kits\8.1\Lib\winv6.3\um\x86\
+   Kopiera freeglut-2.8.1\lib\x64\freeglut.lib till C:\Program (x86)\Windows Kits\8.1\Lib\winv6.3\um\x64\
+
+4. Kopiera freeglut-2.8.1\lib\x64\freeglut.dll till C:\Windows\System32\
+
+5. Kopiera freeglut-2.8.1\include\GL\freeglut.h     till C:\Program (x86)\Windows Kits\8.1\Include\um\gl\
+   Kopiera freeglut-2.8.1\include\GL\freeglut_ext.h till C:\Program (x86)\Windows Kits\8.1\Include\um\gl\
+   Kopiera freeglut-2.8.1\include\GL\freeglut_std.h till C:\Program (x86)\Windows Kits\8.1\Include\um\gl\
+   Kopiera freeglut-2.8.1\include\GL\glut.h         till C:\Program (x86)\Windows Kits\8.1\Include\um\gl\
+
+6. Packa upp glew-1.10.0-win32.zip.
+
+7. Kopiera glew-1.10.0\lib\Release\Win32\glew32.lib       till C:\Program (x86)\Windows Kits\8.1\Lib\winv6.3\um\x86\
+   Kopiera glew-1.10.0\lib\Release\Win32\glew32s.lib      till C:\Program (x86)\Windows Kits\8.1\Lib\winv6.3\um\x86\
+   Kopiera glew-1.10.0\lib\Release MX\Win32\glew32mx.lib  till C:\Program (x86)\Windows Kits\8.1\Lib\winv6.3\um\x86\
+   Kopiera glew-1.10.0\lib\Release MX\Win32\glew32mxs.lib till C:\Program (x86)\Windows Kits\8.1\Lib\winv6.3\um\x86\
+   Kopiera glew-1.10.0\lib\Release\x64\glew32.lib         till C:\Program (x86)\Windows Kits\8.1\Lib\winv6.3\um\x64\
+   Kopiera glew-1.10.0\lib\Release\x64\glew32s.lib        till C:\Program (x86)\Windows Kits\8.1\Lib\winv6.3\um\x64\
+   Kopiera glew-1.10.0\lib\Release MX\x64\glew32mx.lib    till C:\Program (x86)\Windows Kits\8.1\Lib\winv6.3\um\x64\
+   Kopiera glew-1.10.0\lib\Release MX\x64\glew32mxs.lib   till C:\Program (x86)\Windows Kits\8.1\Lib\winv6.3\um\x64\
+
+8. Kopiera glew-1.10.0\bin\Release\x64\glew32.dll      till C:\Windows\System32\
+   Kopiera glew-1.10.0\bin\Release MX\x64\glew32mx.dll till C:\Windows\System32\
+
+9. Kopiera glew-1.10.0\include\GL\glew.h  till C:\Program (x86)\Windows Kits\8.1\Include\um\gl\
+   Kopiera glew-1.10.0\include\GL\wglew.h till C:\Program (x86)\Windows Kits\8.1\Include\um\gl\
+
+10. För att få ett projekt att fungera med OpenGL, tänk på följande:
+  * Den lilla nedåtpilen bredvid Degub/Release->Configuration Manager->Active solution ska vara x64.
+    Använd sedan Debug när du kompilerar och testar projektet, och Release enbart när man ska kompilera för typ sista gången.
+  * Project->[project name] properties->Configuration Properties->Linker->Input->Additional Dependencies bör ha:
+	freeglut.lib;glew32.lib;glew32s.lib;glew32mx.lib;glew32mxs.lib;
+    mellan den sista *.lib; och %(AdditionalDependencies)
+-------------------------
+------EXTRA: OpenAL------
+11. Packa upp openal-soft-1.15.1-bin.zip.
+
+12. Döp om openal-soft-1.15.1-bin\Win64\soft_oal.dll till OpenAL32.dll, och kopiera till C:\Windows\System32\
+
+13. Kopiera openal-soft-1.15.1-bin\include\AL till C:\Program (x86)\Windows Kits\8.1\Include\um\
+
+14. Kopiera openal-soft-1.15.1-bin\lob\Win32\libOpenAL32.dll.a till C:\Program (x86)\Windows Kits\8.1\Lib\winv6.3\um\x86\
+    Kopiera openal-soft-1.15.1-bin\lob\Win64\libOpenAL32.dll.a till C:\Program (x86)\Windows Kits\8.1\Lib\winv6.3\um\x64\
+
+15. I punkt 10 ovan, lägg till
+	libOpenAL32.dll.a;
+    mellan den sista *.lib; och %(AdditionalDependencies)
+-------------------------

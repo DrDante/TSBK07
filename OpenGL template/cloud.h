@@ -5,9 +5,8 @@
 #include "GL_utilities.h"
 #include "math.h"
 
-// Type 1 is EU55_1
+// Type 1 is EU55_1.
 class cloud{
-
 	vec3 pos{ 0.0, 0.0, 0.0 };
 	GLfloat size = 0;
 	//GLfloat hitBoxHeigth = 0;
@@ -27,14 +26,14 @@ public:
 	{
 		return size;
 	}
-	//GLfloat GetHitBoxHeigth()
-	//{
-	//	return hitBoxHeigth;
-	//}
-	//GLfloat GetHitBoxRad()
-	//{
-	//	return hitBoxRad;
-	//}
+	/*GLfloat GetHitBoxHeigth()
+	{
+		return hitBoxHeigth;
+	}
+	GLfloat GetHitBoxRad()
+	{
+		return hitBoxRad;
+	}*/
 	int GetType()
 	{
 		return type;
@@ -59,7 +58,6 @@ public:
 	{
 		type = typeIn;
 	}
-
 };
 
 #endif

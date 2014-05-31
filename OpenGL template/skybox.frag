@@ -35,7 +35,5 @@ vec3 totalLight;	// Total light.
 
 void main(void)
 {
-
-		out_Color = texture(texUnit, outTexCoord);
-
+	out_Color = texture(texUnit, outTexCoord);
 }

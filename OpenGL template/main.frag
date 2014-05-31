@@ -10,7 +10,6 @@ uniform sampler2D texUnit, texUnit2, texUnit3;
 
 in float pos;
 
-
 uniform bool skybox;
 uniform bool lambert;
 uniform bool multitex;
@@ -81,18 +80,12 @@ void main(void)
 	totalLight += specLight;
 
 	vec4 tempTotalLight = vec4(totalLight, 1.0);
-	/*if(transparent)
-		tempTotalLight[3] = 0.1;*/
 	if(!multitex)
 	{
 		out_Color = texture(texUnit, outTexCoord) * tempTotalLight;
 	}
 	else
 	{
-		//float zone1end = 6.0;
-		//float zone2start = 11.0;
-		//float zone2end = 14.5;
-		//float zone3start = 19.5;
 		float zone1end = 10.0;
 		float zone2start = 18.0;
 		float zone2end = 25.0;

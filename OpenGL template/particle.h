@@ -7,13 +7,10 @@
 
 
 class particle{
-
-
 	vec3 pos{ 0.0, 0.0, 0.0 };
 	vec3 speed{0.0, 0.0, 0.0};
 	vec3 acceleration{ 0.0, 0.0, 0.0 };
 	GLfloat timeAlive = 0;
-
 public:
 	particle(vec3 pos, GLfloat size)
 	{
@@ -78,9 +75,7 @@ public:
 	{
 		acceleration.z = z;
 	}
-
 };
-
 
 particle* GenerateParticles(int nrOfParticles, int isExplosion);
 

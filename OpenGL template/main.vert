@@ -28,7 +28,6 @@ void main(void)
 	pos = tempPos.y;
 
 	vec3 temp = vec3(camPos[0], camPos[1], camPos[2]);
-	//outCamPos = vec3(VTPMatrix * WTVMatrix * vec4(temp, 1.0));
 	outCamPos = temp;
 	outObjPos = vec3(MTWMatrix * vec4(inPosition, 1));
 }

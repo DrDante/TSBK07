@@ -123,7 +123,6 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="particle.cpp" />
     <ClCompile Include="terrain.cpp" />
-    <ClCompile Include="tree.cpp" />
     <ClCompile Include="VectorUtils3.c" />
   </ItemGroup>
   <ItemGroup>

@@ -16,16 +16,14 @@ particle* GenerateParticles(int nrOfParticles, int isExplosion)
 	int scale = 40000;
 	for (int i = 0; i < nrOfParticles; i++)
 	{
-		//Hmm.. hur räkna ut hastigheten?
 		xAcc = 0;
 		yAcc = -0.01;
 		zAcc = 0;
 		if (isExplosion)
 		{
-		
-		speed.x = speed.x + (GLfloat)rand() / 15000;
-		speed.y = speed.y + (GLfloat)rand() / 15000;
-		speed.z = speed.z + (GLfloat)rand() / 15000;
+			speed.x = speed.x + (GLfloat)rand() / 15000;
+			speed.y = speed.y + (GLfloat)rand() / 15000;
+			speed.z = speed.z + (GLfloat)rand() / 15000;
 		}
 		else
 		{
@@ -46,7 +44,5 @@ particle* GenerateParticles(int nrOfParticles, int isExplosion)
 		particleArray[i].SetYSpeed(tempSpeed.y);
 		particleArray[i].SetZSpeed(tempSpeed.z);
 	}
-
 	return particleArray;
-
 }

@@ -6,7 +6,6 @@
 #include "math.h"
 #include "terrain.h"
 
-
 int* GenerateGridPositions(GLfloat *vertexArray, int xMax, int zMax, int square_size);
 int getNrXPoints();
 int getNrZPoints();

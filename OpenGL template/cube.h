@@ -5,9 +5,7 @@
 #include "GL_utilities.h"
 #include "math.h"
 
-
 class cube{
-
 	vec3 pos = { 0.0f, 0.0f, 0.0f };
 	GLfloat color = 0;
 	bool alreadyHit = false;
@@ -28,12 +26,11 @@ public:
 		GLfloat dist;
 		bool isHit = false;
 		dist = sqrt(pow((pos.x - objectPos.x), 2) + pow((pos.y - objectPos.y), 2) +  pow((pos.z - objectPos.z), 2));
-			if (dist < R)
-			{
-				isHit = true;
-				alreadyHit = false;
-			}
-
+		if (dist < R)
+		{
+			isHit = true;
+			alreadyHit = false;
+		}
 		return isHit;
 	}
 	bool CheckOtherObject(vec3 objectPos){

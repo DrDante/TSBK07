@@ -1,14 +1,9 @@
 ﻿#include "terrain.h"
 
-// terrain variables
-//int terrainW; //width
-//int terrainH; //height
+// Terrain variables.
 int nrOfTrees;
 int nrOfClouds;
 int nrOfCubes;
-
-// Model
-//Model *terrain;
 
 Model* GenerateTerrain(TextureData *tex, GLfloat terrainScale)
 {
@@ -28,9 +23,9 @@ Model* GenerateTerrain(TextureData *tex, GLfloat terrainScale)
 	{
 		for (z = 0; z < tex->height; z++)
 		{
-			// Vertex array. You need to scale this properly
+			// Vertex array. You need to scale this properly.
 			vertexArray[(x + z * tex->width) * 3 + 0] = x / 1.0;
-			vertexArray[(x + z * tex->width) * 3 + 1] = tex->imageData[(x + z * tex->width) * (tex->bpp / 8)] /terrainScale; // Terrain height
+			vertexArray[(x + z * tex->width) * 3 + 1] = tex->imageData[(x + z * tex->width) * (tex->bpp / 8)] /terrainScale; // Terrain height.
 			vertexArray[(x + z * tex->width) * 3 + 2] = z / 1.0;
 
 			// Texture coordinates. You may want to scale them.
@@ -43,11 +38,11 @@ Model* GenerateTerrain(TextureData *tex, GLfloat terrainScale)
 	{
 		for (z = 0; z < tex->height - 1; z++)
 		{
-			// Triangle 1
+			// Triangle 1.
 			indexArray[(x + z * (tex->width - 1)) * 6 + 0] = x + z * tex->width;
 			indexArray[(x + z * (tex->width - 1)) * 6 + 1] = x + (z + 1) * tex->width;
 			indexArray[(x + z * (tex->width - 1)) * 6 + 2] = x + 1 + z * tex->width;
-			// Triangle 2
+			// Triangle 2.
 			indexArray[(x + z * (tex->width - 1)) * 6 + 3] = x + 1 + z * tex->width;
 			indexArray[(x + z * (tex->width - 1)) * 6 + 4] = x + (z + 1) * tex->width;
 			indexArray[(x + z * (tex->width - 1)) * 6 + 5] = x + 1 + (z + 1) * tex->width;
@@ -60,17 +55,15 @@ Model* GenerateTerrain(TextureData *tex, GLfloat terrainScale)
 		{
 			// Normal vectors. You need to calculate these.
 			tempNormal = giveNormal(x, tex->imageData[(x + z * tex->width) * (tex->bpp / 8)] / 10.0, z, vertexArray, indexArray, tex->width, tex->height);
-			//printf("normal_x %d\n", x);
 			normalArray[(x + z * tex->width) * 3 + 0] = -tempNormal.x;
 			normalArray[(x + z * tex->width) * 3 + 1] = -tempNormal.y;
 			normalArray[(x + z * tex->width) * 3 + 2] = -tempNormal.z;
 		}
 	}
 
-	// End of terrain generation
+	// End of terrain generation.
 
-	// Create Model and upload to GPU:
-
+	// Create Model and upload to GPU.
 	Model* model = LoadDataToModel(
 		vertexArray,
 		normalArray,
@@ -84,7 +77,7 @@ Model* GenerateTerrain(TextureData *tex, GLfloat terrainScale)
 }
 
 
-vec3 giveNormal(int x, int y, int z, GLfloat *vertexArray, GLuint *indexArray, int width, int height)	// Returns the normal of a vertex.
+vec3 giveNormal(int x, int y, int z, GLfloat *vertexArray, GLuint *indexArray, int width, int height) // Returns the normal of a vertex.
 {
 	vec3 vertex = { GLfloat(x), GLfloat(y), GLfloat(z) };
 	vec3 normal = { 0, 1, 0 };
@@ -138,7 +131,6 @@ vec3 giveNormal(int x, int y, int z, GLfloat *vertexArray, GLuint *indexArray, i
 
 	}
 	return normal;
-
 }
 
 int getWidth(TextureData *tex)
@@ -152,8 +144,8 @@ int getHeight(TextureData *tex)
 	return height;
 }
 
-GLfloat findHeight(GLfloat x, GLfloat z, GLfloat *vertexArray, int width, int height){
-
+GLfloat findHeight(GLfloat x, GLfloat z, GLfloat *vertexArray, int width, int height)
+{
 	GLfloat yheight = 0;
 
 	int vertX1 = floor(x);
@@ -208,10 +200,7 @@ GLfloat findHeight(GLfloat x, GLfloat z, GLfloat *vertexArray, int width, int he
 		GLfloat D;
 		D = DotProduct(planeNormal, p1);
 
-
-
 		yheight = (D - planeNormal.x*x - planeNormal.z*z) / planeNormal.y;
-
 	}
 	return yheight;
 }

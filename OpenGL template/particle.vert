@@ -11,6 +11,6 @@ uniform mat4 VTPMatrix;	// View-to-projection matrix (lens).
 
 void main(void)
 {
-		gl_Position = VTPMatrix * WTVMatrix * MTWMatrix * vec4(inPosition, 1.0);
-		vertexColor = inColor;
+	gl_Position = VTPMatrix * WTVMatrix * MTWMatrix * vec4(inPosition, 1.0);
+	vertexColor = inColor;
 }
